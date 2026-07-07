@@ -6,15 +6,27 @@ export type AgentId =
   | "dangan"
   | "quanxian"
   | "fengkong"
-  | "fuhe";
+  | "fuhe"
+  | "chief_front"
+  | "chief_back"
+  | "trainee_front"
+  | "trainee_back"
+  | "director";
+
+// 1 = Director, 2 = Section Chief, 3 = Window Officer, 4 = Trainee
+export type AgentLevel = 1 | 2 | 3 | 4;
 
 export type AgentDef = {
   id: AgentId;
   dept: string;
-  windowNo: string;
+  windowNo?: string;
   personName: string;
   staffId: string;
+  level: AgentLevel;
+  superior?: AgentId;
+  subordinates: AgentId[];
   tenureYears: number;
+  status?: string;
   persona: string;
   duty: string;
   boundary: string;
@@ -26,8 +38,22 @@ export type CaseOutcome = "resolved" | "rejected" | "terminated";
 export type CaseEvent =
   | { type: "user_message"; ts: number; agentId: AgentId; text: string }
   | { type: "agent_message"; ts: number; agentId: AgentId; text: string }
-  | { type: "internal_memo"; ts: number; from: AgentId; to: AgentId; text: string }
-  | { type: "internal_reply"; ts: number; from: AgentId; to: AgentId; text: string }
+  | {
+      type: "internal_memo";
+      ts: number;
+      from: AgentId;
+      to: AgentId;
+      text: string;
+      channel?: "peer" | "up" | "down";
+    }
+  | {
+      type: "internal_reply";
+      ts: number;
+      from: AgentId;
+      to: AgentId;
+      text: string;
+      channel?: "peer" | "up" | "down";
+    }
   | {
       type: "document_issued";
       ts: number;

@@ -17,17 +17,22 @@ import type {
 
 type Spot = { x: number; y: number };
 
-const ENTRANCE: Spot = { x: 50, y: 90 };
+const ENTRANCE: Spot = { x: 50, y: 86 };
 
 const HALL_LAYOUT: Record<AgentId, Spot> = {
-  daoban: { x: 15, y: 16 },
-  shouli: { x: 38.5, y: 16 },
-  cailiao: { x: 62, y: 16 },
-  zige: { x: 85.5, y: 16 },
-  dangan: { x: 87, y: 48 },
-  quanxian: { x: 87, y: 78 },
-  fengkong: { x: 13, y: 48 },
-  fuhe: { x: 13, y: 78 },
+  director: { x: 50, y: 8 },
+  chief_front: { x: 32, y: 19 },
+  chief_back: { x: 68, y: 19 },
+  trainee_front: { x: 12, y: 19 },
+  trainee_back: { x: 88, y: 19 },
+  daoban: { x: 15, y: 46 },
+  shouli: { x: 38.5, y: 46 },
+  cailiao: { x: 62, y: 46 },
+  zige: { x: 85.5, y: 46 },
+  dangan: { x: 15, y: 70 },
+  quanxian: { x: 38.5, y: 70 },
+  fengkong: { x: 62, y: 70 },
+  fuhe: { x: 85.5, y: 70 },
 };
 
 const STATE_LABEL: Record<AgentUiState, string> = {
@@ -39,7 +44,13 @@ const STATE_LABEL: Record<AgentUiState, string> = {
 
 const MAX_OBSERVER_TURNS = 12;
 
-type Flight = { id: number; from: AgentId; to: AgentId; reply: boolean };
+type Flight = {
+  id: number;
+  from: AgentId;
+  to: AgentId;
+  reply: boolean;
+  channel?: "peer" | "up" | "down";
+};
 
 function spotOf(p: AgentId | "entrance"): Spot {
   return p === "entrance" ? ENTRANCE : HALL_LAYOUT[p];
@@ -108,7 +119,11 @@ function FlightPaper({ flight, onDone }: { flight: Flight; onDone: (id: number) 
   }, [flight, onDone]);
   return (
     <div
-      className={"memo-fly" + (flight.reply ? " reply" : "")}
+      className={
+        "memo-fly" +
+        (flight.reply ? " reply" : "") +
+        (flight.channel === "up" ? " up" : flight.channel === "down" ? " down" : "")
+      }
       style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
     >
       ▤
@@ -287,7 +302,13 @@ export default function HallPage() {
       flightId.current += 1;
       setFlights((f) => [
         ...f,
-        { id: flightId.current, from: e.from, to: e.to, reply: e.type === "internal_reply" },
+        {
+          id: flightId.current,
+          from: e.from,
+          to: e.to,
+          reply: e.type === "internal_reply",
+          channel: e.channel,
+        },
       ]);
     }
   }, []);
@@ -624,30 +645,42 @@ export default function HallPage() {
             </span>
           ))}
 
+        <div className="staff-divider">
+          <span>{t(lang, "staffOnly")}</span>
+        </div>
+
         {AGENTS.map((a, idx) => {
           const st = statusMap[a.id];
           const busy = st && st.state !== "idle";
+          const isWindow = a.level === 3;
           return (
             <button
               key={a.id}
               className={
                 "station" +
+                (isWindow ? "" : " staff") +
                 (current === a.id ? " active" : "") +
                 (busy ? " lit" : "") +
                 (suggested === a.id && current !== a.id ? " suggested" : "")
               }
               style={{ left: `${HALL_LAYOUT[a.id].x}%`, top: `${HALL_LAYOUT[a.id].y}%` }}
-              onClick={() => !observer && goTo(a.id)}
+              onClick={() => isWindow && !observer && goTo(a.id)}
+              tabIndex={isWindow ? 0 : -1}
             >
               <DeskFigure flip={idx % 2 === 1} />
               <span className="st-label">
-                {a.windowNo} {a.dept}
+                {a.windowNo ? `${a.windowNo} ` : ""}
+                {a.dept}
               </span>
-              <span className="st-person">{a.personName}</span>
+              <span className="st-person">
+                {a.personName}
+                {a.status ? " ·" : ""}
+              </span>
+              {a.status && <span className="st-person">({a.status})</span>}
               {busy && st && (
                 <span className="st-status">
                   {st.state === "consulting" && st.target
-                    ? `memo → ${AGENT_MAP[st.target].dept}`
+                    ? `memo → ${AGENT_MAP[st.target].personName}`
                     : STATE_LABEL[st.state]}
                 </span>
               )}
@@ -894,9 +927,14 @@ export default function HallPage() {
               {events.map((e, i) => {
                 if (e.type === "internal_memo")
                   return (
-                    <div key={i} className="memo">
+                    <div key={i} className={"memo" + (e.channel ? ` ch-${e.channel}` : "")}>
                       <div className="route">
-                        {AGENT_MAP[e.from].dept} → {AGENT_MAP[e.to].dept} · {t(lang, "memo")}
+                        {AGENT_MAP[e.from].personName} → {AGENT_MAP[e.to].personName} ·{" "}
+                        {e.channel === "up"
+                          ? "escalation ↑"
+                          : e.channel === "down"
+                            ? "assignment ↓"
+                            : t(lang, "memo")}
                       </div>
                       <div className="body">{e.text}</div>
                     </div>
@@ -905,7 +943,7 @@ export default function HallPage() {
                   return (
                     <div key={i} className="memo reply">
                       <div className="route">
-                        {AGENT_MAP[e.from].dept} → {AGENT_MAP[e.to].dept} ·{" "}
+                        {AGENT_MAP[e.from].personName} → {AGENT_MAP[e.to].personName} ·{" "}
                         {t(lang, "replyMemo")}
                       </div>
                       <div className="body">{e.text}</div>

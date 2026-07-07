@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AGENTS } from "@/lib/agents";
+import { WINDOW_AGENTS } from "@/lib/agents";
 import { makeCaseId } from "@/lib/case-file";
 import { saveCase, clearCase } from "@/lib/storage";
 import { SCENARIOS } from "@/lib/visitors";
@@ -110,7 +110,7 @@ export default function PortalPage() {
         <h2 className="h-l">{t(lang, "hallWindows")}</h2>
         <table className="window-table">
           <tbody>
-            {AGENTS.map((a) => (
+            {WINDOW_AGENTS.map((a) => (
               <tr key={a.id}>
                 <td>
                   <span>{a.windowNo}</span> {a.dept}

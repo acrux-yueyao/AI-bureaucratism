@@ -87,7 +87,9 @@ ${cs.matter}
 - Window exchanges: ${stats.userTurns}
 - Windows visited: ${stats.windowsVisited}
 - Referrals: ${stats.referrals}
-- Internal memos: ${stats.internalMemos}
+- Peer memos: ${stats.internalMemos}
+- Escalations (upward): ${stats.escalations}
+- Assignments (downward): ${stats.assignments}
 - Materials demanded: ${stats.materialsRequired}
 - Documents issued: ${stats.documentsIssued}
 - Outcome: ${stats.outcome}
@@ -174,6 +176,14 @@ ${analysis || "(not generated)"}
           <div className="stat">
             <div className="num">{stats.internalMemos}</div>
             <div className="label">{t(lang, "statMemos")}</div>
+          </div>
+          <div className="stat">
+            <div className="num">{stats.escalations}</div>
+            <div className="label">{t(lang, "statEscalations")}</div>
+          </div>
+          <div className="stat">
+            <div className="num">{stats.assignments}</div>
+            <div className="label">{t(lang, "statAssignments")}</div>
           </div>
           <div className="stat">
             <div className="num">{stats.materialsRequired}</div>

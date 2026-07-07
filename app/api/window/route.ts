@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { buildSystemPrompt, AGENT_MAP } from "@/lib/agents";
-import { WINDOW_TOOLS, INTERNAL_TOOLS } from "@/lib/tools";
+import { buildSystemPrompt, AGENT_MAP, WINDOW_AGENTS } from "@/lib/agents";
+import { toolsFor } from "@/lib/tools";
 import { renderCaseFile } from "@/lib/case-file";
 import type {
   AgentId,
@@ -14,8 +14,8 @@ import type {
 export const maxDuration = 300;
 
 const MODEL = process.env.AIB_MODEL || "claude-sonnet-5";
-const MAX_CONSULT_DEPTH = 3;
-const MAX_CALLS_PER_TURN = 14;
+const MAX_ROUTING_DEPTH = 4;
+const MAX_CALLS_PER_TURN = 18;
 
 type Ctx = {
   client: Anthropic;
@@ -39,11 +39,14 @@ function isAgentId(v: unknown): v is AgentId {
   return typeof v === "string" && v in AGENT_MAP;
 }
 
+function isWindowId(v: unknown): v is AgentId {
+  return isAgentId(v) && WINDOW_AGENTS.some((a) => a.id === v);
+}
+
 async function runAgent(
   ctx: Ctx,
   agentId: AgentId,
   situation: string,
-  tools: Anthropic.Tool[],
   depth: number
 ): Promise<string> {
   signal(ctx, {
@@ -52,9 +55,7 @@ async function runAgent(
     state: depth === 0 ? "receiving" : "replying",
   });
 
-  const messages: Anthropic.MessageParam[] = [
-    { role: "user", content: situation },
-  ];
+  const messages: Anthropic.MessageParam[] = [{ role: "user", content: situation }];
   const texts: string[] = [];
 
   try {
@@ -66,7 +67,7 @@ async function runAgent(
         model: MODEL,
         max_tokens: 1500,
         system: buildSystemPrompt(agentId),
-        tools,
+        tools: toolsFor(agentId, depth > 0),
         messages,
       });
       if (depth === 0) {
@@ -102,6 +103,59 @@ async function runAgent(
   return texts.join("\n\n");
 }
 
+async function routeMemo(
+  ctx: Ctx,
+  from: AgentId,
+  to: AgentId,
+  text: string,
+  channel: "peer" | "up" | "down",
+  depth: number
+): Promise<string> {
+  if (depth >= MAX_ROUTING_DEPTH)
+    return "System notice: the routing limit for this exchange has been reached. The message was not sent; handle the matter yourself.";
+  if (ctx.calls >= MAX_CALLS_PER_TURN)
+    return "System notice: the call budget for this exchange is exhausted. The message was not sent.";
+
+  signal(ctx, { type: "status", agentId: from, state: "consulting", target: to });
+  push(ctx, { type: "internal_memo", ts: Date.now(), from, to, text, channel });
+
+  const intro =
+    channel === "up"
+      ? `${AGENT_MAP[from].personName} (${AGENT_MAP[from].dept}), who reports to you, has escalated the following to you:`
+      : channel === "down"
+        ? `${AGENT_MAP[from].personName} (${AGENT_MAP[from].dept}), whom you report to, has assigned you the following task:`
+        : `${AGENT_MAP[from].personName} (${AGENT_MAP[from].dept}) has sent you a peer memo:`;
+
+  const closing =
+    channel === "down"
+      ? "Carry out or respond to the assignment as you judge fit. Your text response is returned to them as your result."
+      : "Respond as you judge fit. Your text response is returned to them as your reply.";
+
+  const situation = `${renderCaseFile(ctx.caseId, ctx.matter, ctx.events)}
+
+${intro}
+"${text}"
+
+${closing}`;
+
+  const reply = await runAgent(ctx, to, situation, depth + 1);
+  const replyText = reply || "(no written reply)";
+  push(ctx, {
+    type: "internal_reply",
+    ts: Date.now(),
+    from: to,
+    to: from,
+    text: replyText,
+    channel,
+  });
+  signal(ctx, {
+    type: "status",
+    agentId: from,
+    state: depth === 0 ? "receiving" : "replying",
+  });
+  return `Response from ${AGENT_MAP[to].personName} (${AGENT_MAP[to].dept}):\n${replyText}`;
+}
+
 async function handleTool(
   ctx: Ctx,
   agentId: AgentId,
@@ -110,6 +164,7 @@ async function handleTool(
 ): Promise<string> {
   const input = tu.input as Record<string, unknown>;
   const ts = Date.now();
+  const me = AGENT_MAP[agentId];
 
   switch (tu.name) {
     case "issue_document": {
@@ -120,7 +175,7 @@ async function handleTool(
         docName: String(input.doc_name ?? "Untitled document"),
         content: String(input.content ?? ""),
       });
-      return "Document issued, delivered, and entered into the case file.";
+      return "Document issued under your name and entered into the case file.";
     }
     case "require_materials": {
       const items = Array.isArray(input.items)
@@ -141,7 +196,7 @@ async function handleTool(
       return "The visitor has been informed; entered into the case file.";
     }
     case "refer_user": {
-      if (!isAgentId(input.target)) return "System notice: no such window.";
+      if (!isWindowId(input.target)) return "System notice: no such window.";
       push(ctx, {
         type: "referral",
         ts,
@@ -167,41 +222,20 @@ async function handleTool(
       return "The case is closed; the system has issued the visitor a receipt.";
     }
     case "consult_internal": {
-      if (!isAgentId(input.target)) return "System notice: no such department.";
+      if (!isAgentId(input.target)) return "System notice: no such member of staff.";
       if (input.target === agentId)
-        return "System notice: you cannot send a memo to your own department.";
-      if (depth >= MAX_CONSULT_DEPTH)
-        return "System notice: the routing limit for this exchange has been reached. The memo was not sent; handle the matter yourself or reply to the visitor directly.";
-      if (ctx.calls >= MAX_CALLS_PER_TURN)
-        return "System notice: the call budget for this exchange is exhausted. The memo was not sent.";
-
-      const target = input.target;
-      const memoText = String(input.message ?? "");
-      signal(ctx, { type: "status", agentId, state: "consulting", target });
-      push(ctx, { type: "internal_memo", ts, from: agentId, to: target, text: memoText });
-
-      const situation = `${renderCaseFile(ctx.caseId, ctx.matter, ctx.events)}
-
-[${AGENT_MAP[agentId].dept}] (${AGENT_MAP[agentId].personName}) has just sent you an internal memo:
-"${memoText}"
-
-Reply to the memo. Your text response will be delivered to them as your reply.`;
-
-      const reply = await runAgent(ctx, target, situation, INTERNAL_TOOLS, depth + 1);
-      const replyText = reply || "(no written reply)";
-      push(ctx, {
-        type: "internal_reply",
-        ts: Date.now(),
-        from: target,
-        to: agentId,
-        text: replyText,
-      });
-      signal(ctx, {
-        type: "status",
-        agentId,
-        state: depth === 0 ? "receiving" : "replying",
-      });
-      return `Reply received from [${AGENT_MAP[target].dept}]:\n${replyText}`;
+        return "System notice: you cannot send a memo to yourself.";
+      return routeMemo(ctx, agentId, input.target, String(input.message ?? ""), "peer", depth);
+    }
+    case "escalate": {
+      if (!me.superior) return "System notice: you have no superior to escalate to.";
+      return routeMemo(ctx, agentId, me.superior, String(input.message ?? ""), "up", depth);
+    }
+    case "assign_work": {
+      if (!isAgentId(input.target)) return "System notice: no such member of staff.";
+      if (!me.subordinates.includes(input.target))
+        return "System notice: that person does not work under you.";
+      return routeMemo(ctx, agentId, input.target, String(input.task ?? ""), "down", depth);
     }
     default:
       return "System notice: unknown action.";
@@ -215,7 +249,7 @@ export async function POST(req: Request) {
   } catch {
     return Response.json({ error: "Malformed request." }, { status: 400 });
   }
-  if (!isAgentId(body.agentId) || !body.userMessage?.trim()) {
+  if (!isWindowId(body.agentId) || !body.userMessage?.trim()) {
     return Response.json({ error: "Missing parameters." }, { status: 400 });
   }
 
@@ -237,7 +271,8 @@ export async function POST(req: Request) {
           kind: "signal",
           signal: {
             type: "error",
-            message: "The server is missing ANTHROPIC_API_KEY. Set it in .env.local and restart.",
+            message:
+              "The server is missing ANTHROPIC_API_KEY. Set it in .env.local and restart.",
           },
         });
         finish();
@@ -268,7 +303,7 @@ A visitor has just come to your window and says:
 Attend to them. Your text response is spoken to the visitor at the window.`;
 
       try {
-        const replyText = await runAgent(ctx, body.agentId, situation, WINDOW_TOOLS, 0);
+        const replyText = await runAgent(ctx, body.agentId, situation, 0);
         if (replyText) {
           push(ctx, {
             type: "agent_message",
@@ -279,7 +314,10 @@ Attend to them. Your text response is spoken to the visitor at the window.`;
         }
       } catch (err) {
         const msg = err instanceof Error ? err.message : "unknown error";
-        emit({ kind: "signal", signal: { type: "error", message: `Model call failed: ${msg}` } });
+        emit({
+          kind: "signal",
+          signal: { type: "error", message: `Model call failed: ${msg}` },
+        });
       } finally {
         finish();
       }

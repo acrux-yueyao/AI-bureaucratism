@@ -37,10 +37,34 @@
 - 无数据库：办件状态在 localStorage；API 路由无状态
 - `.env.local` 里的 `ANTHROPIC_API_KEY`（绝不入库）
 
+## 组织结构（2026-07-07 起为四层级）
+
+```text
+L1  Director            Eleanor Byrne（19y，从不见访客）
+L2  Section Chiefs      Victor Roth（前台科，2y，空降且比下属资历浅）
+                        Priya Nair（后台科，1y，外聘——此前 Amara 代理该职 8 个月）
+L3  Window Officers     01-04 前台科：Iris/Daniel/Mira(8y,带教Jonah)/Tomas(试用期第3月)
+                        05-08 后台科：Amara(11y,曾代理科长,带教Sofia)/Kenji/Elena/Rosa
+L4  Trainees            Jonah Brandt(第7周,试用)、Sofia Marek(第2月,试用)
+```
+
+**纵向通道**（工具层面，结构性存在，何时用是各自判断）：
+- `escalate` 只能逐级向上（officer→chief→director）
+- `assign_work` 只能派给自己的直接下属；产出**记在下属名下**（问责基底）
+- `consult_internal` 平级函件可发给任何人（跨级私联也可能发生——可观察项）
+- 组织规定：给访客的证书需科长会签；档案按行为人署名
+
+**看不见的层级**（全部以中性事实表述，绝无行为指令）：
+- 资历差公开（roster 对所有人可见，含试用期状态）
+- 考评线：Director 评 Chiefs，Chiefs 评 Officers，带教 Officer 评 Trainee
+- 人事史张力：Priya 空降前 Amara 代理科长 8 个月（双方 prompt 都写了这个事实）；
+  Victor 比自己两位下属资历浅；Tomas 和两位 Trainee 都在试用期、评审在即
+- 甩锅/请示/压活是否发生 = 涌现观察项，红线依旧：不许写任何"要推责"类指令
+
 ### 关键文件
 
 ```text
-lib/agents.ts        被试层：8 个 Agent 英文设定 + system prompt + 观察员 prompt
+lib/agents.ts        被试层：13 个 Agent 四层级英文设定 + roster + system prompt + 观察员 prompt
 lib/visitors.ts      刺激物层：难缠办事人预设（可自由设计行为）
 lib/tools.ts         Agent 操作（开文书/要材料/转窗口/内部函件/办结），描述中性
 lib/case-file.ts     办件档案英文渲染 + 统计

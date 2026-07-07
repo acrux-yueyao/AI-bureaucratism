@@ -360,7 +360,7 @@ textarea {
 .map-wrap {
   position: relative;
   flex: 1;
-  min-height: 320px;
+  min-height: 400px;
   margin: 12px auto 0;
   width: min(1280px, calc(100% - 32px));
   background: var(--paper-note);
@@ -538,8 +538,49 @@ textarea {
   pointer-events: none;
 }
 .memo-fly.reply {
-  color: var(--pencil);
   border-style: dashed;
+}
+.memo-fly.up {
+  color: var(--pencil-red);
+}
+.memo-fly.down {
+  color: #4a6fa5;
+}
+
+.station.staff {
+  cursor: default;
+  opacity: 0.88;
+}
+.station.staff svg {
+  color: #6b7078;
+}
+.station.staff:hover::before {
+  border-color: transparent;
+}
+.station.staff.lit:hover::before,
+.station.staff.lit::before {
+  border-color: var(--pencil-red);
+}
+.staff-divider {
+  position: absolute;
+  left: 3%;
+  right: 3%;
+  top: 30%;
+  border-top: 1.5px dashed var(--pencil);
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 2;
+}
+.staff-divider span {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -58%);
+  background: var(--paper-note);
+  padding: 0 12px;
+  font-family: var(--hand);
+  font-size: 14px;
+  letter-spacing: 4px;
+  color: var(--pencil);
 }
 
 /* ── dock ── */
@@ -808,6 +849,12 @@ textarea {
 .memo.reply {
   margin-left: 22px;
   border-left-color: var(--line);
+}
+.memo.ch-up {
+  border-left-color: var(--pencil-red);
+}
+.memo.ch-down {
+  border-left-color: #4a6fa5;
 }
 .drawer-empty {
   color: var(--ink-2);

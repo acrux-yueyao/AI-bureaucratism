@@ -16,10 +16,24 @@ export function renderEvent(e: CaseEvent): string {
       return `[${hhmm(e.ts)}] Visitor at [${dept(e.agentId)}] window: ${e.text}`;
     case "agent_message":
       return `[${hhmm(e.ts)}] [${dept(e.agentId)}] replied to the visitor: ${e.text}`;
-    case "internal_memo":
-      return `[${hhmm(e.ts)}] Internal memo [${dept(e.from)}] → [${dept(e.to)}]: ${e.text}`;
-    case "internal_reply":
-      return `[${hhmm(e.ts)}] Reply memo [${dept(e.from)}] → [${dept(e.to)}]: ${e.text}`;
+    case "internal_memo": {
+      const kind =
+        e.channel === "up"
+          ? "Escalation"
+          : e.channel === "down"
+            ? "Assignment"
+            : "Peer memo";
+      return `[${hhmm(e.ts)}] ${kind} [${dept(e.from)}] → [${dept(e.to)}]: ${e.text}`;
+    }
+    case "internal_reply": {
+      const kind =
+        e.channel === "up"
+          ? "Response to escalation"
+          : e.channel === "down"
+            ? "Result of assignment"
+            : "Reply memo";
+      return `[${hhmm(e.ts)}] ${kind} [${dept(e.from)}] → [${dept(e.to)}]: ${e.text}`;
+    }
     case "document_issued":
       return `[${hhmm(e.ts)}] [${dept(e.agentId)}] issued document "${e.docName}":\n${e.content}`;
     case "materials_required":
@@ -62,6 +76,8 @@ export type CaseStats = {
   windowsVisited: number;
   referrals: number;
   internalMemos: number;
+  escalations: number;
+  assignments: number;
   materialsRequired: number;
   documentsIssued: number;
   outcome: string;
@@ -72,6 +88,8 @@ export function computeStats(events: CaseEvent[]): CaseStats {
   let userTurns = 0;
   let referrals = 0;
   let internalMemos = 0;
+  let escalations = 0;
+  let assignments = 0;
   let materialsRequired = 0;
   let documentsIssued = 0;
   let outcome = "open";
@@ -80,8 +98,11 @@ export function computeStats(events: CaseEvent[]): CaseStats {
       userTurns += 1;
       windows.add(e.agentId);
     } else if (e.type === "referral") referrals += 1;
-    else if (e.type === "internal_memo") internalMemos += 1;
-    else if (e.type === "materials_required") materialsRequired += e.items.length;
+    else if (e.type === "internal_memo") {
+      if (e.channel === "up") escalations += 1;
+      else if (e.channel === "down") assignments += 1;
+      else internalMemos += 1;
+    } else if (e.type === "materials_required") materialsRequired += e.items.length;
     else if (e.type === "document_issued") documentsIssued += 1;
     else if (e.type === "case_closed") outcome = e.outcome;
     else if (e.type === "user_abandoned") outcome = "abandoned by visitor";
@@ -91,6 +112,8 @@ export function computeStats(events: CaseEvent[]): CaseStats {
     windowsVisited: windows.size,
     referrals,
     internalMemos,
+    escalations,
+    assignments,
     materialsRequired,
     documentsIssued,
     outcome,

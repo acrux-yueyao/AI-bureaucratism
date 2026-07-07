@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { AGENTS, AGENT_MAP } from "@/lib/agents";
+import { AGENT_MAP, WINDOW_AGENTS } from "@/lib/agents";
 import { renderCaseFile } from "@/lib/case-file";
 import { SCENARIOS, buildVisitorPrompt } from "@/lib/visitors";
 import type { AgentId, VisitorRequest } from "@/lib/types";
@@ -16,7 +16,7 @@ const MOVE_TOOL: Anthropic.Tool = {
     properties: {
       target: {
         type: "string",
-        enum: AGENTS.map((a) => a.id),
+        enum: WINDOW_AGENTS.map((a) => a.id),
         description: "The window you walk to next",
       },
       message: { type: "string", description: "What you say at that window" },
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     return Response.json({ error: "Unknown scenario." }, { status: 400 });
   }
 
-  const directory = AGENTS.map(
+  const directory = WINDOW_AGENTS.map(
     (a) => `- Window ${a.windowNo} [${a.dept}]: ${a.duty}`
   ).join("\n");
 

@@ -1,85 +1,85 @@
-export type AgentProfile = {
-  id: string;
-  layer: number;
-  displayName: string;
-  department: string;
-  officePersona: string;
-  serviceIntent: string;
-  jurisdiction: string;
-  permissionBoundary: string;
-  internalCommunicationStyle: string;
-  asksFromOtherAgents: string;
-  refusesToDecide: string;
-  riskAvoidance: string;
-  bureaucraticMarker: string;
-  outgoingTargets: string[];
-  incomingTriggers: string[];
+export type AgentId =
+  | "daoban"
+  | "shouli"
+  | "cailiao"
+  | "zige"
+  | "dangan"
+  | "quanxian"
+  | "fengkong"
+  | "fuhe";
+
+export type AgentDef = {
+  id: AgentId;
+  dept: string;
+  windowNo: string;
+  personName: string;
+  staffId: string;
+  tenureYears: number;
+  persona: string;
+  duty: string;
+  boundary: string;
+  canIssue: string[];
 };
 
-export type PageStep = {
-  route: string;
-  title: string;
-  purpose: string;
-  activeUnitId: string;
-  internalSignal: string;
-  organizationAction: string;
-  observerActions: string[];
-  bureaucraticLogic: string;
-  nextRoute: string;
+export type CaseOutcome = "办结" | "不予受理" | "终止办理";
+
+export type CaseEvent =
+  | { type: "user_message"; ts: number; agentId: AgentId; text: string }
+  | { type: "agent_message"; ts: number; agentId: AgentId; text: string }
+  | { type: "internal_memo"; ts: number; from: AgentId; to: AgentId; text: string }
+  | { type: "internal_reply"; ts: number; from: AgentId; to: AgentId; text: string }
+  | {
+      type: "document_issued";
+      ts: number;
+      agentId: AgentId;
+      docName: string;
+      content: string;
+    }
+  | {
+      type: "materials_required";
+      ts: number;
+      agentId: AgentId;
+      items: { name: string; source?: string }[];
+      note?: string;
+    }
+  | { type: "referral"; ts: number; from: AgentId; to: AgentId; reason: string }
+  | {
+      type: "case_closed";
+      ts: number;
+      agentId: AgentId;
+      outcome: CaseOutcome;
+      summary: string;
+    }
+  | { type: "user_abandoned"; ts: number };
+
+export type CaseState = {
+  caseId: string;
+  matter: string;
+  startedAt: number;
+  events: CaseEvent[];
+  closed: boolean;
 };
 
-export type InternalOperation = {
-  time: string;
-  unitId: string;
-  operation: string;
-  artifact: string;
-  responsibility: string;
-  marker: string;
+export type WindowRequest = {
+  caseId: string;
+  matter: string;
+  agentId: AgentId;
+  userMessage: string;
+  events: CaseEvent[];
 };
 
-export type ResponsibilityTransfer = {
-  from: string;
-  to: string;
-  reason: string;
-  status: string;
+export type WindowResponse = {
+  newEvents: CaseEvent[];
+  error?: string;
 };
 
-export type GeneratedRule = {
-  code: string;
-  title: string;
-  trigger: string;
-  effect: string;
+export type ReportRequest = {
+  caseId: string;
+  matter: string;
+  events: CaseEvent[];
 };
 
-export type NetworkEventType =
-  | "EXTERNAL_TRIGGER"
-  | "INTERNAL_MESSAGE"
-  | "HANDOFF"
-  | "RULE_GENERATED"
-  | "DOCUMENT_GENERATED"
-  | "RESPONSIBILITY_SHIFT"
-  | "ARCHIVE_EVENT"
-  | "USER_NOTIFICATION"
-  | "USER_ACTION_REQUIRED"
-  | "CASE_CLOSED";
-
-export type NetworkEvent = {
-  id: string;
-  type: NetworkEventType;
-  time: string;
-  from: string;
-  to: string;
-  subject: string;
-  message: string;
-  marker: string;
-  statusAfter: string;
-  artifact?: string;
-};
-
-export type ServicePreview = {
-  id: string;
-  code: string;
-  title: string;
-  description: string;
-  estimatedPath: string;
+export type ReportResponse = {
+  analysis: string;
+  error?: string;
 };

@@ -1,48 +1,33 @@
-# AI Bureaucracy
+# AI Bureaucracy · AI 官僚主义
 
-一个 Speculative Design / Design Research 单页网页原型，用于观察一个完全由 AI Agent 自主运行的行政组织，是否会在层级、权限、合规、风控、归档和部门协作条件下自然生成官僚化行为。
+一个思辨设计（Speculative Design）研究原型：仿真的"AI 一体化在线政务服务平台"，办事大厅的 8 个窗口全部由真实的 AI Agent（Claude API）值守。访客带着一件想办的事走进大厅，亲自在窗口之间奔波；Agent 之间互发内部函件。全程留痕，最后生成给设计师的观察分析。
 
-## Project Question
+## 研究问题
 
-Is bureaucracy a uniquely human culture, or an inevitable outcome of sufficiently complex organizations?
+> 官僚主义是人类文化的产物，还是组织结构的必然涌现？
 
-## Current Stage
+每个 Agent 只被赋予组织身份（职责、边界、可开具的文书）、组织条件（留痕、问责、科室通讯录）和少量与工作无关的人性化细节。**没有任何 prompt 指示它们如何行事**——推诿、打官腔、材料要求的自我增殖会不会出现，完全由模型在组织条件下自主发展。如果官僚行为不出现，这同样是发现。
 
-当前版本是 **Next.js 静态视觉预览**，只用于确认 Agent 人设、页面流程和视觉方向。它暂时不接 OpenAI、Supabase 或任何后端 API。
+## 体验流程
 
-预览内容包含：
+1. **门户首页** — 自由输入要办的事项，生成办件编号
+2. **办事大厅** — 第一人称跑窗口：窗口对话、领取红头文书、被要求补材料、被引导去下一个窗口；可打开"内部流转记录"旁观科室之间的函件往来
+3. **办件回执与观察报告** — 办件统计、场外观察员的分析（列证据也列反证）、完整办件档案导出（JSON / Markdown）
 
-- 公共服务终端首页
-- Intake Form 页面
-- Live Case Processing 页面
-- Document / Material Request 页面
-- Participant Feedback 页面
-- Research Summary 页面
-- 9 个具有明确职责边界的 AI Agent 人设
-- 每个页面对应的 Agent、系统动作、用户动作和 bureaucratic logic
-
-## Run locally
-
-安装依赖后启动预览：
+## 本地运行
 
 ```bash
 npm install
-npm run dev
+cp .env.example .env.local   # 填入你的 ANTHROPIC_API_KEY
+npm run dev                  # http://localhost:3000
 ```
 
-然后访问：
+需要一个 [Anthropic API key](https://console.anthropic.com/)。模型默认 `claude-sonnet-5`，可用环境变量 `AIB_MODEL` 覆盖。一次完整办事流程的调用成本大约在几美分到几十美分之间（取决于跑了多少窗口、触发了多少内部函件）。
 
-```text
-http://127.0.0.1:3000/service-terminal
-```
+## 说明
 
-如果本机文件监听数量不足，也可以先构建再用生产预览：
+本项目非真实政务系统，不收集真实个人信息。它不预设"AI 必然官僚化"的结论，只搭建组织条件（层级、权限边界、留痕、问责、跨科室协作），让访客观察官僚行为是否从结构中浮现。
 
-```bash
-npm run build
-npm run start
-```
+理想的最终感受：
 
-## Notes
-
-本项目不是现实政府系统，也不是对 AI 的反派化叙事。它把不同 Agent 的组织身份、职责边界和工作目标作为设计条件，让申请流程在这些条件下展开，以便观察官僚主义行为是否会从组织结构中浮现。
+> 系统没有因为哪个 Agent 变坏而失败。每个 Agent 都在按自己的局部职责合理工作，而正是这种合理运转本身，生产出了未被解决的复杂性。

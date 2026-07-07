@@ -1,389 +1,89 @@
-# AI Bureaucracy / Claude Code Handoff
+# AI Bureaucracy — 项目上下文
 
-This repository is an interaction design prototype for a speculative design project called **AI Bureaucracy**. The project is primarily in Chinese, with a small amount of English interface language where it supports the institutional/software atmosphere.
+这是一个思辨设计（Speculative Design）/ 设计研究项目的交互原型。界面语言为中文。
 
-## What This Project Is
+## 项目是什么
 
-AI Bureaucracy is not a normal government service website and not a chatbot. It is a speculative interactive website that lets a visitor trigger a small administrative request, then observe how an all-AI organization processes it internally.
+一个仿真的"AI 一体化在线政务服务平台"：办事大厅的每个窗口都由一个真实的 AI Agent（Claude API 调用）值守。访客带着一件自己想办的事走进大厅，亲自在窗口之间奔波；Agent 之间也会互发内部函件。整个过程被完整记录，最后由场外观察员生成给设计师的分析。
 
-The central question:
+核心研究问题：
 
-> Is bureaucracy produced by human culture, or by organizational structure?
+> 官僚主义是人类文化的产物，还是组织结构的必然涌现？
 
-More specifically:
+具体地说：
 
-> If an organization is fully composed of AI agents, can bureaucratic behavior still emerge from hierarchy, permissions, compliance, risk control, archival logic, and interdepartmental coordination?
+> 如果一个组织完全由 AI Agent 组成，仅仅给予层级、职责边界、留痕、问责、跨科室协作这些组织条件，推诿（踢皮球）、程序性语体（打官腔）、材料要求的自我增殖会不会自发出现？
 
-The website should make bureaucracy feel like an emergent property of a working organization, not a pre-written joke and not a story about evil AI.
+## 实验设计红线（最重要的约束）
 
-## Current Design Direction
+**任何 Agent 的 system prompt 和工具描述里，都不能出现引导官僚行为的语句。**
 
-The current main page is:
+- 不能写"要谨慎""要推诿""要多要材料""怕担责任"之类的性格或行为指令。
+- 只能提供：组织身份（科室、职责、边界、可开具的文书）、组织条件（留痕、问责、通讯录）、与工作行为无关的人性化细节（爱好、近况、工龄）。
+- 工具描述只说明操作是什么，不暗示何时"应该"使用。
+- 官僚行为出现与否，必须完全来自模型在组织条件下的自主发展——这是整个项目的实验效度所在。
+- 观察员（`buildObserverPrompt`）在组织之外，可以直接分析官僚行为，但必须同时列出反证，不预设结论。
+
+修改 `lib/agents.ts` 时务必逐句检查是否违反此红线。
+
+## 架构
+
+- Next.js App Router + React + TypeScript，纯 CSS（`app/globals.css`）
+- `@anthropic-ai/sdk`，模型默认 `claude-sonnet-5`（可用环境变量 `AIB_MODEL` 覆盖）
+- 无数据库：办件状态存在浏览器 localStorage，API 路由无状态
+- 需要 `.env.local` 中的 `ANTHROPIC_API_KEY`（绝不提交入库）
+
+### 关键文件
 
 ```text
-/service-terminal
+lib/agents.ts        8 个 Agent 的组织身份设定 + system prompt 组装 + 观察员 prompt
+lib/tools.ts         Agent 可用的操作（开文书/要材料/转窗口/内部函件/办结）
+lib/case-file.ts     办件档案：事件流渲染成中文档案文本（Agent 的组织记忆）+ 统计
+lib/types.ts         全部共享类型（CaseEvent 判别联合是核心数据结构）
+lib/storage.ts       localStorage 读写
+app/api/window/route.ts   窗口对话：调用当前 Agent；consult_internal 触发嵌套调用
+                          目标 Agent（深度上限 3，单轮总调用上限 14）
+app/api/report/route.ts   观察员分析
+app/page.tsx         门户首页（输入事项 → 建办件 → 进大厅）
+app/hall/page.tsx    办事大厅（左：窗口列表；中：窗口对话；右：材料袋/待办；
+                     抽屉：内部流转记录；红头文书查看器）
+app/report/page.tsx  办件回执 + 统计 + 观察员分析 + 完整档案 + JSON/Markdown 导出
 ```
 
-It has been redesigned away from an academic presentation/dashboard and toward:
-
-- an AI public-service terminal
-- a transparent institutional backstage
-- a dynamic Agent office map
-- an early Windows / old administrative software visual skin
-- a system that looks formal, cold, and procedural, but slightly over-systematized
-
-The page should feel like the visitor has opened an old institutional operating system: title bars, gray system windows, blue bars, status panels, case files, rule notes, and Agent nodes moving information around.
-
-## User's Strong Preferences
-
-Keep these constraints. They came from repeated feedback and matter more than generic UI instincts.
-
-- Do not make it a long scroll portfolio essay.
-- Do not make the opening page academic.
-- Do not show "Research Question", "Methods", "Insights", "Stage", "研究总结", or similar research framing before the experience.
-- Do not make AI Agents into customer-service chatbots.
-- Do not center the experience on user-agent conversation.
-- Do not use neon cyberpunk, sci-fi glow, or comedy/satire styling.
-- Do not make Agents malicious, stupid, or intentionally evasive.
-- Do not predefine a fixed user request like "申请一把椅子" as the core flow.
-- The user should type their own matter/request.
-- After the user submits, the user becomes mostly an observer.
-- The main action should be Agent-to-Agent communication, instruction, handoff, evidence request, rule generation, responsibility movement, and archival accumulation.
-- The absurdity should come from the system working too reasonably.
-
-## Current Stack
-
-- Next.js App Router
-- React
-- TypeScript
-- Plain CSS in `app/globals.css`
-- Static mock data only
-- No database
-- No OpenAI API
-- No Supabase
-- No backend routes yet
-
-Run locally:
+### 运行与验证
 
 ```bash
 npm install
-npm run dev
-```
-
-Or production preview:
-
-```bash
-npm run build
-npm run start -- --hostname 127.0.0.1 --port 3000
-```
-
-Verification commands:
-
-```bash
+npm run dev        # http://localhost:3000
 npm run typecheck
 npm run build
 ```
 
-## Important Files
+## 交互流程
 
-```text
-app/service-terminal/page.tsx
-```
+1. 门户首页输入要办的事（自由文本，不预设事项）→ 生成办件编号 → 进入 `/hall`
+2. 用户第一人称跑窗口：选窗口 → 对话 → Agent 可能开文书、要材料、让用户去别的窗口
+3. Agent 之间可互发内部函件（用户在"内部流转记录"抽屉可见——组织后台对研究者透明）
+4. 任一 Agent 办结、或用户点"结束办理"→ `/report`
+5. 报告页：回执、统计（走过窗口数/被转办次数/内部函件数/被要求材料数…）、观察员分析、档案导出
 
-This route renders the current main experience.
+## 8 个窗口
 
-```text
-app/components/ServiceTerminalExperience.tsx
-```
+01 综合导办（林一苇）· 02 统一受理（赵砚知）· 03 材料审核（沈目）· 04 资格初审（祁明彻）· 05 档案证明（苏卷云）· 06 权限管理（白钥）· 07 合规风控（郑衡）· 08 申诉复核（何镜台）
 
-The current core interactive prototype. It contains:
+每个 Agent 的完整设定见 `lib/agents.ts`。人性层细节（绿萝、长假、值班）刻意与工作行为无关。
 
-- Agent roster
-- mock internal event sequence
-- request input
-- live Agent office map
-- Agent nodes
-- internal message bubble
-- material/document artifacts
-- rule-added notes
-- responsibility token
-- occasional user action dock
-- final System Trace
+## 用户的强偏好（历次反馈沉淀，优先于通用 UI 直觉）
 
-```text
-app/globals.css
-```
+- 视觉是现代中国政务门户风：庄重蓝 + 印章红、横幅、服务卡片、红头文书。不要早期 Windows 皮肤（已废弃的旧方向），不要霓虹科幻、不要搞笑讽刺、不要 SaaS 感。
+- 不要研究计划书式的开场页，不要长滚动作品集页面，体验先于解释。
+- 不预设固定办事事项，用户自己输入。
+- Agent 不是客服聊天机器人，也不能被写成反派或蠢角色。
+- 荒诞感必须来自"系统过于合理地运转"，而不是刻意搞笑。
+- 平台各处的免责声明保留：这是设计研究原型，非真实政务系统。
 
-Contains all visual styling, including the early Windows institutional skin near the end of the file.
+## Git
 
-```text
-lib/preview-data.ts
-app/components/NetworkPlayback.tsx
-```
-
-Earlier visual preview for the Agent network route. It is still present but the user is currently focused on `/service-terminal`.
-
-## Current Main Interaction Flow
-
-1. Visitor lands on `/service-terminal`.
-2. They see a formal old-system terminal window:
-   - title: `AI-BUREAUCRACY.EXE`
-   - central prompt: `请输入您要办理的事项`
-   - placeholder: `请直接输入需要系统处理的事项...`
-3. Visitor enters any matter/request in natural language.
-4. System creates a mock Case ID:
-   - `AIB-2041-OPEN`
-5. The page switches into a dynamic Agent office map.
-6. Multiple Agent nodes exchange internal messages.
-7. Lines light up between sender and receiver.
-8. Files/materials appear when evidence is requested or generated.
-9. A rule note appears when the system generates a new procedural rule.
-10. A responsibility token moves between responsible units.
-11. The user occasionally sees a small action dock:
-   - `前往获取材料`
-   - `继续提交`
-   - `申请复核`
-   - `确认继续`
-12. At the end, System Trace appears, showing that the case became procedurally complete but substantively unresolved.
-
-The user should mostly watch the institution operate.
-
-## Current Agent Roster
-
-The current `/service-terminal` experience uses 8 Agents.
-
-### 综合导办 Agent
-
-- Office: 导办台
-- Prototype: 政务大厅引导员
-- Duty: Translate the user's natural language matter into possible administrative paths.
-- Boundary: Does not accept concrete applications or judge qualifications.
-- Professional temperament: Afraid the user will enter the wrong path; tends to confirm jurisdiction first.
-- Prop: 路线牌
-
-### 统一受理 Agent
-
-- Office: 受理窗口
-- Prototype: 窗口工作人员
-- Duty: Receive request, generate case ID, check basic format.
-- Boundary: Cannot decide approval; only decides whether the matter enters process.
-- Professional temperament: Values numbering, timestamps, and traceability.
-- Prop: 受理章
-
-### 材料清单 Agent
-
-- Office: 材料科
-- Prototype: 细致的经办科员
-- Duty: Determine required materials, proofs, attachments, and statements.
-- Boundary: Only checks material completeness, not the user's real situation.
-- Professional temperament: Afraid standards will become inconsistent; tends to create checklists.
-- Prop: 清单夹
-
-### 资格审查 Agent
-
-- Office: 初审科
-- Prototype: 初审工作人员
-- Duty: Check whether existing rules define eligibility.
-- Boundary: Cannot make exceptions for special cases.
-- Professional temperament: Values consistency and avoids subjective judgment.
-- Prop: 放大镜
-
-### 档案证明 Agent
-
-- Office: 档案室
-- Prototype: 档案室工作人员
-- Duty: Search historical records, generate proofs, and archive process records.
-- Boundary: Cannot prove what has no record; cannot invent archives.
-- Professional temperament: Trusts retrievable records and procedural traces.
-- Prop: 档案盒
-
-### 权限边界 Agent
-
-- Office: 权限室
-- Prototype: 系统权限管理员
-- Duty: Decide which Agent is authorized to process a step.
-- Boundary: Does not process the actual matter; only determines who has permission.
-- Professional temperament: Afraid of overreach; maintains jurisdiction boundaries.
-- Prop: 门禁卡
-
-### 合规风控 Agent
-
-- Office: 风控室
-- Prototype: 法务 / 风控人员
-- Duty: Check compliance, risk, fairness, and traceability.
-- Boundary: Cannot approve the matter; can only raise risks and additional requirements.
-- Professional temperament: Afraid small exceptions become institutional precedents.
-- Prop: 风控盾
-
-### 申诉复核 Agent
-
-- Office: 复核室
-- Prototype: 复议办公室
-- Duty: Check whether the process is reviewable and procedurally compliant.
-- Boundary: Can review procedure, but cannot replace the original department's decision.
-- Professional temperament: Values review target, original decision ID, and procedural closure.
-- Prop: 复核章
-
-## Current Mock Event Logic
-
-The internal flow is not a user-agent chat. It is an Agent-Agent routing sequence.
-
-Event types currently implied by UI:
-
-- external trigger
-- path suggestion
-- intake handoff
-- material inquiry
-- eligibility uncertainty
-- jurisdiction confirmation
-- compliance/risk review
-- material request
-- archive search
-- no-record proof
-- rule added
-- review pre-check
-- procedural closure
-
-Important design principle:
-
-When an Agent requests more proof, refuses to decide, transfers a case, or adds a rule, it should appear locally reasonable because of its role, boundary, and risk obligations.
-
-## Visual Direction
-
-The current visual target combines:
-
-- early Windows system UI
-- old public-sector/internal administrative software
-- institutional case-processing windows
-- gray beveled surfaces
-- blue title bars
-- pixel-like buttons
-- system dialogs
-- document windows
-- file stacks
-- a hand-drawn/irregular office map feeling
-
-Keep the palette restrained:
-
-- gray
-- white
-- black
-- institutional blue
-- limited warning red/yellow only when functionally needed
-
-Avoid:
-
-- neon
-- glossy SaaS dashboard
-- smooth generic product UI
-- long-scroll portfolio layout
-- colorful playful illustration
-- cyberpunk effects
-
-## What To Improve Next
-
-If continuing development, prioritize:
-
-1. Make the Agent-Agent performance richer while staying deterministic.
-2. Add more visible instruction-like communication between Agents, not user-facing chat.
-3. Increase the sense of files/rules/windows accumulating over time.
-4. Improve the office map composition so it feels less like a dashboard and more like a working administrative desktop.
-5. Add a feedback step after the case completes.
-6. Only after the static experience works visually, consider backend/API integration.
-
-## Future Full-Stack Direction
-
-Do not implement this unless the user explicitly asks to move beyond static preview.
-
-Recommended later architecture:
-
-- Vercel deployment
-- Next.js server routes
-- Supabase for anonymous research data
-- OpenAI Responses API for optional Agent wording/document generation
-
-Possible environment variables:
-
-```text
-OPENAI_API_KEY
-SUPABASE_URL
-SUPABASE_SERVICE_ROLE_KEY
-```
-
-Suggested future API routes:
-
-```text
-POST /api/sessions
-POST /api/agent-step
-POST /api/events
-POST /api/feedback
-GET  /api/research/[sessionId]
-```
-
-But the current phase is still visual/interaction prototyping.
-
-## Git / Repo Notes
-
-This workspace was converted from a static HTML/CSS/JS prototype into a Next.js project.
-
-Old files were removed:
-
-```text
-index.html
-styles.css
-app.js
-```
-
-Current Next.js files may still be untracked depending on the local git state. Check `git status` before committing.
-
-There is a local visual reference folder:
-
-```text
-视觉参考/
-```
-
-Do not use those images directly as page assets unless the user explicitly asks. They are visual references only.
-
-## Tone and Language
-
-Use Chinese for the interface and most design discussion.
-
-Allowed English:
-
-- AI Bureaucracy
-- System Trace
-- Agent
-- Case ID
-- internal software labels like `.exe`, `.log`, `.ini`, `.sys`
-
-The UI tone should be:
-
-- formal
-- polite
-- procedural
-- restrained
-- institutional
-- slightly over-systematized
-
-Do not use memes, jokes, or exaggerated villain language.
-
-## Core Design Position
-
-The project should not prove in advance that AI must become bureaucratic.
-
-It should construct conditions:
-
-- hierarchy
-- permission boundary
-- auditability
-- compliance
-- risk control
-- archival record
-- interdepartmental coordination
-- responsibility separation
-
-Then it should let the visitor observe whether bureaucratic behavior emerges from those conditions.
-
-The best final feeling:
-
-> The system did not fail because one Agent was bad. The system worked according to its own local responsibilities, and that working process produced unresolved complexity.
+- `main` 是唯一推送到 GitHub（acrux-yueyao/AI-bureaucratism）的分支。
+- `codex/interactive-website` 是旧原型的本地存档分支，不要推送、不要删除。
+- `视觉参考/` 与 `.env.local` 在 .gitignore 中，永远不入库。

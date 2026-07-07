@@ -6,32 +6,41 @@
 
 Is bureaucracy a uniquely human culture, or an inevitable outcome of sufficiently complex organizations?
 
-## Prototype
+## Current Stage
 
-这是一个静态前端原型，无需后端即可运行。页面包含：
+当前版本是 **Next.js 静态视觉预览**，只用于确认 Agent 人设、页面流程和视觉方向。它暂时不接 OpenAI、Supabase 或任何后端 API。
 
-- 政务服务平台式首页与办事入口
-- 10 个具有明确职责边界的 AI Agent
-- 简单事项申请流程
-- Agent 对话 / 审批记录
-- 责任转移地图
-- 新增规则记录与材料清单
-- 行政文件输出
-- Designer / Research Feedback 面板
-- AI 机构年度报告区域
+预览内容包含：
+
+- 公共服务终端首页
+- Intake Form 页面
+- Live Case Processing 页面
+- Document / Material Request 页面
+- Participant Feedback 页面
+- Research Summary 页面
+- 9 个具有明确职责边界的 AI Agent 人设
+- 每个页面对应的 Agent、系统动作、用户动作和 bureaucratic logic
 
 ## Run locally
 
-直接打开 `index.html`，或在项目目录启动任意静态服务：
+安装依赖后启动预览：
 
 ```bash
-python3 -m http.server 4173
+npm install
+npm run dev
 ```
 
 然后访问：
 
 ```text
-http://127.0.0.1:4173/
+http://127.0.0.1:3000/service-terminal
+```
+
+如果本机文件监听数量不足，也可以先构建再用生产预览：
+
+```bash
+npm run build
+npm run start
 ```
 
 ## Notes

@@ -2,3 +2,9 @@
 node_modules/
 dist/
 .env
+.env.local
+.next/
+.vercel/
+coverage/
+tsconfig.tsbuildinfo
+视觉参考/

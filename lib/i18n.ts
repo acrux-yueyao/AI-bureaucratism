@@ -57,6 +57,10 @@ const EN = {
   referredTo: "Referral: please proceed to Window",
   reason: "",
   closedAs: "Case closed",
+  journeyTitle: "Case journey",
+  journeyLegend:
+    "grey dashes: visitor's path · green: peer memo · red: escalation · blue: assignment · ▤ document · ● closed",
+  printPdf: "Print / save as PDF",
   staffRecords: "Staff records",
   staffRecordsDesc:
     "What each member of staff has accumulated across cases: mechanical tallies, and a private notebook written by the agent itself at the end of each day. Both are shown back to them on future days.",
@@ -160,6 +164,9 @@ const ZH: typeof EN = {
   referredTo: "转办：请前往窗口",
   reason: "",
   closedAs: "本件已办结",
+  journeyTitle: "办理轨迹",
+  journeyLegend: "灰虚线：办事人足迹 · 绿：平级函件 · 红：向上请示 · 蓝：向下派工 · ▤ 文书 · ● 办结",
+  printPdf: "打印 / 存为 PDF",
   staffRecords: "员工档案",
   staffRecordsDesc: "每位员工跨案件积累的东西：机械台账 + 它们自己每天下班写的私人笔记本。未来的每一天这些都会摆回它们面前。",
   daysOnRecord: "在册天数",

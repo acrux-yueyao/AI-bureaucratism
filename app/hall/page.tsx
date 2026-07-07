@@ -17,25 +17,7 @@ import type {
   VisitorMove,
 } from "@/lib/types";
 
-type Spot = { x: number; y: number };
-
-const ENTRANCE: Spot = { x: 50, y: 86 };
-
-const HALL_LAYOUT: Record<AgentId, Spot> = {
-  director: { x: 50, y: 8 },
-  chief_front: { x: 32, y: 19 },
-  chief_back: { x: 68, y: 19 },
-  trainee_front: { x: 12, y: 19 },
-  trainee_back: { x: 88, y: 19 },
-  daoban: { x: 15, y: 46 },
-  shouli: { x: 38.5, y: 46 },
-  cailiao: { x: 62, y: 46 },
-  zige: { x: 85.5, y: 46 },
-  dangan: { x: 15, y: 70 },
-  quanxian: { x: 38.5, y: 70 },
-  fengkong: { x: 62, y: 70 },
-  fuhe: { x: 85.5, y: 70 },
-};
+import { ENTRANCE, HALL_LAYOUT, type Spot } from "@/lib/layout";
 
 const STATE_LABEL: Record<AgentUiState, string> = {
   receiving: "attending",
@@ -233,16 +215,56 @@ export default function HallPage() {
   }, [events]);
 
   const memoRoutes = useMemo(() => {
-    const counts = new Map<string, { a: Spot; b: Spot; n: number }>();
+    const counts = new Map<
+      string,
+      { a: Spot; b: Spot; n: number; channel: "peer" | "up" | "down" }
+    >();
     for (const e of events) {
       if (e.type !== "internal_memo" && e.type !== "internal_reply") continue;
-      const key = [e.from, e.to].sort().join("|");
+      const ch = e.channel ?? "peer";
+      const key = [e.from, e.to].sort().join("|") + "|" + ch;
       const cur = counts.get(key);
       if (cur) cur.n += 1;
-      else counts.set(key, { a: HALL_LAYOUT[e.from], b: HALL_LAYOUT[e.to], n: 1 });
+      else
+        counts.set(key, {
+          a: HALL_LAYOUT[e.from],
+          b: HALL_LAYOUT[e.to],
+          n: 1,
+          channel: ch,
+        });
     }
     return [...counts.values()];
   }, [events]);
+
+  const stationStats = useMemo(() => {
+    const m = new Map<AgentId, { visits: number; acts: number }>();
+    const bump = (id: AgentId, k: "visits" | "acts") => {
+      const s = m.get(id) ?? { visits: 0, acts: 0 };
+      s[k] += 1;
+      m.set(id, s);
+    };
+    for (const e of events) {
+      if (e.type === "user_message") bump(e.agentId, "visits");
+      else if (
+        e.type === "agent_message" ||
+        e.type === "document_issued" ||
+        e.type === "materials_required" ||
+        e.type === "case_closed"
+      )
+        bump(e.agentId, "acts");
+      else if (e.type === "internal_memo" || e.type === "internal_reply") {
+        bump(e.from, "acts");
+        bump(e.to, "acts");
+      }
+    }
+    return m;
+  }, [events]);
+
+  const queueSize = useMemo(() => {
+    if (cs?.conditionId === "rush") return 3;
+    if (cs?.conditionId === "ninth_hour") return 2;
+    return 0;
+  }, [cs?.conditionId]);
 
   const trailSegments = useMemo(() => {
     const counts = new Map<string, { a: Spot; b: Spot; n: number }>();
@@ -641,15 +663,22 @@ export default function HallPage() {
         </div>
         <svg className="web-layer" viewBox="0 0 100 100" preserveAspectRatio="none">
           {memoRoutes.map((s, i) => (
-            <line
-              key={i}
-              x1={s.a.x}
-              y1={s.a.y}
-              x2={s.b.x}
-              y2={s.b.y}
-              className="web-line"
-              vectorEffect="non-scaling-stroke"
-            />
+            <g key={i}>
+              <line
+                x1={s.a.x}
+                y1={s.a.y}
+                x2={s.b.x}
+                y2={s.b.y}
+                className={"web-line ch-" + s.channel}
+                vectorEffect="non-scaling-stroke"
+              />
+              <circle
+                cx={s.a.x + (s.b.x - s.a.x) * 0.84}
+                cy={s.a.y + (s.b.y - s.a.y) * 0.84}
+                r={0.55}
+                className={"web-dot ch-" + s.channel}
+              />
+            </g>
           ))}
         </svg>
         <svg className="trail-layer" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -699,6 +728,8 @@ export default function HallPage() {
           const st = statusMap[a.id];
           const busy = st && st.state !== "idle";
           const isWindow = a.level === 3;
+          const stats = stationStats.get(a.id);
+          const heat = Math.min((stats?.visits ?? 0) + (stats?.acts ?? 0), 12);
           return (
             <button
               key={a.id}
@@ -713,6 +744,20 @@ export default function HallPage() {
               onClick={() => isWindow && !observer && goTo(a.id)}
               tabIndex={isWindow ? 0 : -1}
             >
+              {heat > 1 && (
+                <span
+                  className="halo"
+                  style={{
+                    inset: -(4 + heat),
+                    opacity: Math.min(0.18 + heat * 0.05, 0.62),
+                    borderColor: heat > 6 ? "var(--pencil-red)" : "#d9a33c",
+                    transform: `rotate(${(idx % 3) * 4 - 4}deg)`,
+                  }}
+                />
+              )}
+              {(stats?.visits ?? 0) > 1 && (
+                <span className="st-visits">×{stats!.visits}</span>
+              )}
               <DeskFigure flip={idx % 2 === 1} />
               <span className="st-label">
                 {a.windowNo ? `${a.windowNo} ` : ""}
@@ -736,6 +781,29 @@ export default function HallPage() {
             </button>
           );
         })}
+
+        {queueSize > 0 &&
+          AGENTS.filter((a) => a.level === 3).map((a) =>
+            Array.from({ length: queueSize }).map((_, qi) => (
+              <div
+                key={a.id + "-q" + qi}
+                className="queue-fig"
+                style={{
+                  left: `${HALL_LAYOUT[a.id].x + 3.4 + qi * 1.8}%`,
+                  top: `${HALL_LAYOUT[a.id].y + 8 + (qi % 2) * 1.2}%`,
+                }}
+              >
+                <svg width="11" height="17" viewBox="0 0 12 18" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" aria-hidden>
+                  <circle cx="6" cy="3" r="2" />
+                  <path d="M6 5 V11" />
+                  <path d="M6 11 L3.5 16" />
+                  <path d="M6 11 L8.5 16" />
+                  <path d="M6 7 L3 9.5" />
+                  <path d="M6 7 L9 9" />
+                </svg>
+              </div>
+            ))
+          )}
 
         <div
           className={"visitor" + (observer ? " synthetic" : "")}

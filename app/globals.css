@@ -402,7 +402,24 @@ textarea {
 .web-line {
   stroke: var(--note-green);
   stroke-width: 1px;
-  opacity: 0.5;
+  stroke-dasharray: 4 3;
+  opacity: 0.55;
+}
+.web-line.ch-up {
+  stroke: var(--pencil-red);
+}
+.web-line.ch-down {
+  stroke: #4a6fa5;
+}
+.web-dot {
+  fill: var(--note-green);
+  opacity: 0.7;
+}
+.web-dot.ch-up {
+  fill: var(--pencil-red);
+}
+.web-dot.ch-down {
+  fill: #4a6fa5;
 }
 .trail-count {
   position: absolute;
@@ -504,6 +521,29 @@ textarea {
   color: #c9a227;
   transform: rotate(6deg);
   animation: circle-wobble 1.6s ease-in-out infinite;
+}
+.station .halo {
+  position: absolute;
+  border: 1.7px solid;
+  border-radius: 53% 47% 44% 56% / 46% 57% 43% 54%;
+  pointer-events: none;
+}
+.station .st-visits {
+  position: absolute;
+  top: -12px;
+  left: -16px;
+  font-family: var(--hand);
+  font-size: 15px;
+  color: var(--pencil);
+  transform: rotate(-8deg);
+}
+.queue-fig {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  color: #9aa0a8;
+  opacity: 0.75;
+  pointer-events: none;
+  z-index: 3;
 }
 .visitor {
   position: absolute;
@@ -1054,6 +1094,74 @@ textarea {
   gap: 10px;
   flex-wrap: wrap;
   margin-top: 16px;
+}
+
+/* ── report journey ── */
+.flow-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+.flow-node {
+  border: 1px solid var(--line);
+  background: #fff;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+.flow-node.entrance {
+  border-style: dashed;
+  color: var(--ink-2);
+}
+.flow-node.closed {
+  border: 2px solid var(--ink);
+  font-weight: 700;
+}
+.flow-arrow {
+  color: var(--ink-2);
+}
+.flow-legend {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  margin-top: 8px;
+}
+
+@media print {
+  .gov-header,
+  .blue-bar,
+  .report-actions,
+  .err,
+  .inset,
+  button {
+    display: none !important;
+  }
+  .page {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+  .timeline {
+    max-height: none !important;
+    overflow: visible !important;
+    border: none;
+    padding: 0;
+  }
+  .analysis {
+    border: none;
+    padding: 0;
+  }
+  body {
+    font-size: 12px;
+  }
+  .h-l {
+    break-after: avoid;
+  }
+  .receipt,
+  .stats,
+  svg {
+    break-inside: avoid;
+  }
 }
 
 @media (max-width: 960px) {

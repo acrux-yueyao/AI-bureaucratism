@@ -2,7 +2,14 @@ import Anthropic from "@anthropic-ai/sdk";
 import { buildSystemPrompt, AGENT_MAP } from "@/lib/agents";
 import { WINDOW_TOOLS, INTERNAL_TOOLS } from "@/lib/tools";
 import { renderCaseFile } from "@/lib/case-file";
-import type { AgentId, CaseEvent, CaseOutcome, WindowRequest } from "@/lib/types";
+import type {
+  AgentId,
+  CaseEvent,
+  CaseOutcome,
+  StreamFrame,
+  StreamSignal,
+  WindowRequest,
+} from "@/lib/types";
 
 export const maxDuration = 300;
 
@@ -15,13 +22,17 @@ type Ctx = {
   caseId: string;
   matter: string;
   events: CaseEvent[];
-  newEvents: CaseEvent[];
   calls: number;
+  emit: (frame: StreamFrame) => void;
 };
 
 function push(ctx: Ctx, e: CaseEvent) {
   ctx.events.push(e);
-  ctx.newEvents.push(e);
+  ctx.emit({ kind: "event", event: e });
+}
+
+function signal(ctx: Ctx, s: StreamSignal) {
+  ctx.emit({ kind: "signal", signal: s });
 }
 
 function isAgentId(v: unknown): v is AgentId {
@@ -35,41 +46,51 @@ async function runAgent(
   tools: Anthropic.Tool[],
   depth: number
 ): Promise<string> {
+  signal(ctx, {
+    type: "status",
+    agentId,
+    state: depth === 0 ? "receiving" : "replying",
+  });
+
   const messages: Anthropic.MessageParam[] = [
     { role: "user", content: situation },
   ];
   const texts: string[] = [];
 
-  for (;;) {
-    if (ctx.calls >= MAX_CALLS_PER_TURN) break;
-    ctx.calls += 1;
+  try {
+    for (;;) {
+      if (ctx.calls >= MAX_CALLS_PER_TURN) break;
+      ctx.calls += 1;
 
-    const res = await ctx.client.messages.create({
-      model: MODEL,
-      max_tokens: 1500,
-      system: buildSystemPrompt(agentId),
-      tools,
-      messages,
-    });
-
-    const toolUses = res.content.filter(
-      (b): b is Anthropic.ToolUseBlock => b.type === "tool_use"
-    );
-    for (const b of res.content) {
-      if (b.type === "text" && b.text.trim()) texts.push(b.text.trim());
-    }
-    if (res.stop_reason !== "tool_use" || toolUses.length === 0) break;
-
-    messages.push({ role: "assistant", content: res.content });
-    const results: Anthropic.ToolResultBlockParam[] = [];
-    for (const tu of toolUses) {
-      results.push({
-        type: "tool_result",
-        tool_use_id: tu.id,
-        content: await handleTool(ctx, agentId, tu, depth),
+      const res = await ctx.client.messages.create({
+        model: MODEL,
+        max_tokens: 1500,
+        system: buildSystemPrompt(agentId),
+        tools,
+        messages,
       });
+
+      const toolUses = res.content.filter(
+        (b): b is Anthropic.ToolUseBlock => b.type === "tool_use"
+      );
+      for (const b of res.content) {
+        if (b.type === "text" && b.text.trim()) texts.push(b.text.trim());
+      }
+      if (res.stop_reason !== "tool_use" || toolUses.length === 0) break;
+
+      messages.push({ role: "assistant", content: res.content });
+      const results: Anthropic.ToolResultBlockParam[] = [];
+      for (const tu of toolUses) {
+        results.push({
+          type: "tool_result",
+          tool_use_id: tu.id,
+          content: await handleTool(ctx, agentId, tu, depth),
+        });
+      }
+      messages.push({ role: "user", content: results });
     }
-    messages.push({ role: "user", content: results });
+  } finally {
+    signal(ctx, { type: "status", agentId, state: "idle" });
   }
 
   return texts.join("\n\n");
@@ -149,6 +170,7 @@ async function handleTool(
 
       const target = input.target;
       const memoText = String(input.message ?? "");
+      signal(ctx, { type: "status", agentId, state: "consulting", target });
       push(ctx, { type: "internal_memo", ts, from: agentId, to: target, text: memoText });
 
       const situation = `${renderCaseFile(ctx.caseId, ctx.matter, ctx.events)}
@@ -167,6 +189,11 @@ async function handleTool(
         to: agentId,
         text: replyText,
       });
+      signal(ctx, {
+        type: "status",
+        agentId,
+        state: depth === 0 ? "receiving" : "replying",
+      });
       return `收到【${AGENT_MAP[target].dept}】回函：\n${replyText}`;
     }
     default:
@@ -175,63 +202,88 @@ async function handleTool(
 }
 
 export async function POST(req: Request) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return Response.json(
-      { newEvents: [], error: "服务端未配置 ANTHROPIC_API_KEY，请在 .env.local 中设置后重启。" },
-      { status: 500 }
-    );
-  }
-
   let body: WindowRequest;
   try {
     body = (await req.json()) as WindowRequest;
   } catch {
-    return Response.json({ newEvents: [], error: "请求格式错误。" }, { status: 400 });
+    return Response.json({ error: "请求格式错误。" }, { status: 400 });
   }
   if (!isAgentId(body.agentId) || !body.userMessage?.trim()) {
-    return Response.json({ newEvents: [], error: "请求参数不完整。" }, { status: 400 });
+    return Response.json({ error: "请求参数不完整。" }, { status: 400 });
   }
 
-  const ctx: Ctx = {
-    client: new Anthropic({ apiKey }),
-    caseId: body.caseId,
-    matter: body.matter,
-    events: Array.isArray(body.events) ? [...body.events] : [],
-    newEvents: [],
-    calls: 0,
-  };
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const encoder = new TextEncoder();
 
-  push(ctx, {
-    type: "user_message",
-    ts: Date.now(),
-    agentId: body.agentId,
-    text: body.userMessage.trim(),
-  });
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      const emit = (frame: StreamFrame) => {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(frame)}\n\n`));
+      };
+      const finish = () => {
+        emit({ kind: "signal", signal: { type: "done" } });
+        controller.close();
+      };
 
-  const situation = `${renderCaseFile(ctx.caseId, ctx.matter, ctx.events)}
+      if (!apiKey) {
+        emit({
+          kind: "signal",
+          signal: {
+            type: "error",
+            message: "服务端未配置 ANTHROPIC_API_KEY，请在 .env.local 中设置后重启。",
+          },
+        });
+        finish();
+        return;
+      }
+
+      const ctx: Ctx = {
+        client: new Anthropic({ apiKey }),
+        caseId: body.caseId,
+        matter: body.matter,
+        events: Array.isArray(body.events) ? [...body.events] : [],
+        calls: 0,
+        emit,
+      };
+
+      push(ctx, {
+        type: "user_message",
+        ts: Date.now(),
+        agentId: body.agentId,
+        text: body.userMessage.trim(),
+      });
+
+      const situation = `${renderCaseFile(ctx.caseId, ctx.matter, ctx.events)}
 
 现在，办事人来到你的窗口，对你说：
 "${body.userMessage.trim()}"
 
 请接待。你的文字回复会作为窗口答复直接告知办事人。`;
 
-  try {
-    const replyText = await runAgent(ctx, body.agentId, situation, WINDOW_TOOLS, 0);
-    if (replyText) {
-      push(ctx, {
-        type: "agent_message",
-        ts: Date.now(),
-        agentId: body.agentId,
-        text: replyText,
-      });
-    }
-    return Response.json({ newEvents: ctx.newEvents });
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "未知错误";
-    return Response.json(
-      { newEvents: ctx.newEvents, error: `调用模型失败：${msg}` },
-      { status: 502 }
-    );
-  }
+      try {
+        const replyText = await runAgent(ctx, body.agentId, situation, WINDOW_TOOLS, 0);
+        if (replyText) {
+          push(ctx, {
+            type: "agent_message",
+            ts: Date.now(),
+            agentId: body.agentId,
+            text: replyText,
+          });
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "未知错误";
+        emit({ kind: "signal", signal: { type: "error", message: `调用模型失败：${msg}` } });
+      } finally {
+        finish();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+    },
+  });
 }

@@ -73,6 +73,15 @@ export type WindowResponse = {
   error?: string;
 };
 
+export type AgentUiState = "receiving" | "consulting" | "replying" | "idle";
+
+export type StreamSignal =
+  | { type: "status"; agentId: AgentId; state: AgentUiState; target?: AgentId }
+  | { type: "error"; message: string }
+  | { type: "done" };
+
+export type StreamFrame = { kind: "event"; event: CaseEvent } | { kind: "signal"; signal: StreamSignal };
+
 export type ReportRequest = {
   caseId: string;
   matter: string;

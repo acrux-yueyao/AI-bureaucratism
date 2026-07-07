@@ -13,25 +13,25 @@ function hhmm(ts: number): string {
 export function renderEvent(e: CaseEvent): string {
   switch (e.type) {
     case "user_message":
-      return `[${hhmm(e.ts)}] 办事人在【${dept(e.agentId)}】窗口：${e.text}`;
+      return `[${hhmm(e.ts)}] Visitor at [${dept(e.agentId)}] window: ${e.text}`;
     case "agent_message":
-      return `[${hhmm(e.ts)}] 【${dept(e.agentId)}】答复办事人：${e.text}`;
+      return `[${hhmm(e.ts)}] [${dept(e.agentId)}] replied to the visitor: ${e.text}`;
     case "internal_memo":
-      return `[${hhmm(e.ts)}] 内部函件 【${dept(e.from)}】→【${dept(e.to)}】：${e.text}`;
+      return `[${hhmm(e.ts)}] Internal memo [${dept(e.from)}] → [${dept(e.to)}]: ${e.text}`;
     case "internal_reply":
-      return `[${hhmm(e.ts)}] 回函 【${dept(e.from)}】→【${dept(e.to)}】：${e.text}`;
+      return `[${hhmm(e.ts)}] Reply memo [${dept(e.from)}] → [${dept(e.to)}]: ${e.text}`;
     case "document_issued":
-      return `[${hhmm(e.ts)}] 【${dept(e.agentId)}】开具文书《${e.docName}》：\n${e.content}`;
+      return `[${hhmm(e.ts)}] [${dept(e.agentId)}] issued document "${e.docName}":\n${e.content}`;
     case "materials_required":
-      return `[${hhmm(e.ts)}] 【${dept(e.agentId)}】告知办事人需提供材料：${e.items
-        .map((i) => i.name + (i.source ? `（${i.source}）` : ""))
-        .join("、")}${e.note ? `。说明：${e.note}` : ""}`;
+      return `[${hhmm(e.ts)}] [${dept(e.agentId)}] told the visitor to provide: ${e.items
+        .map((i) => i.name + (i.source ? ` (${i.source})` : ""))
+        .join(", ")}${e.note ? `. Note: ${e.note}` : ""}`;
     case "referral":
-      return `[${hhmm(e.ts)}] 【${dept(e.from)}】引导办事人前往【${dept(e.to)}】窗口：${e.reason}`;
+      return `[${hhmm(e.ts)}] [${dept(e.from)}] directed the visitor to [${dept(e.to)}]: ${e.reason}`;
     case "case_closed":
-      return `[${hhmm(e.ts)}] 【${dept(e.agentId)}】办结本件（${e.outcome}）：${e.summary}`;
+      return `[${hhmm(e.ts)}] [${dept(e.agentId)}] closed the case (${e.outcome}): ${e.summary}`;
     case "user_abandoned":
-      return `[${hhmm(e.ts)}] 办事人离开大厅，放弃办理。`;
+      return `[${hhmm(e.ts)}] The visitor left the hall and gave up on the matter.`;
   }
 }
 
@@ -41,11 +41,11 @@ export function renderCaseFile(
   events: CaseEvent[]
 ): string {
   const lines = events.map(renderEvent).join("\n");
-  return `═══ 办件档案 ═══
-办件编号：${caseId}
-事项：${matter}
-${events.length === 0 ? "（本件尚无办理记录）" : lines}
-═══ 档案结束 ═══`;
+  return `═══ CASE FILE ═══
+Case no.: ${caseId}
+Matter: ${matter}
+${events.length === 0 ? "(no processing record yet)" : lines}
+═══ END OF FILE ═══`;
 }
 
 export function makeCaseId(): string {
@@ -74,7 +74,7 @@ export function computeStats(events: CaseEvent[]): CaseStats {
   let internalMemos = 0;
   let materialsRequired = 0;
   let documentsIssued = 0;
-  let outcome = "未办结";
+  let outcome = "open";
   for (const e of events) {
     if (e.type === "user_message") {
       userTurns += 1;
@@ -84,7 +84,7 @@ export function computeStats(events: CaseEvent[]): CaseStats {
     else if (e.type === "materials_required") materialsRequired += e.items.length;
     else if (e.type === "document_issued") documentsIssued += 1;
     else if (e.type === "case_closed") outcome = e.outcome;
-    else if (e.type === "user_abandoned") outcome = "办事人放弃";
+    else if (e.type === "user_abandoned") outcome = "abandoned by visitor";
   }
   return {
     userTurns,

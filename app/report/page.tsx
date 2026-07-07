@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { computeStats, renderEvent, renderCaseFile } from "@/lib/case-file";
 import { clearCase, loadAnalysis, loadCase, saveAnalysis } from "@/lib/storage";
+import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
 import type { CaseState, ReportResponse } from "@/lib/types";
 
 function download(filename: string, content: string, mime: string) {
@@ -18,12 +19,14 @@ function download(filename: string, content: string, mime: string) {
 
 export default function ReportPage() {
   const router = useRouter();
+  const [lang, setLang] = useState<Lang>("en");
   const [cs, setCs] = useState<CaseState | null>(null);
   const [analysis, setAnalysis] = useState("");
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    setLang(getLang());
     const c = loadCase();
     if (!c) {
       router.replace("/");
@@ -34,6 +37,12 @@ export default function ReportPage() {
   }, [router]);
 
   const stats = useMemo(() => (cs ? computeStats(cs.events) : null), [cs]);
+
+  function toggleLang() {
+    const next: Lang = lang === "en" ? "zh" : "en";
+    setLang(next);
+    storeLang(next);
+  }
 
   async function generate() {
     if (!cs || generating) return;
@@ -52,7 +61,7 @@ export default function ReportPage() {
         saveAnalysis(data.analysis);
       }
     } catch {
-      setError("网络请求失败，请重试。");
+      setError(t(lang, "netError"));
     } finally {
       setGenerating(false);
     }
@@ -69,29 +78,29 @@ export default function ReportPage() {
 
   function exportMarkdown() {
     if (!cs || !stats) return;
-    const md = `# 办件观察记录 ${cs.caseId}
+    const md = `# Case observation record ${cs.caseId}
 
-## 事项
+## Matter
 ${cs.matter}
 
-## 统计
-- 窗口对话轮数：${stats.userTurns}
-- 走过窗口数：${stats.windowsVisited}
-- 被转办次数：${stats.referrals}
-- 内部函件数：${stats.internalMemos}
-- 被要求材料项数：${stats.materialsRequired}
-- 取得文书数：${stats.documentsIssued}
-- 办结状态：${stats.outcome}
+## Statistics
+- Window exchanges: ${stats.userTurns}
+- Windows visited: ${stats.windowsVisited}
+- Referrals: ${stats.referrals}
+- Internal memos: ${stats.internalMemos}
+- Materials demanded: ${stats.materialsRequired}
+- Documents issued: ${stats.documentsIssued}
+- Outcome: ${stats.outcome}
 
-## 办件档案
+## Case file
 
 \`\`\`
 ${renderCaseFile(cs.caseId, cs.matter, cs.events)}
 \`\`\`
 
-## 观察员分析
+## Observer analysis
 
-${analysis || "（未生成）"}
+${analysis || "(not generated)"}
 `;
     download(`${cs.caseId}.md`, md, "text/markdown");
   }
@@ -100,109 +109,102 @@ ${analysis || "（未生成）"}
 
   return (
     <main>
-      <div className="hall-header">
-        <div className="hall-header-inner">
-          <span className="brand">AI 政务服务大厅</span>
-          <span className="meta">办件回执与观察报告</span>
-          <button className="btn-header" onClick={() => router.push("/hall")}>
-            返回大厅
-          </button>
-          <button
-            className="btn-header"
-            onClick={() => {
-              if (window.confirm("开始新的办件将清除当前办件档案（可先导出）。继续吗？")) {
-                clearCase();
-                router.push("/");
-              }
-            }}
-          >
-            办理新事项
-          </button>
+      <header className="gov-header">
+        <div className="gov-header-inner">
+          <a className="gov-logotype" href="/">
+            {t(lang, "brand")}
+          </a>
+          <span className="svc">{t(lang, "receipt")}</span>
+          <span className="right">
+            <button onClick={() => router.push("/hall")}>{t(lang, "backHall")}</button>
+            <button
+              onClick={() => {
+                if (window.confirm(t(lang, "newCaseConfirm"))) {
+                  clearCase();
+                  router.push("/");
+                }
+              }}
+            >
+              {t(lang, "newCase")}
+            </button>
+            <button onClick={toggleLang}>{t(lang, "langToggle")}</button>
+          </span>
         </div>
-      </div>
+      </header>
+      <div className="blue-bar" />
 
       <div className="page" style={{ maxWidth: 860 }}>
-        <section className="card receipt">
-          <h2>办 件 回 执</h2>
+        <section className="receipt">
+          <h2>{t(lang, "receipt")}</h2>
           <table>
             <tbody>
               <tr>
-                <td>办件编号</td>
-                <td>{cs.caseId}</td>
+                <td>{t(lang, "caseNo")}</td>
+                <td style={{ fontFamily: "var(--mono)" }}>{cs.caseId}</td>
               </tr>
               <tr>
-                <td>申办事项</td>
+                <td>{t(lang, "matter")}</td>
                 <td>{cs.matter}</td>
               </tr>
               <tr>
-                <td>办结状态</td>
+                <td>{t(lang, "outcome")}</td>
                 <td>{stats.outcome}</td>
               </tr>
               <tr>
-                <td>开始时间</td>
-                <td>{new Date(cs.startedAt).toLocaleString("zh-CN")}</td>
+                <td>{t(lang, "started")}</td>
+                <td>{new Date(cs.startedAt).toLocaleString("en-GB")}</td>
               </tr>
             </tbody>
           </table>
-          <div className="seal" style={{ right: 40, bottom: 24, width: 92, height: 92, fontSize: 11 }}>
-            <span className="star">✦</span>
-            <span>
-              AI政务服务大厅
-              <br />
-              综合受理
-            </span>
+          <div className="ink-stamp" style={{ position: "absolute", right: 28, bottom: 20 }}>
+            PROCESSED
           </div>
         </section>
 
-        <h2 className="section-title">办件统计</h2>
+        <h2 className="h-l">{t(lang, "stats")}</h2>
         <div className="stats">
           <div className="stat">
             <div className="num">{stats.windowsVisited}</div>
-            <div className="label">走过的窗口</div>
+            <div className="label">{t(lang, "statWindows")}</div>
           </div>
           <div className="stat">
             <div className="num">{stats.referrals}</div>
-            <div className="label">被转办次数</div>
+            <div className="label">{t(lang, "statReferrals")}</div>
           </div>
           <div className="stat">
             <div className="num">{stats.internalMemos}</div>
-            <div className="label">内部函件</div>
+            <div className="label">{t(lang, "statMemos")}</div>
           </div>
           <div className="stat">
             <div className="num">{stats.materialsRequired}</div>
-            <div className="label">被要求的材料</div>
+            <div className="label">{t(lang, "statMaterials")}</div>
           </div>
           <div className="stat">
             <div className="num">{stats.documentsIssued}</div>
-            <div className="label">取得的文书</div>
+            <div className="label">{t(lang, "statDocs")}</div>
           </div>
           <div className="stat">
             <div className="num">{stats.userTurns}</div>
-            <div className="label">窗口对话轮数</div>
+            <div className="label">{t(lang, "statTurns")}</div>
           </div>
         </div>
 
-        <h2 className="section-title">观察员分析（给设计师）</h2>
-        <div className="card">
-          {analysis ? (
-            <div className="analysis">{analysis}</div>
-          ) : (
-            <div className="analysis" style={{ color: "var(--ink-3)" }}>
-              由一位处于组织之外的观察员（同一模型的独立调用）通读办件档案，
-              分析其中是否出现推诿、转办循环、程序性语体等官僚行为的迹象，并列出反证。
-            </div>
-          )}
-          <div style={{ padding: "0 26px 22px" }}>
-            <button className="btn" onClick={generate} disabled={generating}>
-              {generating && <span className="spin" />}
-              {analysis ? "重新生成分析" : "生成观察员分析"}
-            </button>
-          </div>
+        <h2 className="h-l">{t(lang, "observerTitle")}</h2>
+        {analysis ? (
+          <div className="analysis">{analysis}</div>
+        ) : (
+          <div className="analysis placeholder">{t(lang, "observerHint")}</div>
+        )}
+        <div style={{ marginTop: 12 }}>
+          <button className="btn-plain" onClick={generate} disabled={generating}>
+            {generating && <span className="spin" />}
+            {analysis ? t(lang, "regenerate") : t(lang, "generate")}
+          </button>
         </div>
         {error && <div className="err">{error}</div>}
 
-        <h2 className="section-title">完整办件档案</h2>
-        <div className="card timeline">
+        <h2 className="h-l">{t(lang, "fullFile")}</h2>
+        <div className="timeline">
           {cs.events.map((e, i) => (
             <div
               key={i}
@@ -217,11 +219,11 @@ ${analysis || "（未生成）"}
         </div>
 
         <div className="report-actions">
-          <button className="btn" onClick={exportJson}>
-            导出 JSON
+          <button className="btn-plain" onClick={exportJson}>
+            {t(lang, "exportJson")}
           </button>
-          <button className="btn" onClick={exportMarkdown}>
-            导出 Markdown
+          <button className="btn-plain" onClick={exportMarkdown}>
+            {t(lang, "exportMd")}
           </button>
         </div>
       </div>

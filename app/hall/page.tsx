@@ -4,12 +4,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AGENTS, AGENT_MAP } from "@/lib/agents";
 import { loadCase, saveCase } from "@/lib/storage";
+import { SCENARIOS } from "@/lib/visitors";
+import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
 import type {
   AgentId,
   AgentUiState,
   CaseEvent,
   CaseState,
   StreamFrame,
+  VisitorMove,
 } from "@/lib/types";
 
 type Spot = { x: number; y: number };
@@ -28,11 +31,13 @@ const HALL_LAYOUT: Record<AgentId, Spot> = {
 };
 
 const STATE_LABEL: Record<AgentUiState, string> = {
-  receiving: "接待中",
-  consulting: "函询中",
-  replying: "拟复函",
-  idle: "空闲",
+  receiving: "attending",
+  consulting: "memo out",
+  replying: "drafting reply",
+  idle: "",
 };
+
+const MAX_OBSERVER_TURNS = 12;
 
 type Flight = { id: number; from: AgentId; to: AgentId; reply: boolean };
 
@@ -95,10 +100,10 @@ function FlightPaper({ flight, onDone }: { flight: Flight; onDone: (id: number) 
     const raf = requestAnimationFrame(() =>
       requestAnimationFrame(() => setPos(spotOf(flight.to)))
     );
-    const t = setTimeout(() => onDone(flight.id), 1500);
+    const timer = setTimeout(() => onDone(flight.id), 1500);
     return () => {
       cancelAnimationFrame(raf);
-      clearTimeout(t);
+      clearTimeout(timer);
     };
   }, [flight, onDone]);
   return (
@@ -113,6 +118,7 @@ function FlightPaper({ flight, onDone }: { flight: Flight; onDone: (id: number) 
 
 export default function HallPage() {
   const router = useRouter();
+  const [lang, setLang] = useState<Lang>("en");
   const [cs, setCs] = useState<CaseState | null>(null);
   const [current, setCurrent] = useState<AgentId | null>(null);
   const [path, setPath] = useState<(AgentId | "entrance")[]>(["entrance"]);
@@ -120,15 +126,31 @@ export default function HallPage() {
   const [sending, setSending] = useState(false);
   const [tab, setTab] = useState<"chat" | "docs" | "todos">("chat");
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [viewDoc, setViewDoc] = useState<{ docName: string; content: string; dept: string } | null>(null);
+  const [viewDoc, setViewDoc] = useState<{
+    docName: string;
+    content: string;
+    dept: string;
+    ts: number;
+  } | null>(null);
   const [error, setError] = useState("");
-  const [statusMap, setStatusMap] = useState<Partial<Record<AgentId, { state: AgentUiState; target?: AgentId }>>>({});
+  const [statusMap, setStatusMap] = useState<
+    Partial<Record<AgentId, { state: AgentUiState; target?: AgentId }>>
+  >({});
   const [flights, setFlights] = useState<Flight[]>([]);
+  const [stream, setStream] = useState<{ agentId: AgentId; text: string } | null>(null);
+  const [observer, setObserver] = useState<{
+    scenarioId: string;
+    turn: number;
+    note: string;
+  } | null>(null);
   const flightId = useRef(0);
   const bodyRef = useRef<HTMLDivElement>(null);
   const csRef = useRef<CaseState | null>(null);
+  const stopRef = useRef(false);
+  const observerStarted = useRef(false);
 
   useEffect(() => {
+    setLang(getLang());
     const c = loadCase();
     if (!c) {
       router.replace("/");
@@ -136,17 +158,27 @@ export default function HallPage() {
     }
     csRef.current = c;
     setCs(c);
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("mode") === "observer") {
+      const scenarioId = params.get("scenario") ?? "";
+      if (SCENARIOS.some((s) => s.id === scenarioId)) {
+        setObserver({ scenarioId, turn: 0, note: "" });
+      }
+    }
   }, [router]);
 
   const events = useMemo(() => cs?.events ?? [], [cs]);
 
   const closed = useMemo(
-    () => !!cs?.closed || events.some((e) => e.type === "case_closed" || e.type === "user_abandoned"),
+    () =>
+      !!cs?.closed ||
+      events.some((e) => e.type === "case_closed" || e.type === "user_abandoned"),
     [cs, events]
   );
 
   const memoCount = useMemo(
-    () => events.filter((e) => e.type === "internal_memo" || e.type === "internal_reply").length,
+    () =>
+      events.filter((e) => e.type === "internal_memo" || e.type === "internal_reply").length,
     [events]
   );
 
@@ -156,7 +188,11 @@ export default function HallPage() {
   );
 
   const docs = useMemo(
-    () => events.filter((e): e is Extract<CaseEvent, { type: "document_issued" }> => e.type === "document_issued"),
+    () =>
+      events.filter(
+        (e): e is Extract<CaseEvent, { type: "document_issued" }> =>
+          e.type === "document_issued"
+      ),
     [events]
   );
 
@@ -208,8 +244,13 @@ export default function HallPage() {
   const chatItems = useMemo(() => {
     if (!current) return [];
     return events.filter((e) => {
-      if (e.type === "user_message" || e.type === "agent_message") return e.agentId === current;
-      if (e.type === "materials_required" || e.type === "document_issued" || e.type === "case_closed")
+      if (e.type === "user_message" || e.type === "agent_message")
+        return e.agentId === current;
+      if (
+        e.type === "materials_required" ||
+        e.type === "document_issued" ||
+        e.type === "case_closed"
+      )
         return e.agentId === current;
       if (e.type === "referral") return e.from === current;
       return false;
@@ -218,13 +259,19 @@ export default function HallPage() {
 
   useEffect(() => {
     bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight });
-  }, [chatItems.length, sending, tab]);
+  }, [chatItems.length, sending, tab, stream?.text.length]);
 
   const removeFlight = useCallback((id: number) => {
     setFlights((f) => f.filter((x) => x.id !== id));
   }, []);
 
-  function applyEvent(e: CaseEvent) {
+  function toggleLang() {
+    const next: Lang = lang === "en" ? "zh" : "en";
+    setLang(next);
+    storeLang(next);
+  }
+
+  const applyEvent = useCallback((e: CaseEvent) => {
     const prev = csRef.current;
     if (!prev) return;
     const merged: CaseState = {
@@ -235,6 +282,7 @@ export default function HallPage() {
     csRef.current = merged;
     setCs(merged);
     saveCase(merged);
+    if (e.type === "agent_message") setStream(null);
     if (e.type === "internal_memo" || e.type === "internal_reply") {
       flightId.current += 1;
       setFlights((f) => [
@@ -242,88 +290,178 @@ export default function HallPage() {
         { id: flightId.current, from: e.from, to: e.to, reply: e.type === "internal_reply" },
       ]);
     }
-  }
+  }, []);
 
-  function goTo(id: AgentId) {
-    if (id === current) return;
-    setCurrent(id);
-    setTab("chat");
-    setPath((p) => [...p, id]);
-  }
-
-  async function send() {
-    const base = csRef.current;
-    if (!base || !current || sending || closed) return;
-    const text = input.trim();
-    if (!text) return;
-    setInput("");
-    setError("");
-    setSending(true);
-    try {
-      const res = await fetch("/api/window", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          caseId: base.caseId,
-          matter: base.matter,
-          agentId: current,
-          userMessage: text,
-          events: base.events,
-        }),
+  const goTo = useCallback(
+    (id: AgentId) => {
+      setCurrent((cur) => {
+        if (id === cur) return cur;
+        setTab("chat");
+        setPath((p) => [...p, id]);
+        return id;
       });
-      if (!res.ok || !res.body) {
-        const data = await res.json().catch(() => null);
-        setError((data as { error?: string } | null)?.error ?? "请求失败，请重试。");
-        return;
-      }
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buf = "";
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        let idx: number;
-        while ((idx = buf.indexOf("\n\n")) >= 0) {
-          const chunk = buf.slice(0, idx);
-          buf = buf.slice(idx + 2);
-          for (const line of chunk.split("\n")) {
-            if (!line.startsWith("data: ")) continue;
-            let frame: StreamFrame;
-            try {
-              frame = JSON.parse(line.slice(6)) as StreamFrame;
-            } catch {
-              continue;
-            }
-            if (frame.kind === "event") {
-              applyEvent(frame.event);
-            } else if (frame.signal.type === "status") {
-              const s = frame.signal;
-              setStatusMap((m) => ({
-                ...m,
-                [s.agentId]: { state: s.state, target: s.target },
-              }));
-            } else if (frame.signal.type === "error") {
-              setError(frame.signal.message);
+    },
+    []
+  );
+
+  const dispatch = useCallback(
+    async (agentId: AgentId, text: string): Promise<boolean> => {
+      const base = csRef.current;
+      if (!base) return false;
+      setError("");
+      setSending(true);
+      setStream(null);
+      try {
+        const res = await fetch("/api/window", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            caseId: base.caseId,
+            matter: base.matter,
+            agentId,
+            userMessage: text,
+            events: base.events,
+          }),
+        });
+        if (!res.ok || !res.body) {
+          const data = await res.json().catch(() => null);
+          setError(
+            (data as { error?: string } | null)?.error ?? "Request failed. Try again."
+          );
+          return false;
+        }
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = "";
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          let idx: number;
+          while ((idx = buf.indexOf("\n\n")) >= 0) {
+            const chunk = buf.slice(0, idx);
+            buf = buf.slice(idx + 2);
+            for (const line of chunk.split("\n")) {
+              if (!line.startsWith("data: ")) continue;
+              let frame: StreamFrame;
+              try {
+                frame = JSON.parse(line.slice(6)) as StreamFrame;
+              } catch {
+                continue;
+              }
+              if (frame.kind === "event") {
+                applyEvent(frame.event);
+              } else if (frame.kind === "delta") {
+                const d = frame;
+                setStream((s) =>
+                  s && s.agentId === d.agentId
+                    ? { agentId: d.agentId, text: s.text + d.text }
+                    : { agentId: d.agentId, text: d.text }
+                );
+              } else if (frame.signal.type === "status") {
+                const s = frame.signal;
+                setStatusMap((m) => ({
+                  ...m,
+                  [s.agentId]: { state: s.state, target: s.target },
+                }));
+              } else if (frame.signal.type === "error") {
+                setError(frame.signal.message);
+              }
             }
           }
         }
+        return true;
+      } catch {
+        setError("Request interrupted. Try again.");
+        return false;
+      } finally {
+        setSending(false);
+        setStream(null);
+        setStatusMap({});
       }
-    } catch {
-      setError("网络请求中断，请重试。");
-    } finally {
-      setSending(false);
-      setStatusMap({});
-    }
+    },
+    [applyEvent]
+  );
+
+  async function send(preset?: string) {
+    if (!current || sending || closed || observer) return;
+    const text = (preset ?? input).trim();
+    if (!text) return;
+    if (!preset) setInput("");
+    await dispatch(current, text);
   }
 
-  function abandon() {
+  async function walkAndReport(target: AgentId, fromDept: string) {
+    if (sending || closed || observer) return;
+    goTo(target);
+    await new Promise((r) => setTimeout(r, 950));
+    await dispatch(
+      target,
+      `Hello — I was directed here by the ${fromDept} window regarding my matter.`
+    );
+  }
+
+  const runObserver = useCallback(async () => {
+    const obs = observer;
+    const base = csRef.current;
+    if (!obs || !base) return;
+    stopRef.current = false;
+    for (let turn = 1; turn <= MAX_OBSERVER_TURNS; turn++) {
+      if (stopRef.current) return;
+      setObserver((o) => (o ? { ...o, turn } : o));
+      let move: VisitorMove;
+      try {
+        const res = await fetch("/api/visitor", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            caseId: base.caseId,
+            matter: base.matter,
+            scenarioId: obs.scenarioId,
+            events: csRef.current?.events ?? [],
+          }),
+        });
+        move = (await res.json()) as VisitorMove;
+        if (!res.ok || move.error) {
+          setError(move.error ?? "Visitor call failed.");
+          return;
+        }
+      } catch {
+        setError("Visitor call failed.");
+        return;
+      }
+      if (stopRef.current) return;
+      if (move.giveUp) {
+        applyEvent({ type: "user_abandoned", ts: Date.now() });
+        setObserver((o) => (o ? { ...o, note: t(getLang(), "visitorGaveUp") } : o));
+        return;
+      }
+      goTo(move.target);
+      await new Promise((r) => setTimeout(r, 1100));
+      if (stopRef.current) return;
+      await dispatch(move.target, move.message);
+      if (csRef.current?.events.some((e) => e.type === "case_closed")) return;
+    }
+    setObserver((o) => (o ? { ...o, note: t(getLang(), "turnLimit") } : o));
+  }, [observer, dispatch, applyEvent, goTo]);
+
+  useEffect(() => {
+    if (observer && !observerStarted.current && cs) {
+      observerStarted.current = true;
+      void runObserver();
+    }
+  }, [observer, cs, runObserver]);
+
+  function leave() {
     const base = csRef.current;
     if (!base) return;
-    if (!window.confirm("确定要结束办理并离开大厅吗？办件档案将保留，可查看观察报告。")) return;
+    if (!window.confirm(t(lang, "leaveConfirm"))) return;
+    stopRef.current = true;
     const merged: CaseState = {
       ...base,
-      events: closed ? base.events : [...base.events, { type: "user_abandoned", ts: Date.now() }],
+      events: closed
+        ? base.events
+        : [...base.events, { type: "user_abandoned", ts: Date.now() } as CaseEvent],
       closed: true,
     };
     csRef.current = merged;
@@ -336,51 +474,103 @@ export default function HallPage() {
 
   const cur = current ? AGENT_MAP[current] : null;
   const visitorSpot = current ? HALL_LAYOUT[current] : ENTRANCE;
+  const scenario = observer ? SCENARIOS.find((s) => s.id === observer.scenarioId) : null;
 
   return (
     <main className="hall-page">
-      <div className="hall-header">
-        <div className="hall-header-inner">
-          <span className="brand">AI 政务服务大厅</span>
-          <span className="meta">
-            办件编号 {cs.caseId} ｜ 事项：{cs.matter}
+      <header className="gov-header">
+        <div className="gov-header-inner">
+          <a className="gov-logotype" href="/">
+            {t(lang, "brand")}
+          </a>
+          <span className="hall-head-meta">
+            {t(lang, "caseNo")} {cs.caseId} · {cs.matter}
           </span>
-          {referralCount > 0 && <span className="counter-chip">转办 ×{referralCount}</span>}
-          <button className="btn-header" onClick={() => setDrawerOpen(true)}>
-            内部流转记录{memoCount > 0 && <span className="badge">{memoCount}</span>}
-          </button>
-          {closed ? (
-            <button className="btn-header" onClick={() => router.push("/report")}>
-              查看办件回执
+          {referralCount > 0 && (
+            <span className="counter-chip">
+              {referralCount} {t(lang, "referrals")}
+            </span>
+          )}
+          <span className="right">
+            <button onClick={() => setDrawerOpen(true)}>
+              {t(lang, "internalLog")}
+              {memoCount > 0 ? ` (${memoCount})` : ""}
+            </button>
+            {closed ? (
+              <button onClick={() => router.push("/report")}>{t(lang, "viewReceipt")}</button>
+            ) : (
+              <button onClick={leave}>{t(lang, "endService")}</button>
+            )}
+            <button onClick={toggleLang}>{t(lang, "langToggle")}</button>
+          </span>
+        </div>
+      </header>
+      <div className="blue-bar" />
+
+      {observer && scenario && (
+        <div className="stress-banner">
+          <span>
+            {t(lang, "stressRunning")} — {scenario.name}
+          </span>
+          <span className="mono">
+            turn {observer.turn}/{MAX_OBSERVER_TURNS}
+          </span>
+          {observer.note && <span>{observer.note}</span>}
+          {!closed && !observer.note ? (
+            <button
+              className="btn-warn"
+              onClick={() => {
+                stopRef.current = true;
+                setObserver((o) => (o ? { ...o, note: t(lang, "stopped") } : o));
+              }}
+            >
+              ■ {t(lang, "stop")}
             </button>
           ) : (
-            <button className="btn-header" onClick={abandon}>
-              结束办理
+            <button
+              className="btn-plain"
+              style={{ marginLeft: "auto" }}
+              onClick={() => router.push("/report")}
+            >
+              {t(lang, "viewReceipt")} →
             </button>
           )}
         </div>
-      </div>
+      )}
 
-      {closed && (
+      {closed && !observer && (
         <div className="closed-banner">
-          <strong>本件已终止办理。</strong>
-          <span>您可以查看办件回执与观察报告。</span>
-          <button className="btn" onClick={() => router.push("/report")}>
-            前往查看
+          <strong>{t(lang, "caseClosedBanner")}</strong>
+          <span>{t(lang, "seeReport")}</span>
+          <button className="btn-plain" onClick={() => router.push("/report")}>
+            {t(lang, "goSee")} →
           </button>
         </div>
       )}
 
       <div className="map-wrap">
         <div className="map-note">
-          观察记录 · {cs.caseId}
+          {t(lang, "observationLog")} · {cs.caseId}
+          {observer && (
+            <>
+              {" "}
+              · <span className="red">{t(lang, "syntheticTag")}</span>
+            </>
+          )}
           {referralCount > 0 && (
             <>
               {" "}
-              <span className="red">被转办 ×{referralCount}</span>
+              <span className="red">
+                {referralCount} {t(lang, "referrals")}
+              </span>
             </>
           )}
-          {memoCount > 0 && <> · 函件 ×{memoCount}</>}
+          {memoCount > 0 && (
+            <>
+              {" "}
+              · {memoCount} {t(lang, "memos")}
+            </>
+          )}
         </div>
         <svg className="web-layer" viewBox="0 0 100 100" preserveAspectRatio="none">
           {memoRoutes.map((s, i) => (
@@ -425,7 +615,10 @@ export default function HallPage() {
             <span
               key={"w" + i}
               className="web-count"
-              style={{ left: `${(s.a.x + s.b.x) / 2 + 2}%`, top: `${(s.a.y + s.b.y) / 2 - 3}%` }}
+              style={{
+                left: `${(s.a.x + s.b.x) / 2 + 2}%`,
+                top: `${(s.a.y + s.b.y) / 2 - 3}%`,
+              }}
             >
               ×{s.n}
             </span>
@@ -444,26 +637,31 @@ export default function HallPage() {
                 (suggested === a.id && current !== a.id ? " suggested" : "")
               }
               style={{ left: `${HALL_LAYOUT[a.id].x}%`, top: `${HALL_LAYOUT[a.id].y}%` }}
-              onClick={() => goTo(a.id)}
+              onClick={() => !observer && goTo(a.id)}
             >
               <DeskFigure flip={idx % 2 === 1} />
               <span className="st-label">
                 {a.windowNo} {a.dept}
               </span>
               <span className="st-person">{a.personName}</span>
-              {busy && (
+              {busy && st && (
                 <span className="st-status">
                   {st.state === "consulting" && st.target
-                    ? `函询→${AGENT_MAP[st.target].dept}`
+                    ? `memo → ${AGENT_MAP[st.target].dept}`
                     : STATE_LABEL[st.state]}
                 </span>
               )}
-              {suggested === a.id && current !== a.id && <span className="st-tag">请前往→</span>}
+              {suggested === a.id && current !== a.id && !observer && (
+                <span className="st-tag">go here →</span>
+              )}
             </button>
           );
         })}
 
-        <div className="visitor" style={{ left: `${visitorSpot.x}%`, top: `${visitorSpot.y + 7}%` }}>
+        <div
+          className={"visitor" + (observer ? " synthetic" : "")}
+          style={{ left: `${visitorSpot.x}%`, top: `${visitorSpot.y + 7}%` }}
+        >
           <VisitorFigure />
         </div>
 
@@ -471,21 +669,25 @@ export default function HallPage() {
           <FlightPaper key={f.id} flight={f} onDone={removeFlight} />
         ))}
 
-        <div className="entrance-label" style={{ left: `${ENTRANCE.x}%`, top: `${ENTRANCE.y + 6}%` }}>
-          入口
+        <div
+          className="entrance-label"
+          style={{ left: `${ENTRANCE.x}%`, top: `${ENTRANCE.y + 6}%` }}
+        >
+          {t(lang, "entrance")}
         </div>
       </div>
 
       <div className="dock">
         <div className="dock-tabs">
           <button className={tab === "chat" ? "on" : ""} onClick={() => setTab("chat")}>
-            窗口对话{cur ? ` · ${cur.dept}` : ""}
+            {t(lang, "windowChat")}
+            {cur ? ` · ${cur.dept}` : ""}
           </button>
           <button className={tab === "docs" ? "on" : ""} onClick={() => setTab("docs")}>
-            我的材料袋（{docs.length}）
+            {t(lang, "myDocuments")} ({docs.length})
           </button>
           <button className={tab === "todos" ? "on" : ""} onClick={() => setTab("todos")}>
-            被要求的材料（{todos.length}）
+            {t(lang, "requiredMaterials")} ({todos.length})
           </button>
         </div>
 
@@ -494,8 +696,10 @@ export default function HallPage() {
             {cur ? (
               <>
                 <div className="counter-body" ref={bodyRef}>
-                  {chatItems.length === 0 && (
-                    <div className="sys-note">您已来到{cur.dept}窗口，请说明您的事项。</div>
+                  {chatItems.length === 0 && !stream && (
+                    <div className="sys-note">
+                      {t(lang, "arrivedHint").replace("{dept}", cur.dept)}
+                    </div>
                   )}
                   {chatItems.map((e, i) => {
                     if (e.type === "user_message")
@@ -516,20 +720,32 @@ export default function HallPage() {
                     if (e.type === "materials_required")
                       return (
                         <div key={i} className="sys-note">
-                          需提供材料：
-                          {e.items.map((it) => it.name + (it.source ? `（${it.source}）` : "")).join("、")}
+                          {t(lang, "needMaterials")}{" "}
+                          {e.items
+                            .map((it) => it.name + (it.source ? ` (${it.source})` : ""))
+                            .join(", ")}
                         </div>
                       );
                     if (e.type === "referral")
                       return (
                         <div key={i} className="sys-note">
-                          窗口引导：请前往 {AGENT_MAP[e.to].windowNo} 号窗口【{AGENT_MAP[e.to].dept}】——{e.reason}
+                          {t(lang, "referredTo")} {AGENT_MAP[e.to].windowNo} [
+                          {AGENT_MAP[e.to].dept}] — {e.reason}
+                          {!observer && !closed && (
+                            <button
+                              className="btn-plain"
+                              onClick={() => walkAndReport(e.to, AGENT_MAP[e.from].dept)}
+                              disabled={sending}
+                            >
+                              {t(lang, "walkTo")} {AGENT_MAP[e.to].windowNo} →
+                            </button>
+                          )}
                         </div>
                       );
                     if (e.type === "document_issued")
                       return (
                         <div key={i} className="sys-note">
-                          《{e.docName}》已开具，
+                          “{e.docName}” {t(lang, "docIssued")}{" "}
                           <a
                             href="#view"
                             onClick={(ev) => {
@@ -538,74 +754,111 @@ export default function HallPage() {
                                 docName: e.docName,
                                 content: e.content,
                                 dept: AGENT_MAP[e.agentId].dept,
+                                ts: e.ts,
                               });
                             }}
                           >
-                            点击查看
-                          </a>
-                          ，已放入您的材料袋
+                            {t(lang, "clickView")}
+                          </a>{" "}
+                          — {t(lang, "inYourBag")}
                         </div>
                       );
                     if (e.type === "case_closed")
                       return (
                         <div key={i} className="sys-note">
-                          本件已{e.outcome}：{e.summary}
+                          {t(lang, "closedAs")}: {e.outcome} — {e.summary}
                         </div>
                       );
                     return null;
                   })}
-                  {sending && (
+                  {stream && stream.agentId === current && (
+                    <div className="msg agent streaming">
+                      <span className="who">
+                        {cur.dept} · {cur.personName}
+                      </span>
+                      {stream.text}
+                    </div>
+                  )}
+                  {sending && !(stream && stream.agentId === current) && (
                     <div className="sys-note">
                       <span className="spin" />
-                      窗口正在办理——抬头看看大厅，科室之间的动静都在平面图上。
+                      {t(lang, "processing")}
                     </div>
                   )}
                 </div>
-                <div className="counter-input">
-                  <textarea
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        send();
+                {!observer && !closed && (
+                  <div className="quick-row">
+                    {[t(lang, "quickDocs"), t(lang, "quickWhat"), t(lang, "quickGo")].map(
+                      (q) => (
+                        <button
+                          key={q}
+                          className="chip"
+                          onClick={() => send(q)}
+                          disabled={sending}
+                        >
+                          {q}
+                        </button>
+                      )
+                    )}
+                  </div>
+                )}
+                {!observer && (
+                  <div className="counter-input">
+                    <textarea
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          send();
+                        }
+                      }}
+                      placeholder={
+                        closed ? t(lang, "inputClosed") : t(lang, "inputPlaceholder")
                       }
-                    }}
-                    placeholder={closed ? "本件已终止办理" : "向窗口工作人员说明您的请求…（Enter 发送）"}
-                    disabled={sending || closed}
-                  />
-                  <button
-                    className="btn-primary"
-                    style={{ height: 60 }}
-                    onClick={send}
-                    disabled={sending || closed || !input.trim()}
-                  >
-                    提交
-                  </button>
-                </div>
+                      disabled={sending || closed}
+                    />
+                    <button
+                      className="btn-green"
+                      onClick={() => send()}
+                      disabled={sending || closed || !input.trim()}
+                    >
+                      {t(lang, "send")}
+                    </button>
+                  </div>
+                )}
               </>
             ) : (
               <div className="counter-empty">
-                <div>请点击平面图中的窗口，走过去办理您的事项。</div>
-                <div style={{ fontSize: 12 }}>不确定去哪个窗口？可以先到 01 号【综合导办】问路。</div>
+                <div>{t(lang, "approachHint")}</div>
+                <div style={{ fontSize: 13 }}>{t(lang, "approachHint2")}</div>
               </div>
             )}
-            {error && <div className="err" style={{ margin: "0 16px 12px" }}>{error}</div>}
+            {error && (
+              <div className="err" style={{ margin: "0 16px 12px" }}>
+                {error}
+              </div>
+            )}
           </div>
         )}
 
         {tab === "docs" && (
           <div className="dock-pane">
-            {docs.length === 0 && <div className="empty">尚未取得任何文书。</div>}
+            {docs.length === 0 && <div className="empty">{t(lang, "noDocuments")}</div>}
             {docs.map((d, i) => (
               <button
                 key={d.ts + "-" + i}
                 className="doc-item stamped"
                 onClick={() =>
-                  setViewDoc({ docName: d.docName, content: d.content, dept: AGENT_MAP[d.agentId].dept })
+                  setViewDoc({
+                    docName: d.docName,
+                    content: d.content,
+                    dept: AGENT_MAP[d.agentId].dept,
+                    ts: d.ts,
+                  })
                 }
               >
-                <span className="seal-dot" />《{d.docName}》<span>{AGENT_MAP[d.agentId].dept}</span>
+                “{d.docName}”<span className="ref">{AGENT_MAP[d.agentId].dept}</span>
               </button>
             ))}
           </div>
@@ -613,13 +866,14 @@ export default function HallPage() {
 
         {tab === "todos" && (
           <div className="dock-pane">
-            {todos.length === 0 && <div className="empty">暂无。</div>}
-            {todos.map((t, i) => (
+            {todos.length === 0 && <div className="empty">{t(lang, "noneYet")}</div>}
+            {todos.map((it, i) => (
               <div key={i} className="todo-item">
-                {t.name}
+                {it.name}
                 <em>
                   {" "}
-                  ｜ {AGENT_MAP[t.by].dept}要求{t.source ? `，可于${t.source}获取` : ""}
+                  — {AGENT_MAP[it.by].dept}
+                  {it.source ? `, from ${it.source}` : ""}
                 </em>
               </div>
             ))}
@@ -632,17 +886,17 @@ export default function HallPage() {
           <div className="drawer-mask" onClick={() => setDrawerOpen(false)} />
           <div className="drawer">
             <div className="drawer-head">
-              <h3>内部流转记录</h3>
+              <h3>{t(lang, "internalLog")}</h3>
               <button onClick={() => setDrawerOpen(false)}>✕</button>
             </div>
             <div className="drawer-body">
-              {memoCount === 0 && <div className="drawer-empty">科室之间尚无内部函件往来。</div>}
+              {memoCount === 0 && <div className="drawer-empty">{t(lang, "drawerEmpty")}</div>}
               {events.map((e, i) => {
                 if (e.type === "internal_memo")
                   return (
                     <div key={i} className="memo">
                       <div className="route">
-                        {AGENT_MAP[e.from].dept} → {AGENT_MAP[e.to].dept} ｜ 内部函件
+                        {AGENT_MAP[e.from].dept} → {AGENT_MAP[e.to].dept} · {t(lang, "memo")}
                       </div>
                       <div className="body">{e.text}</div>
                     </div>
@@ -651,7 +905,8 @@ export default function HallPage() {
                   return (
                     <div key={i} className="memo reply">
                       <div className="route">
-                        {AGENT_MAP[e.from].dept} → {AGENT_MAP[e.to].dept} ｜ 回函
+                        {AGENT_MAP[e.from].dept} → {AGENT_MAP[e.to].dept} ·{" "}
+                        {t(lang, "replyMemo")}
                       </div>
                       <div className="body">{e.text}</div>
                     </div>
@@ -669,19 +924,19 @@ export default function HallPage() {
             <button className="doc-close" onClick={() => setViewDoc(null)}>
               ✕
             </button>
-            <div className="doc-dept">AI 政务服务大厅 · {viewDoc.dept}</div>
-            <hr className="doc-rule" />
-            <hr className="doc-rule" />
+            <div className="doc-head">
+              <span className="doc-org">GOV.AI · Unified Government Services</span>
+              <span className="doc-dept">{viewDoc.dept}</span>
+            </div>
+            <div className="doc-ref">
+              REF: {cs.caseId}/{String(viewDoc.ts).slice(-5)} ·{" "}
+              {new Date(viewDoc.ts).toISOString().slice(0, 10)}
+            </div>
             <div className="doc-title">{viewDoc.docName}</div>
             <div className="doc-body">{viewDoc.content}</div>
-            <div className="seal stamp-anim">
-              <span className="star">✦</span>
-              <span>
-                AI政务服务大厅
-                <br />
-                {viewDoc.dept}
-              </span>
-            </div>
+            <div className="barcode" />
+            <div className="barcode-ref">{cs.caseId}</div>
+            <div className="ink-stamp stamp-anim">RECEIVED</div>
           </div>
         </div>
       )}

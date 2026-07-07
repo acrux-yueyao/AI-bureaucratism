@@ -62,13 +62,19 @@ async function runAgent(
       if (ctx.calls >= MAX_CALLS_PER_TURN) break;
       ctx.calls += 1;
 
-      const res = await ctx.client.messages.create({
+      const stream = ctx.client.messages.stream({
         model: MODEL,
         max_tokens: 1500,
         system: buildSystemPrompt(agentId),
         tools,
         messages,
       });
+      if (depth === 0) {
+        stream.on("text", (delta) => {
+          ctx.emit({ kind: "delta", agentId, text: delta });
+        });
+      }
+      const res = await stream.finalMessage();
 
       const toolUses = res.content.filter(
         (b): b is Anthropic.ToolUseBlock => b.type === "tool_use"
@@ -111,10 +117,10 @@ async function handleTool(
         type: "document_issued",
         ts,
         agentId,
-        docName: String(input.doc_name ?? "未命名文书"),
+        docName: String(input.doc_name ?? "Untitled document"),
         content: String(input.content ?? ""),
       });
-      return "文书已开具，已交付并记入办件档案。";
+      return "Document issued, delivered, and entered into the case file.";
     }
     case "require_materials": {
       const items = Array.isArray(input.items)
@@ -132,10 +138,10 @@ async function handleTool(
         items,
         note: input.note ? String(input.note) : undefined,
       });
-      return "已告知办事人，已记入办件档案。";
+      return "The visitor has been informed; entered into the case file.";
     }
     case "refer_user": {
-      if (!isAgentId(input.target)) return "系统提示：目标窗口不存在。";
+      if (!isAgentId(input.target)) return "System notice: no such window.";
       push(ctx, {
         type: "referral",
         ts,
@@ -143,14 +149,14 @@ async function handleTool(
         to: input.target,
         reason: String(input.reason ?? ""),
       });
-      return "已引导办事人，已记入办件档案。";
+      return "The visitor has been directed; entered into the case file.";
     }
     case "close_case": {
-      const outcome = (["办结", "不予受理", "终止办理"] as CaseOutcome[]).includes(
+      const outcome = (["resolved", "rejected", "terminated"] as CaseOutcome[]).includes(
         input.outcome as CaseOutcome
       )
         ? (input.outcome as CaseOutcome)
-        : "办结";
+        : "resolved";
       push(ctx, {
         type: "case_closed",
         ts,
@@ -158,15 +164,16 @@ async function handleTool(
         outcome,
         summary: String(input.summary ?? ""),
       });
-      return "本件已办结，系统已出具办件回执。";
+      return "The case is closed; the system has issued the visitor a receipt.";
     }
     case "consult_internal": {
-      if (!isAgentId(input.target)) return "系统提示：收函科室不存在。";
-      if (input.target === agentId) return "系统提示：不能向本科室发函。";
+      if (!isAgentId(input.target)) return "System notice: no such department.";
+      if (input.target === agentId)
+        return "System notice: you cannot send a memo to your own department.";
       if (depth >= MAX_CONSULT_DEPTH)
-        return "系统提示：本轮内部流转已达上限，函件未送出，请自行处理或直接答复办事人。";
+        return "System notice: the routing limit for this exchange has been reached. The memo was not sent; handle the matter yourself or reply to the visitor directly.";
       if (ctx.calls >= MAX_CALLS_PER_TURN)
-        return "系统提示：本轮系统调用额度已用尽，函件未送出。";
+        return "System notice: the call budget for this exchange is exhausted. The memo was not sent.";
 
       const target = input.target;
       const memoText = String(input.message ?? "");
@@ -175,13 +182,13 @@ async function handleTool(
 
       const situation = `${renderCaseFile(ctx.caseId, ctx.matter, ctx.events)}
 
-现在，【${AGENT_MAP[agentId].dept}】（${AGENT_MAP[agentId].personName}）向你发来一份内部函件：
+[${AGENT_MAP[agentId].dept}] (${AGENT_MAP[agentId].personName}) has just sent you an internal memo:
 "${memoText}"
 
-请回函。你的文字回复将作为回函送达对方。`;
+Reply to the memo. Your text response will be delivered to them as your reply.`;
 
       const reply = await runAgent(ctx, target, situation, INTERNAL_TOOLS, depth + 1);
-      const replyText = reply || "（对方未作文字回复）";
+      const replyText = reply || "(no written reply)";
       push(ctx, {
         type: "internal_reply",
         ts: Date.now(),
@@ -194,10 +201,10 @@ async function handleTool(
         agentId,
         state: depth === 0 ? "receiving" : "replying",
       });
-      return `收到【${AGENT_MAP[target].dept}】回函：\n${replyText}`;
+      return `Reply received from [${AGENT_MAP[target].dept}]:\n${replyText}`;
     }
     default:
-      return "系统提示：未知操作。";
+      return "System notice: unknown action.";
   }
 }
 
@@ -206,10 +213,10 @@ export async function POST(req: Request) {
   try {
     body = (await req.json()) as WindowRequest;
   } catch {
-    return Response.json({ error: "请求格式错误。" }, { status: 400 });
+    return Response.json({ error: "Malformed request." }, { status: 400 });
   }
   if (!isAgentId(body.agentId) || !body.userMessage?.trim()) {
-    return Response.json({ error: "请求参数不完整。" }, { status: 400 });
+    return Response.json({ error: "Missing parameters." }, { status: 400 });
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -230,7 +237,7 @@ export async function POST(req: Request) {
           kind: "signal",
           signal: {
             type: "error",
-            message: "服务端未配置 ANTHROPIC_API_KEY，请在 .env.local 中设置后重启。",
+            message: "The server is missing ANTHROPIC_API_KEY. Set it in .env.local and restart.",
           },
         });
         finish();
@@ -255,10 +262,10 @@ export async function POST(req: Request) {
 
       const situation = `${renderCaseFile(ctx.caseId, ctx.matter, ctx.events)}
 
-现在，办事人来到你的窗口，对你说：
+A visitor has just come to your window and says:
 "${body.userMessage.trim()}"
 
-请接待。你的文字回复会作为窗口答复直接告知办事人。`;
+Attend to them. Your text response is spoken to the visitor at the window.`;
 
       try {
         const replyText = await runAgent(ctx, body.agentId, situation, WINDOW_TOOLS, 0);
@@ -271,8 +278,8 @@ export async function POST(req: Request) {
           });
         }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "未知错误";
-        emit({ kind: "signal", signal: { type: "error", message: `调用模型失败：${msg}` } });
+        const msg = err instanceof Error ? err.message : "unknown error";
+        emit({ kind: "signal", signal: { type: "error", message: `Model call failed: ${msg}` } });
       } finally {
         finish();
       }

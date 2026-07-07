@@ -21,7 +21,7 @@ export type AgentDef = {
   canIssue: string[];
 };
 
-export type CaseOutcome = "办结" | "不予受理" | "终止办理";
+export type CaseOutcome = "resolved" | "rejected" | "terminated";
 
 export type CaseEvent =
   | { type: "user_message"; ts: number; agentId: AgentId; text: string }
@@ -80,7 +80,33 @@ export type StreamSignal =
   | { type: "error"; message: string }
   | { type: "done" };
 
-export type StreamFrame = { kind: "event"; event: CaseEvent } | { kind: "signal"; signal: StreamSignal };
+export type StreamFrame =
+  | { kind: "event"; event: CaseEvent }
+  | { kind: "signal"; signal: StreamSignal }
+  | { kind: "delta"; agentId: AgentId; text: string };
+
+export type VisitorScenario = {
+  id: string;
+  name: string;
+  tagline: string;
+  matter: string;
+  persona: string;
+};
+
+export type VisitorRequest = {
+  caseId: string;
+  matter: string;
+  scenarioId: string;
+  customPersona?: string;
+  events: CaseEvent[];
+};
+
+export type VisitorMove = {
+  target: AgentId;
+  message: string;
+  giveUp?: boolean;
+  error?: string;
+};
 
 export type ReportRequest = {
   caseId: string;

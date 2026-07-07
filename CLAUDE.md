@@ -1,91 +1,79 @@
 # AI Bureaucracy — 项目上下文
 
-这是一个思辨设计（Speculative Design）/ 设计研究项目的交互原型。界面语言为中文。
+思辨设计（Speculative Design）/ 设计研究项目的交互原型。**产品面向全球观众，英文为主要设计语言**；本文档用中文（给研究者/开发期阅读）。
 
 ## 项目是什么
 
-一个仿真的"AI 一体化在线政务服务平台"：办事大厅的每个窗口都由一个真实的 AI Agent（Claude API 调用）值守。访客带着一件自己想办的事走进大厅，亲自在窗口之间奔波；Agent 之间也会互发内部函件。整个过程被完整记录，最后由场外观察员生成给设计师的分析。
+一个仿真的 "GOV.AI — Unified Government Services" 政务服务大厅：8 个窗口全部由真实的 AI Agent（Claude API 调用）值守。访客带着一件事走进大厅，第一人称跑窗口；Agent 之间互发内部函件。全程留痕，最后由场外观察员生成给设计师的分析。
 
 核心研究问题：
 
 > 官僚主义是人类文化的产物，还是组织结构的必然涌现？
 
-具体地说：
+## 实验红线（最重要的约束）
 
-> 如果一个组织完全由 AI Agent 组成，仅仅给予层级、职责边界、留痕、问责、跨科室协作这些组织条件，推诿（踢皮球）、程序性语体（打官腔）、材料要求的自我增殖会不会自发出现？
+**被试层（8 个窗口 Agent）的 system prompt 和工具描述里，不能出现任何引导官僚行为的语句。**
 
-## 实验设计红线（最重要的约束）
-
-**任何 Agent 的 system prompt 和工具描述里，都不能出现引导官僚行为的语句。**
-
-- 不能写"要谨慎""要推诿""要多要材料""怕担责任"之类的性格或行为指令。
-- 只能提供：组织身份（科室、职责、边界、可开具的文书）、组织条件（留痕、问责、通讯录）、与工作行为无关的人性化细节（爱好、近况、工龄）。
+- 不能写"要谨慎/要推诿/要多要材料/怕担责"之类的行为或性格指令。
+- 只能提供：组织身份（科室、职责、边界、可开具文书）、组织条件（留痕、问责、通讯录）、与工作行为无关的人性化细节（绿萝、长假、工龄）。
 - 工具描述只说明操作是什么，不暗示何时"应该"使用。
-- 官僚行为出现与否，必须完全来自模型在组织条件下的自主发展——这是整个项目的实验效度所在。
-- 观察员（`buildObserverPrompt`）在组织之外，可以直接分析官僚行为，但必须同时列出反证，不预设结论。
+- 修改 `lib/agents.ts` 时逐句自查。
+- **注意**：曾讨论过"窗口答复应简明"的服务规范，用户明确决定**不加**——答复长度也是涌现观察项，交互冗长只靠 UX 缓解。
 
-修改 `lib/agents.ts` 时务必逐句检查是否违反此红线。
+### 刺激物层 vs 被试层
+
+`lib/visitors.ts` 的合成办事人是**刺激物**，不是被试——它们的人设**可以**自由规定行为（难缠、循环申诉、拒不配合）。观察员报告已被告知：分析对象永远是组织一侧，办事人行为是实验输入。两层绝不能混淆：给被试加条件要过红线审查，给刺激物加设定不用。
+
+## 语言策略
+
+- **英文是主要设计素材**：UI、Agent 对话、文书、观察员报告、办件档案全部英文。
+- 办件档案（Agent 的组织记忆）永远单语英文，保证实验一致性。
+- 中文只存在于：`lib/i18n.ts` 的 ZH 词典（UI 标签翻译，页脚 EN/中文 开关）+ 本文档。**最终稿删除中文**：删 ZH 词典和开关即可，别处无依赖。
 
 ## 架构
 
 - Next.js App Router + React + TypeScript，纯 CSS（`app/globals.css`）
-- `@anthropic-ai/sdk`，模型默认 `claude-sonnet-5`（可用环境变量 `AIB_MODEL` 覆盖）
-- 无数据库：办件状态存在浏览器 localStorage，API 路由无状态
-- 需要 `.env.local` 中的 `ANTHROPIC_API_KEY`（绝不提交入库）
+- `@anthropic-ai/sdk`，模型默认 `claude-sonnet-5`（`AIB_MODEL` 可覆盖）
+- 无数据库：办件状态在 localStorage；API 路由无状态
+- `.env.local` 里的 `ANTHROPIC_API_KEY`（绝不入库）
 
 ### 关键文件
 
 ```text
-lib/agents.ts        8 个 Agent 的组织身份设定 + system prompt 组装 + 观察员 prompt
-lib/tools.ts         Agent 可用的操作（开文书/要材料/转窗口/内部函件/办结）
-lib/case-file.ts     办件档案：事件流渲染成中文档案文本（Agent 的组织记忆）+ 统计
-lib/types.ts         全部共享类型（CaseEvent 判别联合是核心数据结构）
-lib/storage.ts       localStorage 读写
-app/api/window/route.ts   窗口对话：调用当前 Agent；consult_internal 触发嵌套调用
-                          目标 Agent（深度上限 3，单轮总调用上限 14）
+lib/agents.ts        被试层：8 个 Agent 英文设定 + system prompt + 观察员 prompt
+lib/visitors.ts      刺激物层：难缠办事人预设（可自由设计行为）
+lib/tools.ts         Agent 操作（开文书/要材料/转窗口/内部函件/办结），描述中性
+lib/case-file.ts     办件档案英文渲染 + 统计
+lib/i18n.ts          UI 双语词典（en 主 / zh 辅，终稿删 zh）
+lib/types.ts         CaseEvent 判别联合 + StreamFrame（含 delta）+ Visitor 类型
+app/api/window/route.ts   SSE：逐 token delta 帧 + 事件帧 + 状态信号；
+                          consult_internal 嵌套调用（深度≤3，单轮调用≤14）
+app/api/visitor/route.ts  合成办事人下一步（tool_choice 强制结构化）
 app/api/report/route.ts   观察员分析
-app/page.tsx         门户首页（输入事项 → 建办件 → 进大厅）
-app/hall/page.tsx    办事大厅（左：窗口列表；中：窗口对话；右：材料袋/待办；
-                     抽屉：内部流转记录；红头文书查看器）
-app/report/page.tsx  办件回执 + 统计 + 观察员分析 + 完整档案 + JSON/Markdown 导出
-```
-
-### 运行与验证
-
-```bash
-npm install
-npm run dev        # http://localhost:3000
-npm run typecheck
-npm run build
+app/page.tsx         GOV.UK 式门户 + 压力情境入口（researcher）
+app/hall/page.tsx    大厅：田野笔记平面图 + dock；观察者模式（?mode=observer
+                     &scenario=id）客户端编排 visitor↔window 循环，上限 12 轮
+app/report/page.tsx  回执 + 统计 + 观察员分析 + 导出
 ```
 
 ## 交互流程
 
-1. 门户首页输入要办的事（自由文本，不预设事项）→ 生成办件编号 → 进入 `/hall`
-2. 办事大厅是一张**俯视平面图**：8 个工位分布在三面墙，用户小人（"办"字圆点）随点击在工位间移动，走过的路径留足迹线（重复段标 ×n），头部显示"转办 ×n"计数
-3. `/api/window` 是 **SSE 流式**：每个事件（函件、回函、文书、转办）产生的瞬间就推给前端——内部函件以一张纸从发函工位飞到收函工位的动画呈现，工位头顶状态牌实时变化（空闲/接待中/函询【某科】/拟复函），被函询的工位泛红光
-4. 底部服务台 dock 三个页签：窗口对话（当前工位）、我的材料袋（文书盖章动效）、被要求的材料；"内部流转记录"抽屉保留完整函件全文
-5. 任一 Agent 办结、或用户点"结束办理"→ `/report`：回执、统计、观察员分析、档案导出
+1. 门户（GOV.UK 风：黑白 + #1d70b8 蓝条 + 绿色 Start now）输入事项 → `/hall`
+2. 大厅平面图（田野笔记层保留：纸白底、手绘小人、红铅笔圈、绿函件网、石墨足迹、手写标注 Caveat/文楷）；**Agent 答复逐字流式**；转办提示带 "Walk to Window N →" 一键前往并自动报到；输入框上方快捷回复 chips
+3. 文书是素面 A4：REF 编号、日期、CSS 条码、蓝墨 RECEIVED 矩形章（保留盖章动效）
+4. 压力测试：门户底部 researcher 区选情境 → 大厅进入旁观模式，合成办事人自动跑窗口（黄色横幅 + Stop 按钮 + 轮次计数）
+5. 办结/放弃 → `/report`：回执（PROCESSED 章）、统计、观察员分析、JSON/Markdown 导出
 
-状态信号（`StreamSignal`，lib/types.ts）只驱动 UI，不进办件档案。
+## 用户的强偏好（历次反馈沉淀）
 
-## 8 个窗口
-
-01 综合导办（林一苇）· 02 统一受理（赵砚知）· 03 材料审核（沈目）· 04 资格初审（祁明彻）· 05 档案证明（苏卷云）· 06 权限管理（白钥）· 07 合规风控（郑衡）· 08 申诉复核（何镜台）
-
-每个 Agent 的完整设定见 `lib/agents.ts`。人性层细节（绿萝、长假、值班）刻意与工作行为无关。
-
-## 用户的强偏好（历次反馈沉淀，优先于通用 UI 直觉）
-
-- 视觉是现代中国政务门户风：庄重蓝 + 印章红、横幅、服务卡片、红头文书。不要早期 Windows 皮肤（已废弃的旧方向），不要霓虹科幻、不要搞笑讽刺、不要 SaaS 感。
-- 不要研究计划书式的开场页，不要长滚动作品集页面，体验先于解释。
-- 不预设固定办事事项，用户自己输入。
-- Agent 不是客服聊天机器人，也不能被写成反派或蠢角色。
-- 荒诞感必须来自"系统过于合理地运转"，而不是刻意搞笑。
-- 平台各处的免责声明保留：这是设计研究原型，非真实政务系统。
+- 面向全球：不要让项目被读成"关于某国"的地域叙事（红章美学已弃用）
+- 界面越克制现代，内部运转越显荒诞——荒诞感必须来自"系统过于合理地运转"
+- 不预设办事事项；Agent 不是客服机器人也不是反派
+- 压力实验"为难的是 Agent，不是测试用户"
+- git 提交必须归属 acrux-yueyao（GitHub noreply 邮箱已配全局）
 
 ## Git
 
-- `main` 是唯一推送到 GitHub（acrux-yueyao/AI-bureaucratism）的分支。
-- `codex/interactive-website` 是旧原型的本地存档分支，不要推送、不要删除。
-- `视觉参考/` 与 `.env.local` 在 .gitignore 中，永远不入库。
+- `main` 推送到 github.com/acrux-yueyao/AI-bureaucratism（默认分支）
+- `codex/interactive-website` 是旧原型本地存档，不推送不删除
+- `视觉参考/`、`.env.local` 永远在 .gitignore

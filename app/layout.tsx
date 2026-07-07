@@ -2,16 +2,16 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AI 一体化在线政务服务平台",
+  title: "GOV.AI — Unified Government Services",
   description:
-    "AI Bureaucracy —— 一个思辨设计研究原型：完全由 AI Agent 运行的政务服务大厅，用于观察官僚行为是否会从组织结构中涌现。",
+    "AI Bureaucracy — a speculative design research prototype: a public service hall run entirely by AI agents, built to observe whether bureaucracy emerges from organizational structure.",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="zh-CN">
+    <html lang="en">
       <body>{children}</body>
     </html>
   );

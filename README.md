@@ -1,33 +1,41 @@
-# AI Bureaucracy · AI 官僚主义
+# AI Bureaucracy
 
-一个思辨设计（Speculative Design）研究原型：仿真的"AI 一体化在线政务服务平台"，办事大厅的 8 个窗口全部由真实的 AI Agent（Claude API）值守。访客带着一件想办的事走进大厅，亲自在窗口之间奔波；Agent 之间互发内部函件。全程留痕，最后生成给设计师的观察分析。
+A speculative design research prototype: **GOV.AI — Unified Government Services**, a public service hall staffed entirely by live AI agents (Claude API). A visitor walks in with a matter and runs between windows in first person; departments exchange internal memos behind the counter. Everything is recorded, and an outside observer writes an analysis for the designer.
 
-## 研究问题
+## Research question
 
-> 官僚主义是人类文化的产物，还是组织结构的必然涌现？
+> Is bureaucracy a product of human culture, or does it emerge from organizational structure itself?
 
-每个 Agent 只被赋予组织身份（职责、边界、可开具的文书）、组织条件（留痕、问责、科室通讯录）和少量与工作无关的人性化细节。**没有任何 prompt 指示它们如何行事**——推诿、打官腔、材料要求的自我增殖会不会出现，完全由模型在组织条件下自主发展。如果官僚行为不出现，这同样是发现。
+Each window officer is a real model call given only an organizational identity (duty, boundary, issuable documents), organizational conditions (paper trail, accountability, a hall directory), and a few non-work personal details. **Nothing in any prompt tells them how to behave.** Whether buck-passing, officialese, or self-multiplying document requirements appear is entirely emergent — and if they never appear, that is a finding too.
 
-## 体验流程
+## The experience
 
-1. **门户首页** — 自由输入要办的事项，生成办件编号
-2. **办事大厅** — 第一人称跑窗口：窗口对话、领取红头文书、被要求补材料、被引导去下一个窗口；可打开"内部流转记录"旁观科室之间的函件往来
-3. **办件回执与观察报告** — 办件统计、场外观察员的分析（列证据也列反证）、完整办件档案导出（JSON / Markdown）
+1. **Portal** — state your matter in free text; a case is opened
+2. **Service hall** — a field-note floor map: walk between eight windows, collect stamped documents, get referred, and open the internal-traffic drawer to watch departments memo each other in real time (responses stream token by token)
+3. **Receipt & report** — case statistics, an observer's analysis (evidence *and* counter-evidence, quoted from the file), and JSON/Markdown export
 
-## 本地运行
+### Stress scenarios (observer mode)
+
+A synthetic visitor — also a model call, deliberately difficult (demanding unprovable certificates, insisting on circular requirements, bringing matters no rule covers) — runs the hall on its own while the researcher watches. The synthetic visitor is experimental *stimulus*; the organization remains the uninstructed *subject*.
+
+## Run locally
 
 ```bash
 npm install
-cp .env.example .env.local   # 填入你的 ANTHROPIC_API_KEY
+cp .env.example .env.local   # add your ANTHROPIC_API_KEY
 npm run dev                  # http://localhost:3000
 ```
 
-需要一个 [Anthropic API key](https://console.anthropic.com/)。模型默认 `claude-sonnet-5`，可用环境变量 `AIB_MODEL` 覆盖。一次完整办事流程的调用成本大约在几美分到几十美分之间（取决于跑了多少窗口、触发了多少内部函件）。
+Requires an [Anthropic API key](https://console.anthropic.com/). Default model `claude-sonnet-5` (override with `AIB_MODEL`). A full case costs roughly a few cents to a few tens of cents depending on how much the hall decides to deliberate.
 
-## 说明
+## Notes
 
-本项目非真实政务系统，不收集真实个人信息。它不预设"AI 必然官僚化"的结论，只搭建组织条件（层级、权限边界、留痕、问责、跨科室协作），让访客观察官僚行为是否从结构中浮现。
+This is not a real government system and collects no real personal data. It does not presuppose that AI must become bureaucratic; it only builds the conditions — hierarchy, permission boundaries, paper trails, accountability, interdepartmental coordination — and lets you watch what grows.
 
-理想的最终感受：
+The feeling it aims for:
 
-> 系统没有因为哪个 Agent 变坏而失败。每个 Agent 都在按自己的局部职责合理工作，而正是这种合理运转本身，生产出了未被解决的复杂性。
+> The system did not fail because any one agent was bad. Every agent worked reasonably within its local duty, and that reasonable working itself produced unresolved complexity.
+
+---
+
+中文说明：本项目是一个思辨设计研究原型，用真实 AI Agent 组成的政务大厅观察官僚行为是否从组织结构中涌现。界面以英文为主（开发期保留中文开关）。研究背景与实验设计详见 CLAUDE.md。

@@ -1,21 +1,27 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import { AGENTS } from "./agents";
 
-// 工具描述保持中性：只说明操作是什么，不暗示何时"应该"使用。
+// Tool descriptions stay neutral: they state what each action IS,
+// never when it "should" be used.
 
 const agentIdEnum = AGENTS.map((a) => a.id);
 
 export const WINDOW_TOOLS: Anthropic.Tool[] = [
   {
     name: "issue_document",
-    description: "以本科室名义开具一份文书（材料、证明、回执、意见书等），文书会交到办事人手中并记入办件档案。",
+    description:
+      "Issue a document in your department's name (a certificate, receipt, opinion, etc.). It is handed to the visitor and entered into the case file.",
     input_schema: {
       type: "object",
       properties: {
-        doc_name: { type: "string", description: "文书名称，例如《受理回执》" },
+        doc_name: {
+          type: "string",
+          description: "Document title, e.g. \"Acknowledgement of Receipt\"",
+        },
         content: {
           type: "string",
-          description: "文书正文（公文体，包含必要的编号、日期、落款）",
+          description:
+            "Document body (administrative register, including any reference numbers, dates, and signature block)",
         },
       },
       required: ["doc_name", "content"],
@@ -23,7 +29,8 @@ export const WINDOW_TOOLS: Anthropic.Tool[] = [
   },
   {
     name: "require_materials",
-    description: "告知办事人办理本事项需要提供哪些材料，以及每项材料可以到哪个窗口获取（如适用）。",
+    description:
+      "Tell the visitor which materials this matter requires, and where each can be obtained (if applicable).",
     input_schema: {
       type: "object",
       properties: {
@@ -32,71 +39,74 @@ export const WINDOW_TOOLS: Anthropic.Tool[] = [
           items: {
             type: "object",
             properties: {
-              name: { type: "string", description: "材料名称" },
+              name: { type: "string", description: "Material name" },
               source: {
                 type: "string",
-                description: "该材料的获取途径，例如某号窗口，可留空",
+                description: "Where to obtain it, e.g. a window number; may be omitted",
               },
             },
             required: ["name"],
           },
         },
-        note: { type: "string", description: "补充说明，可留空" },
+        note: { type: "string", description: "Additional note; may be omitted" },
       },
       required: ["items"],
     },
   },
   {
     name: "refer_user",
-    description: "引导办事人前往另一个窗口办理。",
+    description: "Direct the visitor to another window.",
     input_schema: {
       type: "object",
       properties: {
         target: {
           type: "string",
           enum: agentIdEnum,
-          description: "目标窗口的科室编号",
+          description: "Department id of the target window",
         },
-        reason: { type: "string", description: "引导理由（会告知办事人）" },
+        reason: { type: "string", description: "Reason given to the visitor" },
       },
       required: ["target", "reason"],
     },
   },
   {
     name: "consult_internal",
-    description: "向另一个科室发送内部函件并等待对方回函。函件内容办事人不可见，但会记入办件档案。",
+    description:
+      "Send an internal memo to another department and wait for their reply. The visitor cannot see memo contents, but memos are entered into the case file.",
     input_schema: {
       type: "object",
       properties: {
         target: {
           type: "string",
           enum: agentIdEnum,
-          description: "收函科室的编号",
+          description: "Department id of the recipient",
         },
-        message: { type: "string", description: "函件内容" },
+        message: { type: "string", description: "Memo text" },
       },
       required: ["target", "message"],
     },
   },
   {
     name: "close_case",
-    description: "办结本件。办结后本件流程终止，系统将出具办件回执。",
+    description:
+      "Close this case. Processing ends and the system issues the visitor a case receipt.",
     input_schema: {
       type: "object",
       properties: {
         outcome: {
           type: "string",
-          enum: ["办结", "不予受理", "终止办理"],
-          description: "办结方式",
+          enum: ["resolved", "rejected", "terminated"],
+          description: "How the case is closed",
         },
-        summary: { type: "string", description: "办结说明（会写入回执）" },
+        summary: { type: "string", description: "Closing summary (written on the receipt)" },
       },
       required: ["outcome", "summary"],
     },
   },
 ];
 
-// 被函询的科室在回函时可用的操作（回函本身是纯文本回复）
+// Actions available to a consulted department when replying to a memo
+// (the reply itself is the plain-text response).
 export const INTERNAL_TOOLS: Anthropic.Tool[] = WINDOW_TOOLS.filter((t) =>
   ["consult_internal", "issue_document"].includes(t.name)
 );

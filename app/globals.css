@@ -1,3 +1,5 @@
+@import url("https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.7.0/style.css");
+
 * {
   margin: 0;
   padding: 0;
@@ -18,6 +20,11 @@
   --bg: #f4f6f9;
   --song: "Songti SC", "SimSun", "STSong", serif;
   --fangsong: "FangSong SC", "FangSong", "STFangsong", "Songti SC", serif;
+  --hand: "LXGW WenKai Lite", "LXGW WenKai", "Kaiti SC", "STKaiti", cursive;
+  --pencil: #787d86;
+  --pencil-red: #cf3f36;
+  --note-green: #61a04a;
+  --paper-note: #fbfaf6;
 }
 
 html,
@@ -349,22 +356,33 @@ textarea {
   letter-spacing: 1px;
 }
 
-/* ── 大厅平面图 ── */
+/* ── 大厅平面图：田野笔记 ── */
 .map-wrap {
   position: relative;
   flex: 1;
   min-height: 340px;
   margin: 12px auto 0;
   width: min(1280px, calc(100% - 32px));
-  background:
-    repeating-linear-gradient(0deg, transparent 0 46px, rgba(29, 95, 176, 0.05) 46px 47px),
-    repeating-linear-gradient(90deg, transparent 0 46px, rgba(29, 95, 176, 0.05) 46px 47px),
-    #eef2f7;
-  border: 1px solid var(--line);
-  border-radius: 6px;
+  background: var(--paper-note);
+  border: 1px solid #e8e5dc;
+  border-radius: 3px;
   overflow: hidden;
 }
-.trail-layer {
+.map-note {
+  position: absolute;
+  top: 10px;
+  left: 16px;
+  font-family: var(--hand);
+  font-size: 13px;
+  color: var(--pencil);
+  pointer-events: none;
+  z-index: 3;
+}
+.map-note .red {
+  color: var(--pencil-red);
+}
+.trail-layer,
+.web-layer {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -372,20 +390,31 @@ textarea {
   pointer-events: none;
 }
 .trail-line {
-  stroke: var(--gov-gold);
-  stroke-width: 2px;
-  stroke-dasharray: 6 5;
-  opacity: 0.7;
+  stroke: var(--pencil);
+  stroke-width: 1.3px;
+  stroke-dasharray: 5 6;
+  opacity: 0.55;
+}
+.web-line {
+  stroke: var(--note-green);
+  stroke-width: 1px;
+  opacity: 0.5;
 }
 .trail-count {
   position: absolute;
-  transform: translate(-50%, -50%);
-  background: var(--gov-gold);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 999px;
-  padding: 1px 8px;
+  transform: translate(-50%, -50%) rotate(-4deg);
+  font-family: var(--hand);
+  color: var(--pencil);
+  font-size: 13px;
+  pointer-events: none;
+  z-index: 3;
+}
+.web-count {
+  position: absolute;
+  transform: translate(-50%, -50%) rotate(3deg);
+  font-family: var(--hand);
+  color: var(--note-green);
+  font-size: 13px;
   pointer-events: none;
   z-index: 3;
 }
@@ -393,125 +422,128 @@ textarea {
 .station {
   position: absolute;
   transform: translate(-50%, -50%);
-  width: 138px;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 8px 10px 9px;
+  background: none;
+  border: none;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1px;
+  gap: 0;
   z-index: 4;
-  transition: box-shadow 0.3s, border-color 0.3s, background 0.3s;
+  padding: 10px 14px;
+  cursor: pointer;
 }
-.station:hover {
-  border-color: var(--gov-blue);
+.station svg {
+  display: block;
+  color: #3f4550;
 }
-.station.active {
-  border: 2px solid var(--gov-blue);
-  background: var(--gov-blue-pale);
+.station::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid transparent;
+  border-radius: 48% 52% 55% 45% / 58% 46% 54% 42%;
+  transform: rotate(-3deg);
+  transition: border-color 0.25s;
+  pointer-events: none;
 }
-.station.lit {
-  border-color: var(--gov-red);
-  box-shadow: 0 0 0 3px rgba(199, 0, 11, 0.15), 0 4px 14px rgba(199, 0, 11, 0.18);
-  animation: lit-pulse 1.4s ease-in-out infinite;
+.station:hover::before {
+  border-color: #d5d2c8;
 }
-@keyframes lit-pulse {
+.station.active::before {
+  border-color: rgba(29, 95, 176, 0.55);
+  border-style: solid;
+}
+.station.lit::before {
+  border-color: var(--pencil-red);
+  animation: circle-wobble 1.6s ease-in-out infinite;
+}
+@keyframes circle-wobble {
+  0%,
+  100% {
+    transform: rotate(-3deg) scale(1);
+  }
   50% {
-    box-shadow: 0 0 0 6px rgba(199, 0, 11, 0.08), 0 4px 18px rgba(199, 0, 11, 0.25);
+    transform: rotate(2deg) scale(1.04);
   }
 }
-.station.suggested {
+.station.suggested::before {
   border-color: var(--gov-gold);
-  box-shadow: 0 0 0 3px rgba(217, 163, 60, 0.3);
+  border-style: dashed;
 }
-.station .st-no {
-  font-family: var(--song);
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--gov-blue);
-}
-.station .st-dept {
+.station .st-label {
+  font-family: var(--hand);
   font-size: 14px;
-  font-weight: 600;
+  color: var(--ink);
+  margin-top: 2px;
+  line-height: 1.3;
 }
 .station .st-person {
+  font-family: var(--hand);
   font-size: 11px;
-  color: var(--ink-3);
+  color: var(--pencil);
+  line-height: 1.2;
 }
-.placard {
-  margin-top: 4px;
-  font-size: 11px;
-  border-radius: 3px;
-  padding: 1px 10px;
-  background: #f0f2f5;
-  color: var(--ink-3);
-  transition: background 0.3s, color 0.3s;
-}
-.placard.busy {
-  background: var(--gov-red);
-  color: #fff;
+.station .st-status {
+  position: absolute;
+  bottom: -14px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-2deg);
+  font-family: var(--hand);
+  font-size: 12px;
+  color: var(--pencil-red);
+  white-space: nowrap;
 }
 .station .st-tag {
   position: absolute;
-  top: -10px;
-  right: -8px;
-  background: var(--gov-gold);
-  color: #fff;
-  font-size: 11px;
-  border-radius: 3px;
-  padding: 1px 8px;
-  animation: lit-pulse 1.4s ease-in-out infinite;
+  top: -14px;
+  right: -18px;
+  font-family: var(--hand);
+  font-size: 13px;
+  color: var(--gov-gold);
+  transform: rotate(6deg);
+  animation: circle-wobble 1.6s ease-in-out infinite;
 }
 
 .visitor {
   position: absolute;
   transform: translate(-50%, -50%);
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--gov-blue);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 600;
-  border: 2px solid #fff;
-  box-shadow: 0 3px 10px rgba(20, 65, 127, 0.4);
   z-index: 6;
+  color: #2b2f36;
   transition: left 0.9s cubic-bezier(0.4, 0, 0.2, 1), top 0.9s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.12));
 }
 .entrance-label {
   position: absolute;
-  transform: translate(-50%, -50%);
-  font-size: 11px;
-  color: var(--ink-3);
-  letter-spacing: 4px;
-  border-top: 2px solid var(--ink-3);
+  transform: translate(-50%, -50%) rotate(-2deg);
+  font-family: var(--hand);
+  font-size: 12px;
+  color: var(--pencil);
+  letter-spacing: 6px;
+  border-top: 1.5px solid var(--pencil);
   padding-top: 2px;
   pointer-events: none;
+  opacity: 0.8;
 }
 
 .memo-fly {
   position: absolute;
   transform: translate(-50%, -50%) rotate(-6deg);
   z-index: 7;
-  font-size: 18px;
-  color: var(--gov-red);
-  background: #fffdf4;
-  border: 1px solid #e5ddcc;
+  font-size: 15px;
+  color: var(--note-green);
+  background: #fff;
+  border: 1px solid #dcd8ca;
   border-radius: 2px;
-  padding: 1px 5px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+  padding: 0 4px;
+  box-shadow: 1px 2px 0 rgba(0, 0, 0, 0.08);
   transition: left 1.2s ease-in-out, top 1.2s ease-in-out;
   pointer-events: none;
 }
 .memo-fly.reply {
-  color: var(--gov-blue);
+  color: var(--pencil);
+  border-style: dashed;
 }
 
 /* ── 底部服务台 dock ── */
@@ -1004,10 +1036,13 @@ textarea {
 
 @media (max-width: 960px) {
   .station {
-    width: 104px;
-    padding: 6px 6px 7px;
+    padding: 6px 8px;
   }
-  .station .st-dept {
+  .station svg {
+    width: 34px;
+    height: auto;
+  }
+  .station .st-label {
     font-size: 12px;
   }
   .dock {

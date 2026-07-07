@@ -40,6 +40,55 @@ function spotOf(p: AgentId | "entrance"): Spot {
   return p === "entrance" ? ENTRANCE : HALL_LAYOUT[p];
 }
 
+function DeskFigure({ flip }: { flip?: boolean }) {
+  return (
+    <svg
+      width="46"
+      height="40"
+      viewBox="0 0 48 40"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      style={flip ? { transform: "scaleX(-1)" } : undefined}
+      aria-hidden
+    >
+      <circle cx="31" cy="9" r="4.2" />
+      <path d="M31 13.5 L31 23" />
+      <path d="M31 17 L24 21.5" />
+      <path d="M31 23 L28 28 L28 35" />
+      <path d="M10 23.5 H36" />
+      <path d="M13 23.5 V35" />
+      <path d="M33.5 23.5 V35" />
+      <path d="M15 20.5 h7" />
+      <path d="M16 18.5 h5" />
+    </svg>
+  );
+}
+
+function VisitorFigure() {
+  return (
+    <svg
+      width="26"
+      height="38"
+      viewBox="0 0 26 38"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <circle cx="12" cy="5.5" r="4" />
+      <path d="M12 9.5 V21" />
+      <path d="M12 21 L7 33" />
+      <path d="M12 21 L17 32" />
+      <path d="M12 12.5 L5.5 18" />
+      <path d="M12 12.5 L18.5 17" />
+      <rect x="16.5" y="16.5" width="7.5" height="5.5" stroke="#cf3f36" />
+    </svg>
+  );
+}
+
 function FlightPaper({ flight, onDone }: { flight: Flight; onDone: (id: number) => void }) {
   const [pos, setPos] = useState<Spot>(spotOf(flight.from));
   useEffect(() => {
@@ -128,6 +177,18 @@ export default function HallPage() {
       if (e.type === "user_message" && e.agentId === target) target = null;
     }
     return target;
+  }, [events]);
+
+  const memoRoutes = useMemo(() => {
+    const counts = new Map<string, { a: Spot; b: Spot; n: number }>();
+    for (const e of events) {
+      if (e.type !== "internal_memo" && e.type !== "internal_reply") continue;
+      const key = [e.from, e.to].sort().join("|");
+      const cur = counts.get(key);
+      if (cur) cur.n += 1;
+      else counts.set(key, { a: HALL_LAYOUT[e.from], b: HALL_LAYOUT[e.to], n: 1 });
+    }
+    return [...counts.values()];
   }, [events]);
 
   const trailSegments = useMemo(() => {
@@ -311,6 +372,29 @@ export default function HallPage() {
       )}
 
       <div className="map-wrap">
+        <div className="map-note">
+          观察记录 · {cs.caseId}
+          {referralCount > 0 && (
+            <>
+              {" "}
+              <span className="red">被转办 ×{referralCount}</span>
+            </>
+          )}
+          {memoCount > 0 && <> · 函件 ×{memoCount}</>}
+        </div>
+        <svg className="web-layer" viewBox="0 0 100 100" preserveAspectRatio="none">
+          {memoRoutes.map((s, i) => (
+            <line
+              key={i}
+              x1={s.a.x}
+              y1={s.a.y}
+              x2={s.b.x}
+              y2={s.b.y}
+              className="web-line"
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+        </svg>
         <svg className="trail-layer" viewBox="0 0 100 100" preserveAspectRatio="none">
           {trailSegments.map((s, i) => (
             <line
@@ -328,15 +412,26 @@ export default function HallPage() {
           .filter((s) => s.n > 1)
           .map((s, i) => (
             <span
-              key={i}
+              key={"t" + i}
               className="trail-count"
               style={{ left: `${(s.a.x + s.b.x) / 2}%`, top: `${(s.a.y + s.b.y) / 2}%` }}
             >
               ×{s.n}
             </span>
           ))}
+        {memoRoutes
+          .filter((s) => s.n > 1)
+          .map((s, i) => (
+            <span
+              key={"w" + i}
+              className="web-count"
+              style={{ left: `${(s.a.x + s.b.x) / 2 + 2}%`, top: `${(s.a.y + s.b.y) / 2 - 3}%` }}
+            >
+              ×{s.n}
+            </span>
+          ))}
 
-        {AGENTS.map((a) => {
+        {AGENTS.map((a, idx) => {
           const st = statusMap[a.id];
           const busy = st && st.state !== "idle";
           return (
@@ -351,21 +446,25 @@ export default function HallPage() {
               style={{ left: `${HALL_LAYOUT[a.id].x}%`, top: `${HALL_LAYOUT[a.id].y}%` }}
               onClick={() => goTo(a.id)}
             >
-              <span className="st-no">{a.windowNo}</span>
-              <span className="st-dept">{a.dept}</span>
-              <span className="st-person">{a.personName}</span>
-              <span className={"placard" + (busy ? " busy" : "")}>
-                {st && st.state === "consulting" && st.target
-                  ? `函询【${AGENT_MAP[st.target].dept}】`
-                  : STATE_LABEL[st?.state ?? "idle"]}
+              <DeskFigure flip={idx % 2 === 1} />
+              <span className="st-label">
+                {a.windowNo} {a.dept}
               </span>
-              {suggested === a.id && current !== a.id && <span className="st-tag">请前往</span>}
+              <span className="st-person">{a.personName}</span>
+              {busy && (
+                <span className="st-status">
+                  {st.state === "consulting" && st.target
+                    ? `函询→${AGENT_MAP[st.target].dept}`
+                    : STATE_LABEL[st.state]}
+                </span>
+              )}
+              {suggested === a.id && current !== a.id && <span className="st-tag">请前往→</span>}
             </button>
           );
         })}
 
         <div className="visitor" style={{ left: `${visitorSpot.x}%`, top: `${visitorSpot.y + 7}%` }}>
-          办
+          <VisitorFigure />
         </div>
 
         {flights.map((f) => (

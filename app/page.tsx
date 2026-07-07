@@ -150,6 +150,9 @@ export default function PortalPage() {
               </button>
             ))}
           </div>
+          <p style={{ marginTop: 14, marginBottom: 0 }}>
+            <a href="/staff">{t(lang, "staffRecords")} →</a>
+          </p>
           <h3 style={{ marginTop: 18 }}>{t(lang, "stressTitle")}</h3>
           <p>{t(lang, "stressDesc")}</p>
           <div className="row">

@@ -1,12 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { computeStats, renderEvent, renderCaseFile } from "@/lib/case-file";
-import { clearCase, loadAnalysis, loadCase, saveAnalysis } from "@/lib/storage";
+import { clearCase, loadAnalysis, loadCase, saveAnalysis, saveCase } from "@/lib/storage";
 import { CONDITION_MAP } from "@/lib/conditions";
+import {
+  addNote,
+  digestsForAll,
+  loadExperience,
+  logCase,
+  participantsOf,
+  saveExperience,
+} from "@/lib/experience";
 import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
-import type { CaseState, ReportResponse } from "@/lib/types";
+import type { CaseState, ReportResponse, ShiftNotesResponse } from "@/lib/types";
 
 function download(filename: string, content: string, mime: string) {
   const blob = new Blob([content], { type: mime });
@@ -24,7 +32,9 @@ export default function ReportPage() {
   const [cs, setCs] = useState<CaseState | null>(null);
   const [analysis, setAnalysis] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [writingNotes, setWritingNotes] = useState(false);
   const [error, setError] = useState("");
+  const notesStarted = useRef(false);
 
   useEffect(() => {
     setLang(getLang());
@@ -36,6 +46,49 @@ export default function ReportPage() {
     setCs(c);
     setAnalysis(loadAnalysis());
   }, [router]);
+
+  useEffect(() => {
+    if (!cs || cs.notesWritten || cs.events.length === 0 || notesStarted.current) return;
+    const exp = loadExperience();
+    if (exp.casesLogged.includes(cs.caseId)) {
+      const merged = { ...cs, notesWritten: true };
+      saveCase(merged);
+      setCs(merged);
+      return;
+    }
+    notesStarted.current = true;
+    setWritingNotes(true);
+    (async () => {
+      let notes: ShiftNotesResponse["notes"] = [];
+      try {
+        const res = await fetch("/api/shift-notes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            caseId: cs.caseId,
+            matter: cs.matter,
+            events: cs.events,
+            agentIds: participantsOf(cs.events),
+            experience: digestsForAll(exp),
+          }),
+        });
+        const data = (await res.json()) as ShiftNotesResponse;
+        notes = data.notes ?? [];
+      } catch {
+        notes = [];
+      }
+      logCase(exp, cs.caseId, cs.events);
+      const ts = Date.now();
+      for (const n of notes) {
+        addNote(exp, n.agentId, { ts, caseId: cs.caseId, matter: cs.matter, text: n.text });
+      }
+      saveExperience(exp);
+      const merged = { ...cs, notesWritten: true };
+      saveCase(merged);
+      setCs(merged);
+      setWritingNotes(false);
+    })();
+  }, [cs]);
 
   const stats = useMemo(() => (cs ? computeStats(cs.events) : null), [cs]);
 
@@ -128,6 +181,7 @@ ${analysis || "(not generated)"}
           </a>
           <span className="svc">{t(lang, "receipt")}</span>
           <span className="right">
+            <button onClick={() => router.push("/staff")}>{t(lang, "staffRecords")}</button>
             <button onClick={() => router.push("/hall")}>{t(lang, "backHall")}</button>
             <button
               onClick={() => {
@@ -146,6 +200,12 @@ ${analysis || "(not generated)"}
       <div className="blue-bar" />
 
       <div className="page" style={{ maxWidth: 860 }}>
+        {writingNotes && (
+          <div className="inset" style={{ marginTop: 0 }}>
+            <span className="spin" />
+            {t(lang, "writingNotes")}
+          </div>
+        )}
         <section className="receipt">
           <h2>{t(lang, "receipt")}</h2>
           <table>

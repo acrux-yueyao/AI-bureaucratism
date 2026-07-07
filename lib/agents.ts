@@ -252,7 +252,11 @@ Trainees (never visitor-facing):
 ${l4}`;
 }
 
-export function buildSystemPrompt(agentId: AgentId, conditionsBlock = ""): string {
+export function buildSystemPrompt(
+  agentId: AgentId,
+  conditionsBlock = "",
+  experienceBlock = ""
+): string {
   const a = AGENT_MAP[agentId];
   const issueLine =
     a.canIssue.length > 0
@@ -316,7 +320,7 @@ ${roster()}
 [How you work]
 - ${visitorLine}
 - The system gives you several actions: issue a document, tell the visitor what materials are required (window officers), direct the visitor to another window (window officers), send a peer memo, escalate to your superior, assign work downward (if anyone works under you), close the case. Whether and how to use them is your judgment, guided by your duty.
-- There is no standard script for handling any matter. How to handle each one is up to you.${conditionsBlock}`;
+- There is no standard script for handling any matter. How to handle each one is up to you.${experienceBlock}${conditionsBlock}`;
 }
 
 export function buildObserverPrompt(): string {

@@ -85,6 +85,7 @@ export type CaseState = {
   events: CaseEvent[];
   closed: boolean;
   conditionId?: string;
+  notesWritten?: boolean;
 };
 
 export type WindowRequest = {
@@ -94,6 +95,43 @@ export type WindowRequest = {
   userMessage: string;
   events: CaseEvent[];
   conditionId?: string;
+  experience?: Partial<Record<AgentId, string>>;
+};
+
+export type ShiftNote = {
+  ts: number;
+  caseId: string;
+  matter: string;
+  text: string;
+};
+
+export type AgentTally = {
+  cases: number;
+  exchanges: number;
+  memosIn: number;
+  memosOut: number;
+  docs: number;
+  escalations: number;
+  assignmentsReceived: number;
+};
+
+export type ExperienceState = {
+  tallies: Partial<Record<AgentId, AgentTally>>;
+  notes: Partial<Record<AgentId, ShiftNote[]>>;
+  casesLogged: string[];
+};
+
+export type ShiftNotesRequest = {
+  caseId: string;
+  matter: string;
+  events: CaseEvent[];
+  agentIds: AgentId[];
+  experience?: Partial<Record<AgentId, string>>;
+};
+
+export type ShiftNotesResponse = {
+  notes: { agentId: AgentId; text: string }[];
+  error?: string;
 };
 
 export type WindowResponse = {

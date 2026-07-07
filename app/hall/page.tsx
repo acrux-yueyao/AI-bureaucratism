@@ -6,6 +6,7 @@ import { AGENTS, AGENT_MAP } from "@/lib/agents";
 import { loadCase, saveCase } from "@/lib/storage";
 import { SCENARIOS } from "@/lib/visitors";
 import { CONDITION_MAP } from "@/lib/conditions";
+import { digestsForAll, loadExperience } from "@/lib/experience";
 import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
 import type {
   AgentId,
@@ -364,6 +365,7 @@ export default function HallPage() {
             userMessage: text,
             events: base.events,
             conditionId: base.conditionId,
+            experience: digestsForAll(loadExperience()),
           }),
         });
         if (!res.ok || !res.body) {

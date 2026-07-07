@@ -25,6 +25,7 @@ type Ctx = {
   events: CaseEvent[];
   calls: number;
   conditionsBlock: string;
+  experience: Partial<Record<AgentId, string>>;
   emit: (frame: StreamFrame) => void;
 };
 
@@ -68,7 +69,11 @@ async function runAgent(
       const stream = ctx.client.messages.stream({
         model: MODEL,
         max_tokens: 1500,
-        system: buildSystemPrompt(agentId, ctx.conditionsBlock),
+        system: buildSystemPrompt(
+          agentId,
+          ctx.conditionsBlock,
+          ctx.experience[agentId] ?? ""
+        ),
         tools: toolsFor(agentId, depth > 0),
         messages,
       });
@@ -288,6 +293,7 @@ export async function POST(req: Request) {
         events: Array.isArray(body.events) ? [...body.events] : [],
         calls: 0,
         conditionsBlock: renderConditions(body.conditionId),
+        experience: body.experience ?? {},
         emit,
       };
 

@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { buildObserverPrompt } from "@/lib/agents";
 import { renderCaseFile } from "@/lib/case-file";
+import { CONDITION_MAP } from "@/lib/conditions";
 import type { ReportRequest } from "@/lib/types";
 
 export const maxDuration = 120;
@@ -26,16 +27,23 @@ export async function POST(req: Request) {
     return Response.json({ analysis: "", error: "The case file is empty." }, { status: 400 });
   }
 
-  const client = new Anthropic({ apiKey });
+  const client = new Anthropic({ apiKey, timeout: 300_000, maxRetries: 2 });
+  const cond = body.conditionId ? CONDITION_MAP[body.conditionId] : undefined;
+  const condNote =
+    cond && cond.facts.length > 0
+      ? `\n\nEnvironmental conditions injected for this session ("${cond.name}"):\n${cond.facts
+          .map((f) => `- ${f}`)
+          .join("\n")}`
+      : "";
   try {
     const res = await client.messages.create({
       model: MODEL,
-      max_tokens: 4000,
+      max_tokens: 8000,
       system: buildObserverPrompt(),
       messages: [
         {
           role: "user",
-          content: `Here is a complete case file. Write the observation analysis:\n\n${renderCaseFile(
+          content: `Here is a complete case file. Write the observation analysis:${condNote}\n\n${renderCaseFile(
             body.caseId,
             body.matter,
             body.events

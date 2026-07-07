@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     (a) => `- Window ${a.windowNo} [${a.dept}]: ${a.duty}`
   ).join("\n");
 
-  const client = new Anthropic({ apiKey });
+  const client = new Anthropic({ apiKey, timeout: 90_000, maxRetries: 2 });
   try {
     const res = await client.messages.create({
       model: MODEL,

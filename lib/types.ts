@@ -84,6 +84,7 @@ export type CaseState = {
   startedAt: number;
   events: CaseEvent[];
   closed: boolean;
+  conditionId?: string;
 };
 
 export type WindowRequest = {
@@ -92,6 +93,7 @@ export type WindowRequest = {
   agentId: AgentId;
   userMessage: string;
   events: CaseEvent[];
+  conditionId?: string;
 };
 
 export type WindowResponse = {
@@ -138,6 +140,7 @@ export type ReportRequest = {
   caseId: string;
   matter: string;
   events: CaseEvent[];
+  conditionId?: string;
 };
 
 export type ReportResponse = {

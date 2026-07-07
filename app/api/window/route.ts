@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { buildSystemPrompt, AGENT_MAP, WINDOW_AGENTS } from "@/lib/agents";
 import { toolsFor } from "@/lib/tools";
 import { renderCaseFile } from "@/lib/case-file";
+import { renderConditions } from "@/lib/conditions";
 import type {
   AgentId,
   CaseEvent,
@@ -23,6 +24,7 @@ type Ctx = {
   matter: string;
   events: CaseEvent[];
   calls: number;
+  conditionsBlock: string;
   emit: (frame: StreamFrame) => void;
 };
 
@@ -66,7 +68,7 @@ async function runAgent(
       const stream = ctx.client.messages.stream({
         model: MODEL,
         max_tokens: 1500,
-        system: buildSystemPrompt(agentId),
+        system: buildSystemPrompt(agentId, ctx.conditionsBlock),
         tools: toolsFor(agentId, depth > 0),
         messages,
       });
@@ -280,11 +282,12 @@ export async function POST(req: Request) {
       }
 
       const ctx: Ctx = {
-        client: new Anthropic({ apiKey }),
+        client: new Anthropic({ apiKey, timeout: 90_000, maxRetries: 2 }),
         caseId: body.caseId,
         matter: body.matter,
         events: Array.isArray(body.events) ? [...body.events] : [],
         calls: 0,
+        conditionsBlock: renderConditions(body.conditionId),
         emit,
       };
 

@@ -6,6 +6,7 @@ import { WINDOW_AGENTS } from "@/lib/agents";
 import { makeCaseId } from "@/lib/case-file";
 import { saveCase, clearCase } from "@/lib/storage";
 import { SCENARIOS } from "@/lib/visitors";
+import { CONDITIONS } from "@/lib/conditions";
 import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
 
 const QUICK_MATTERS = [
@@ -27,6 +28,7 @@ export default function PortalPage() {
   const router = useRouter();
   const [matter, setMatter] = useState("");
   const [lang, setLang] = useState<Lang>("en");
+  const [conditionId, setConditionId] = useState("calm");
 
   useEffect(() => setLang(getLang()), []);
 
@@ -46,6 +48,7 @@ export default function PortalPage() {
       startedAt: Date.now(),
       events: [],
       closed: false,
+      conditionId,
     });
     router.push("/hall");
   }
@@ -60,6 +63,7 @@ export default function PortalPage() {
       startedAt: Date.now(),
       events: [],
       closed: false,
+      conditionId,
     });
     router.push(`/hall?mode=observer&scenario=${scenarioId}`);
   }
@@ -132,7 +136,21 @@ export default function PortalPage() {
         </ul>
 
         <section className="stress-box">
-          <h3>{t(lang, "stressTitle")}</h3>
+          <h3>{t(lang, "conditionsTitle")}</h3>
+          <p>{t(lang, "conditionsDesc")}</p>
+          <div className="row">
+            {CONDITIONS.map((c) => (
+              <button
+                key={c.id}
+                className={"chip" + (conditionId === c.id ? " chip-on" : "")}
+                onClick={() => setConditionId(c.id)}
+                title={c.tagline}
+              >
+                {c.name}
+              </button>
+            ))}
+          </div>
+          <h3 style={{ marginTop: 18 }}>{t(lang, "stressTitle")}</h3>
           <p>{t(lang, "stressDesc")}</p>
           <div className="row">
             {SCENARIOS.map((s) => (

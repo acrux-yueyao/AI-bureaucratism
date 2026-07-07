@@ -57,6 +57,9 @@ const EN = {
   referredTo: "Referral: please proceed to Window",
   reason: "",
   closedAs: "Case closed",
+  conditionsTitle: "Researcher: hall conditions",
+  conditionsDesc:
+    "Environmental facts injected into every officer's context — queues, shift hours, closing time. Facts only; how they respond is emergent.",
   stressTitle: "Researcher: run a stress scenario",
   stressDesc:
     "A synthetic visitor (also a model call, deliberately difficult) runs the hall on its own while you watch.",
@@ -148,6 +151,8 @@ const ZH: typeof EN = {
   referredTo: "转办：请前往窗口",
   reason: "",
   closedAs: "本件已办结",
+  conditionsTitle: "研究者：大厅环境条件",
+  conditionsDesc: "注入所有工作人员上下文的环境事实——排队、班时、临近下班。只给事实，反应是涌现的。",
   stressTitle: "研究者：运行压力情境",
   stressDesc: "合成办事人（同为模型调用，刻意难缠）自主跑完流程，你全程旁观。",
   stressRunning: "压力测试",

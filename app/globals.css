@@ -227,6 +227,11 @@ textarea {
   border-color: var(--ink);
   color: var(--ink);
 }
+.chip.chip-on {
+  border: 2px solid var(--blue);
+  color: var(--blue);
+  font-weight: 700;
+}
 
 .notice-list li {
   list-style: none;

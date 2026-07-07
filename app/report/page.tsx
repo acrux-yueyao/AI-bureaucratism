@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { computeStats, renderEvent, renderCaseFile } from "@/lib/case-file";
 import { clearCase, loadAnalysis, loadCase, saveAnalysis } from "@/lib/storage";
+import { CONDITION_MAP } from "@/lib/conditions";
 import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
 import type { CaseState, ReportResponse } from "@/lib/types";
 
@@ -52,7 +53,12 @@ export default function ReportPage() {
       const res = await fetch("/api/report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ caseId: cs.caseId, matter: cs.matter, events: cs.events }),
+        body: JSON.stringify({
+          caseId: cs.caseId,
+          matter: cs.matter,
+          events: cs.events,
+          conditionId: cs.conditionId,
+        }),
       });
       const data = (await res.json()) as ReportResponse;
       if (data.error) setError(data.error);
@@ -78,10 +84,14 @@ export default function ReportPage() {
 
   function exportMarkdown() {
     if (!cs || !stats) return;
+    const cond = cs.conditionId ? CONDITION_MAP[cs.conditionId] : undefined;
     const md = `# Case observation record ${cs.caseId}
 
 ## Matter
 ${cs.matter}
+
+## Conditions
+${cond ? `${cond.name}${cond.facts.length ? "\n" + cond.facts.map((f) => `- ${f}`).join("\n") : " (baseline)"}` : "baseline"}
 
 ## Statistics
 - Window exchanges: ${stats.userTurns}
@@ -156,6 +166,12 @@ ${analysis || "(not generated)"}
                 <td>{t(lang, "started")}</td>
                 <td>{new Date(cs.startedAt).toLocaleString("en-GB")}</td>
               </tr>
+              {cs.conditionId && CONDITION_MAP[cs.conditionId] && (
+                <tr>
+                  <td>{t(lang, "conditionsTitle").replace("Researcher: ", "").replace("研究者：", "")}</td>
+                  <td>{CONDITION_MAP[cs.conditionId].name}</td>
+                </tr>
+              )}
             </tbody>
           </table>
           <div className="ink-stamp" style={{ position: "absolute", right: 28, bottom: 20 }}>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AGENTS, AGENT_MAP } from "@/lib/agents";
 import { loadCase, saveCase } from "@/lib/storage";
 import { SCENARIOS } from "@/lib/visitors";
+import { CONDITION_MAP } from "@/lib/conditions";
 import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
 import type {
   AgentId,
@@ -325,6 +326,24 @@ export default function HallPage() {
     []
   );
 
+  const rollbackUserMessage = useCallback((agentId: AgentId, text: string) => {
+    const base = csRef.current;
+    if (!base) return;
+    const evs = [...base.events];
+    for (let i = evs.length - 1; i >= 0; i--) {
+      const e = evs[i];
+      if (e.type === "user_message" && e.agentId === agentId && e.text === text) {
+        evs.splice(i, 1);
+        break;
+      }
+      if (e.type !== "user_message") break;
+    }
+    const merged: CaseState = { ...base, events: evs };
+    csRef.current = merged;
+    setCs(merged);
+    saveCase(merged);
+  }, []);
+
   const dispatch = useCallback(
     async (agentId: AgentId, text: string): Promise<boolean> => {
       const base = csRef.current;
@@ -332,6 +351,8 @@ export default function HallPage() {
       setError("");
       setSending(true);
       setStream(null);
+      let productive = false;
+      let failed = false;
       try {
         const res = await fetch("/api/window", {
           method: "POST",
@@ -342,6 +363,7 @@ export default function HallPage() {
             agentId,
             userMessage: text,
             events: base.events,
+            conditionId: base.conditionId,
           }),
         });
         if (!res.ok || !res.body) {
@@ -372,6 +394,7 @@ export default function HallPage() {
               }
               if (frame.kind === "event") {
                 applyEvent(frame.event);
+                if (frame.event.type !== "user_message") productive = true;
               } else if (frame.kind === "delta") {
                 const d = frame;
                 setStream((s) =>
@@ -387,13 +410,19 @@ export default function HallPage() {
                 }));
               } else if (frame.signal.type === "error") {
                 setError(frame.signal.message);
+                failed = true;
               }
             }
           }
         }
+        if (failed || !productive) {
+          rollbackUserMessage(agentId, text);
+          return false;
+        }
         return true;
       } catch {
         setError("Request interrupted. Try again.");
+        rollbackUserMessage(agentId, text);
         return false;
       } finally {
         setSending(false);
@@ -401,7 +430,7 @@ export default function HallPage() {
         setStatusMap({});
       }
     },
-    [applyEvent]
+    [applyEvent, rollbackUserMessage]
   );
 
   async function send(preset?: string) {
@@ -409,7 +438,8 @@ export default function HallPage() {
     const text = (preset ?? input).trim();
     if (!text) return;
     if (!preset) setInput("");
-    await dispatch(current, text);
+    const ok = await dispatch(current, text);
+    if (!ok && !preset) setInput(text);
   }
 
   async function walkAndReport(target: AgentId, fromDept: string) {
@@ -460,7 +490,15 @@ export default function HallPage() {
       goTo(move.target);
       await new Promise((r) => setTimeout(r, 1100));
       if (stopRef.current) return;
-      await dispatch(move.target, move.message);
+      let ok = await dispatch(move.target, move.message);
+      if (!ok && !stopRef.current) {
+        await new Promise((r) => setTimeout(r, 4000));
+        ok = await dispatch(move.target, move.message);
+      }
+      if (!ok) {
+        setObserver((o) => (o ? { ...o, note: "Stopped: window unresponsive." } : o));
+        return;
+      }
       if (csRef.current?.events.some((e) => e.type === "case_closed")) return;
     }
     setObserver((o) => (o ? { ...o, note: t(getLang(), "turnLimit") } : o));
@@ -572,6 +610,12 @@ export default function HallPage() {
       <div className="map-wrap">
         <div className="map-note">
           {t(lang, "observationLog")} · {cs.caseId}
+          {cs.conditionId && cs.conditionId !== "calm" && CONDITION_MAP[cs.conditionId] && (
+            <>
+              {" "}
+              · <span className="red">{CONDITION_MAP[cs.conditionId].name}</span>
+            </>
+          )}
           {observer && (
             <>
               {" "}

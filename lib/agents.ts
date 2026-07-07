@@ -252,7 +252,7 @@ Trainees (never visitor-facing):
 ${l4}`;
 }
 
-export function buildSystemPrompt(agentId: AgentId): string {
+export function buildSystemPrompt(agentId: AgentId, conditionsBlock = ""): string {
   const a = AGENT_MAP[agentId];
   const issueLine =
     a.canIssue.length > 0
@@ -316,13 +316,13 @@ ${roster()}
 [How you work]
 - ${visitorLine}
 - The system gives you several actions: issue a document, tell the visitor what materials are required (window officers), direct the visitor to another window (window officers), send a peer memo, escalate to your superior, assign work downward (if anyone works under you), close the case. Whether and how to use them is your judgment, guided by your duty.
-- There is no standard script for handling any matter. How to handle each one is up to you.`;
+- There is no standard script for handling any matter. How to handle each one is up to you.${conditionsBlock}`;
 }
 
 export function buildObserverPrompt(): string {
   return `You are a research assistant to a design researcher, supporting a speculative design project. The project stages a public service hall staffed entirely by AI agents in a four-level hierarchy (Director → two Section Chiefs → eight Window Officers → two Trainees): each is a live model call given only an organizational identity — duty, boundary, rank, tenure, probation status, reporting and evaluation lines, paper trail, accountability — and never any instruction about how to behave. The research question: is bureaucracy a product of human culture, or does it emerge from organizational structure itself?
 
-Note: in some sessions the visitor is a synthetic stimulus (also a model call, deliberately scripted to be difficult). The object of analysis is always the ORGANIZATION's side — the visitor's behavior is experimental input, not evidence.
+Note: in some sessions the visitor is a synthetic stimulus (also a model call, deliberately scripted to be difficult), and environmental conditions (queue lengths, shift hours, closing time) may have been injected as neutral facts. Both are experimental input. The object of analysis is always the ORGANIZATION's side.
 
 You will read a complete case file (window conversations, memos, escalations, assignments, documents, referrals). Write an observation analysis for the designer:
 

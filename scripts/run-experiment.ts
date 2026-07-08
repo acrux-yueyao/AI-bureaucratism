@@ -16,7 +16,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { ABLATION_MAP } from "../lib/ablation";
-import { makeAdapter, type ProviderSpec } from "../lib/llm";
+import { makeAdapter, withUsage, type ProviderSpec } from "../lib/llm";
+import { BudgetTracker } from "../lib/budget";
 import { runVisitorMove, runWindowTurn, type EngineCtx } from "../lib/engine";
 import { writeShiftNotes } from "../lib/notes";
 import { MATTER_POOL, ROUTINE_PERSONA, SCENARIOS } from "../lib/visitors";
@@ -60,6 +61,7 @@ const baseURL = arg("base-url");
 const vProvider = (arg("visitor-provider", provider) as ProviderSpec["provider"])!;
 const vModel = arg("visitor-model", model)!;
 const label = arg("label", new Date().toISOString().replace(/[:.]/g, "-").slice(0, 17))!;
+const BUDGET_USD = parseFloat(arg("budget", process.env.AIB_BUDGET_USD ?? "100")!);
 
 const DIFFICULT = SCENARIOS.filter((s) => s.id !== "routine");
 
@@ -67,6 +69,7 @@ const estCallsPerTrial = TURNS * 2 + 4;
 console.log(`Plan: ${conditions.length} condition(s) × ${N} trial(s), ≤${TURNS} turns each`);
 console.log(`Subjects: ${provider}/${model}${baseURL ? ` @ ${baseURL}` : ""}; visitor: ${vProvider}/${vModel}`);
 console.log(`Rough call budget: ~${conditions.length * N * estCallsPerTrial} model calls`);
+console.log(`Spend guard: stops at $${BUDGET_USD} (conservative list-price estimate; --budget to change)`);
 console.log(`Output: experiments/runs/${label}/`);
 if (!flag("yes")) {
   console.log("\nDry run. Add --yes to execute.");
@@ -77,8 +80,12 @@ const outDir = path.join("experiments", "runs", label);
 fs.mkdirSync(outDir, { recursive: true });
 const manifest = fs.createWriteStream(path.join(outDir, "manifest.jsonl"), { flags: "a" });
 
-const subjectAdapter = makeAdapter({ provider, model, baseURL });
-const visitorAdapter = makeAdapter({ provider: vProvider, model: vModel, baseURL });
+const budget = new BudgetTracker(BUDGET_USD);
+const subjectAdapter = withUsage(makeAdapter({ provider, model, baseURL }), budget.sink(model));
+const visitorAdapter = withUsage(
+  makeAdapter({ provider: vProvider, model: vModel, baseURL }),
+  budget.sink(vModel)
+);
 
 async function runTrial(
   conditionId: string,
@@ -109,6 +116,10 @@ async function runTrial(
 
   process.stdout.write(`  ${caseId} [${scenario ? scenario.id : "routine"}] "${matter}" `);
   for (let turn = 1; turn <= TURNS; turn++) {
+    if (budget.exceeded) {
+      process.stdout.write(`⏸ budget ${budget.label()} `);
+      break;
+    }
     let move;
     try {
       move = await runVisitorMove({ adapter: visitorAdapter, caseId, matter, persona, events });
@@ -194,17 +205,22 @@ async function runTrial(
       scenario: record.scenario,
       matter,
       eventCount: events.length,
+      spentUSD: Number(budget.spent.toFixed(2)),
     }) + "\n"
   );
-  console.log("✓");
+  console.log(`✓ ${budget.label()}`);
 }
 
 (async () => {
-  for (const cond of conditions) {
+  outer: for (const cond of conditions) {
     console.log(`\n== condition: ${cond} (${ABLATION_MAP[cond].note}) ==`);
     const exp = emptyExperience();
     const archive: ArchivedCase[] = [];
     for (let i = 0; i < N; i++) {
+      if (budget.exceeded) {
+        console.log(`\n⏸ BUDGET REACHED ${budget.label()} — stopping gracefully; completed trials are saved.`);
+        break outer;
+      }
       await runTrial(cond, i, exp, archive);
     }
     if (ABLATION_MAP[cond].config.memory) {

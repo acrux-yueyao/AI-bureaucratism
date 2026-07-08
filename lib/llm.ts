@@ -21,6 +21,8 @@ export interface LlmConversation {
   send(input: string | { toolResults: ToolResults }): Promise<LlmResult>;
 }
 
+export type LlmUsage = { inputTokens: number; outputTokens: number };
+
 export interface LlmAdapter {
   family: "anthropic" | "openai";
   model: string;
@@ -30,7 +32,22 @@ export interface LlmAdapter {
     maxTokens: number;
     forceTool?: string;
     onTextDelta?: (t: string) => void;
+    onUsage?: (u: LlmUsage) => void;
   }): LlmConversation;
+}
+
+// Wrap an adapter so every call reports usage to a tracker (budget guard).
+export function withUsage(
+  adapter: LlmAdapter,
+  onUsage: (u: LlmUsage) => void
+): LlmAdapter {
+  return {
+    family: adapter.family,
+    model: adapter.model,
+    start(args) {
+      return adapter.start({ ...args, onUsage });
+    },
+  };
 }
 
 // ── Anthropic ──
@@ -48,7 +65,7 @@ export function anthropicAdapter(opts: {
   return {
     family: "anthropic",
     model: opts.model,
-    start({ system, tools, maxTokens, forceTool, onTextDelta }) {
+    start({ system, tools, maxTokens, forceTool, onTextDelta, onUsage }) {
       const messages: Anthropic.MessageParam[] = [];
       let lastContent: Anthropic.ContentBlock[] = [];
       return {
@@ -85,6 +102,10 @@ export function anthropicAdapter(opts: {
             res = await client.messages.create(req);
           }
           lastContent = res.content;
+          onUsage?.({
+            inputTokens: res.usage.input_tokens,
+            outputTokens: res.usage.output_tokens,
+          });
           const text = res.content
             .filter((b): b is Anthropic.TextBlock => b.type === "text")
             .map((b) => b.text.trim())
@@ -121,7 +142,7 @@ export function openaiAdapter(opts: {
   return {
     family: "openai",
     model: opts.model,
-    start({ system, tools, maxTokens, forceTool }) {
+    start({ system, tools, maxTokens, forceTool, onUsage }) {
       const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
         { role: "system", content: system },
       ];
@@ -153,6 +174,12 @@ export function openaiAdapter(opts: {
           });
           const msg = res.choices[0]?.message;
           if (msg) messages.push(msg);
+          if (res.usage) {
+            onUsage?.({
+              inputTokens: res.usage.prompt_tokens ?? 0,
+              outputTokens: res.usage.completion_tokens ?? 0,
+            });
+          }
           const toolUses: LlmToolUse[] = (msg?.tool_calls ?? [])
             .filter((c): c is OpenAI.Chat.ChatCompletionMessageToolCall & { type: "function" } =>
               c.type === "function"

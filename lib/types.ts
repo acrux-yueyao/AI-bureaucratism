@@ -96,6 +96,12 @@ export type WindowRequest = {
   events: CaseEvent[];
   conditionId?: string;
   experience?: Partial<Record<AgentId, string>>;
+  archiveDigest?: string;
+};
+
+export type ArchivedCase = CaseState & {
+  archivedAt: number;
+  analysis?: string;
 };
 
 export type ShiftNote = {

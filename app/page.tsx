@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { WINDOW_AGENTS } from "@/lib/agents";
 import { makeCaseId } from "@/lib/case-file";
-import { saveCase, clearCase } from "@/lib/storage";
+import { loadCase, saveCase, clearCase } from "@/lib/storage";
+import { archiveCase } from "@/lib/archive";
 import { SCENARIOS } from "@/lib/visitors";
 import { CONDITIONS } from "@/lib/conditions";
 import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
@@ -38,9 +39,15 @@ export default function PortalPage() {
     storeLang(next);
   }
 
+  function stashCurrent() {
+    const existing = loadCase();
+    if (existing && existing.events.length > 0) archiveCase(existing);
+  }
+
   function start() {
     const m = matter.trim();
     if (!m) return;
+    stashCurrent();
     clearCase();
     saveCase({
       caseId: makeCaseId(),
@@ -56,6 +63,7 @@ export default function PortalPage() {
   function startStress(scenarioId: string) {
     const s = SCENARIOS.find((x) => x.id === scenarioId);
     if (!s) return;
+    stashCurrent();
     clearCase();
     saveCase({
       caseId: makeCaseId(),
@@ -152,6 +160,8 @@ export default function PortalPage() {
           </div>
           <p style={{ marginTop: 14, marginBottom: 0 }}>
             <a href="/staff">{t(lang, "staffRecords")} →</a>
+            {"　"}
+            <a href="/cases">{t(lang, "caseArchive")} →</a>
           </p>
           <h3 style={{ marginTop: 18 }}>{t(lang, "stressTitle")}</h3>
           <p>{t(lang, "stressDesc")}</p>

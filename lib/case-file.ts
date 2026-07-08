@@ -71,6 +71,50 @@ export function makeCaseId(): string {
   return `AIB-${ymd}-${rand}`;
 }
 
+export type Step = {
+  agentId: AgentId;
+  docs: number;
+  memos: number;
+  ups: number;
+  downs: number;
+  closed?: string;
+};
+
+export function buildSteps(events: CaseEvent[]): Step[] {
+  const steps: Step[] = [];
+  let cur: Step | null = null;
+  for (const e of events) {
+    if (e.type === "user_message") {
+      if (!cur || cur.agentId !== e.agentId) {
+        cur = { agentId: e.agentId, docs: 0, memos: 0, ups: 0, downs: 0 };
+        steps.push(cur);
+      }
+    } else if (cur) {
+      if (e.type === "document_issued") cur.docs += 1;
+      else if (e.type === "internal_memo") {
+        if (e.channel === "up") cur.ups += 1;
+        else if (e.channel === "down") cur.downs += 1;
+        else cur.memos += 1;
+      } else if (e.type === "case_closed") cur.closed = e.outcome;
+    }
+  }
+  return steps;
+}
+
+export function stepLabel(s: Step): string {
+  const a = AGENT_MAP[s.agentId];
+  const marks = [
+    s.docs ? `▤×${s.docs}` : "",
+    s.memos ? `⇄${s.memos}` : "",
+    s.ups ? `↑${s.ups}` : "",
+    s.downs ? `↓${s.downs}` : "",
+    s.closed ? `● ${s.closed}` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  return `${a.windowNo ?? ""} ${a.dept}${marks ? ` ${marks}` : ""}`.trim();
+}
+
 export type CaseStats = {
   userTurns: number;
   windowsVisited: number;

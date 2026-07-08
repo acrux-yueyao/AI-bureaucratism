@@ -26,8 +26,13 @@ type Ctx = {
   calls: number;
   conditionsBlock: string;
   experience: Partial<Record<AgentId, string>>;
+  archiveDigest: string;
   emit: (frame: StreamFrame) => void;
 };
+
+// The archive digest goes to Records & Certification only — precedent must
+// travel through the organization's own channels.
+const ARCHIVE_KEEPER: AgentId = "dangan";
 
 function push(ctx: Ctx, e: CaseEvent) {
   ctx.events.push(e);
@@ -72,7 +77,8 @@ async function runAgent(
         system: buildSystemPrompt(
           agentId,
           ctx.conditionsBlock,
-          ctx.experience[agentId] ?? ""
+          (ctx.experience[agentId] ?? "") +
+            (agentId === ARCHIVE_KEEPER ? ctx.archiveDigest : "")
         ),
         tools: toolsFor(agentId, depth > 0),
         messages,
@@ -294,6 +300,7 @@ export async function POST(req: Request) {
         calls: 0,
         conditionsBlock: renderConditions(body.conditionId),
         experience: body.experience ?? {},
+        archiveDigest: typeof body.archiveDigest === "string" ? body.archiveDigest : "",
         emit,
       };
 

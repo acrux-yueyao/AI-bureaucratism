@@ -7,6 +7,7 @@ import { loadCase, saveCase } from "@/lib/storage";
 import { SCENARIOS } from "@/lib/visitors";
 import { CONDITION_MAP } from "@/lib/conditions";
 import { digestsForAll, loadExperience } from "@/lib/experience";
+import { loadArchive, renderArchiveDigest } from "@/lib/archive";
 import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
 import type {
   AgentId,
@@ -388,6 +389,7 @@ export default function HallPage() {
             events: base.events,
             conditionId: base.conditionId,
             experience: digestsForAll(loadExperience()),
+            archiveDigest: renderArchiveDigest(loadArchive()),
           }),
         });
         if (!res.ok || !res.body) {

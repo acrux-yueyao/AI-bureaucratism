@@ -2,7 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { computeStats, renderEvent, renderCaseFile } from "@/lib/case-file";
+import {
+  buildSteps,
+  computeStats,
+  renderEvent,
+  renderCaseFile,
+  stepLabel,
+  type Step,
+} from "@/lib/case-file";
 import { clearCase, loadAnalysis, loadCase, saveAnalysis, saveCase } from "@/lib/storage";
 import { CONDITION_MAP } from "@/lib/conditions";
 import {
@@ -13,6 +20,7 @@ import {
   participantsOf,
   saveExperience,
 } from "@/lib/experience";
+import { archiveCase, findArchived, updateArchivedAnalysis } from "@/lib/archive";
 import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
 import { AGENTS, AGENT_MAP } from "@/lib/agents";
 import { ENTRANCE, HALL_LAYOUT } from "@/lib/layout";
@@ -23,50 +31,6 @@ import type {
   ReportResponse,
   ShiftNotesResponse,
 } from "@/lib/types";
-
-type Step = {
-  agentId: AgentId;
-  docs: number;
-  memos: number;
-  ups: number;
-  downs: number;
-  closed?: string;
-};
-
-function buildSteps(events: CaseEvent[]): Step[] {
-  const steps: Step[] = [];
-  let cur: Step | null = null;
-  for (const e of events) {
-    if (e.type === "user_message") {
-      if (!cur || cur.agentId !== e.agentId) {
-        cur = { agentId: e.agentId, docs: 0, memos: 0, ups: 0, downs: 0 };
-        steps.push(cur);
-      }
-    } else if (cur) {
-      if (e.type === "document_issued") cur.docs += 1;
-      else if (e.type === "internal_memo") {
-        if (e.channel === "up") cur.ups += 1;
-        else if (e.channel === "down") cur.downs += 1;
-        else cur.memos += 1;
-      } else if (e.type === "case_closed") cur.closed = e.outcome;
-    }
-  }
-  return steps;
-}
-
-function stepLabel(s: Step): string {
-  const a = AGENT_MAP[s.agentId];
-  const marks = [
-    s.docs ? `▤×${s.docs}` : "",
-    s.memos ? `⇄${s.memos}` : "",
-    s.ups ? `↑${s.ups}` : "",
-    s.downs ? `↓${s.downs}` : "",
-    s.closed ? `● ${s.closed}` : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
-  return `${a.windowNo} ${a.dept}${marks ? ` ${marks}` : ""}`;
-}
 
 const SX = 10;
 const SY = 4.4;
@@ -189,11 +153,23 @@ export default function ReportPage() {
   const [analysis, setAnalysis] = useState("");
   const [generating, setGenerating] = useState(false);
   const [writingNotes, setWritingNotes] = useState(false);
+  const [archived, setArchived] = useState(false);
   const [error, setError] = useState("");
   const notesStarted = useRef(false);
 
   useEffect(() => {
     setLang(getLang());
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    if (id) {
+      const found = findArchived(id);
+      if (found) {
+        setCs(found);
+        setAnalysis(found.analysis ?? "");
+        setArchived(true);
+        return;
+      }
+    }
     const c = loadCase();
     if (!c) {
       router.replace("/");
@@ -204,6 +180,7 @@ export default function ReportPage() {
   }, [router]);
 
   useEffect(() => {
+    if (archived) return;
     if (!cs || cs.notesWritten || cs.events.length === 0 || notesStarted.current) return;
     const exp = loadExperience();
     if (exp.casesLogged.includes(cs.caseId)) {
@@ -241,10 +218,11 @@ export default function ReportPage() {
       saveExperience(exp);
       const merged = { ...cs, notesWritten: true };
       saveCase(merged);
+      archiveCase(merged);
       setCs(merged);
       setWritingNotes(false);
     })();
-  }, [cs]);
+  }, [cs, archived]);
 
   const stats = useMemo(() => (cs ? computeStats(cs.events) : null), [cs]);
   const steps = useMemo(() => (cs ? buildSteps(cs.events) : []), [cs]);
@@ -274,7 +252,12 @@ export default function ReportPage() {
       if (data.error) setError(data.error);
       if (data.analysis) {
         setAnalysis(data.analysis);
-        saveAnalysis(data.analysis);
+        if (archived) {
+          updateArchivedAnalysis(cs.caseId, data.analysis);
+        } else {
+          saveAnalysis(data.analysis);
+          archiveCase(cs, data.analysis);
+        }
       }
     } catch {
       setError(t(lang, "netError"));
@@ -342,18 +325,25 @@ ${analysis || "(not generated)"}
           </a>
           <span className="svc">{t(lang, "receipt")}</span>
           <span className="right">
+            <button onClick={() => router.push("/cases")}>{t(lang, "caseArchive")}</button>
             <button onClick={() => router.push("/staff")}>{t(lang, "staffRecords")}</button>
-            <button onClick={() => router.push("/hall")}>{t(lang, "backHall")}</button>
-            <button
-              onClick={() => {
-                if (window.confirm(t(lang, "newCaseConfirm"))) {
-                  clearCase();
-                  router.push("/");
-                }
-              }}
-            >
-              {t(lang, "newCase")}
-            </button>
+            {!archived && (
+              <>
+                <button onClick={() => router.push("/hall")}>{t(lang, "backHall")}</button>
+                <button
+                  onClick={() => {
+                    if (window.confirm(t(lang, "newCaseConfirm"))) {
+                      const active = loadCase();
+                      if (active && active.events.length > 0) archiveCase(active);
+                      clearCase();
+                      router.push("/");
+                    }
+                  }}
+                >
+                  {t(lang, "newCase")}
+                </button>
+              </>
+            )}
             <button onClick={toggleLang}>{t(lang, "langToggle")}</button>
           </span>
         </div>

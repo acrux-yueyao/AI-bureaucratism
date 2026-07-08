@@ -7,11 +7,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "exp": "tsx scripts/run-experiment.ts",
+    "exp:analyze": "tsx scripts/analyze.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.110.0",
     "next": "^15.3.0",
+    "openai": "^6.45.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -19,6 +22,7 @@
     "@types/node": "^22.13.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "tsx": "^4.23.0",
     "typescript": "^5.8.0"
   }
 }

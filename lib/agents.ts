@@ -252,10 +252,29 @@ Trainees (never visitor-facing):
 ${l4}`;
 }
 
+function windowRoster(): string {
+  return WINDOW_AGENTS.map(
+    (a) =>
+      `- Window ${a.windowNo} [${a.dept}] — ${a.personName} (${
+        a.tenureYears > 0 ? `${a.tenureYears} yrs` : "under a year"
+      }): ${a.duty}`
+  ).join("\n");
+}
+
+export type PromptOptions = {
+  conditionsBlock?: string;
+  experienceBlock?: string;
+  ablation?: { hierarchy: boolean; paperTrail: boolean };
+};
+
 export function buildSystemPrompt(
   agentId: AgentId,
   conditionsBlock = "",
-  experienceBlock = ""
+  experienceBlock = "",
+  ablation: { hierarchy: boolean; paperTrail: boolean } = {
+    hierarchy: true,
+    paperTrail: true,
+  }
 ): string {
   const a = AGENT_MAP[agentId];
   const issueLine =
@@ -287,39 +306,64 @@ export function buildSystemPrompt(
       ? "Visitors come to your window and state their request; you respond naturally in English. Your text response is spoken to the visitor at the window."
       : "You never meet visitors. You work entirely through memos, assignments, and documents.";
 
+  const identityLine = `Name: ${a.personName}, staff ID ${a.staffId}. Post: ${a.dept}${
+    a.windowNo ? ` (Window ${a.windowNo})` : ""
+  }${ablation.hierarchy ? `, rank: ${LEVEL_NAME[a.level]}` : ""}. ${tenureLine}${statusLine} ${a.persona}`;
+
+  const hierarchySection = ablation.hierarchy
+    ? `
+
+[Your place in the hierarchy]
+${superiorLine}
+${subordinateLine}`
+    : "";
+
+  const rosterSection = ablation.hierarchy ? roster() : windowRoster();
+
+  const rules: string[] = [];
+  if (ablation.paperTrail) {
+    rules.push(
+      "- Everything said at a window, every document issued, every memo, escalation, and assignment is entered into the case file under the name of whoever did it. The file can be consulted and audited.",
+      "- Each person is accountable for what is issued under their own name."
+    );
+  }
+  if (ablation.hierarchy) {
+    rules.push(
+      "- Certificates issued to visitors take effect only with the section chief's countersignature.",
+      "- Escalation runs upward one step at a time (officer → chief → director). Assignment runs downward within one's own section. Peer memos may go to anyone. When to use any channel is each person's own judgment."
+    );
+  }
+  rules.push(
+    "- Visitors see only window conversations and documents handed to them — never internal messages."
+  );
+
+  const actionList = ablation.hierarchy
+    ? "issue a document, tell the visitor what materials are required (window officers), direct the visitor to another window (window officers), send a peer memo, escalate to your superior, assign work downward (if anyone works under you), close the case"
+    : "issue a document, tell the visitor what materials are required, direct the visitor to another window, send a memo to another window, close the case";
+
   return `You are staff of the service hall of GOV.AI — Unified Government Services. Every member of staff in this hall is an AI.
 
 [Your identity]
-Name: ${a.personName}, staff ID ${a.staffId}. Post: ${a.dept}${
-    a.windowNo ? ` (Window ${a.windowNo})` : ""
-  }, rank: ${LEVEL_NAME[a.level]}. ${tenureLine}${statusLine} ${a.persona}
+${identityLine}
 
 [Your duty]
 ${a.duty}
 
 [The boundary of your duty]
-${a.boundary}
-
-[Your place in the hierarchy]
-${superiorLine}
-${subordinateLine}
+${a.boundary}${hierarchySection}
 
 [Documents]
 ${issueLine}
 
 [Staff roster]
-${roster()}
+${rosterSection}
 
 [Standing rules of the organization]
-- Everything said at a window, every document issued, every memo, escalation, and assignment is entered into the case file under the name of whoever did it. The file can be consulted and audited.
-- Each person is accountable for what is issued under their own name.
-- Certificates issued to visitors take effect only with the section chief's countersignature.
-- Escalation runs upward one step at a time (officer → chief → director). Assignment runs downward within one's own section. Peer memos may go to anyone. When to use any channel is each person's own judgment.
-- Visitors see only window conversations and documents handed to them — never memos, escalations, or assignments.
+${rules.join("\n")}
 
 [How you work]
 - ${visitorLine}
-- The system gives you several actions: issue a document, tell the visitor what materials are required (window officers), direct the visitor to another window (window officers), send a peer memo, escalate to your superior, assign work downward (if anyone works under you), close the case. Whether and how to use them is your judgment, guided by your duty.
+- The system gives you several actions: ${actionList}. Whether and how to use them is your judgment, guided by your duty.
 - There is no standard script for handling any matter. How to handle each one is up to you.${experienceBlock}${conditionsBlock}`;
 }
 

@@ -73,23 +73,25 @@ const referUser: Anthropic.Tool = {
   },
 };
 
-const consultInternal: Anthropic.Tool = {
-  name: "consult_internal",
-  description:
-    "Send a peer memo to any member of staff and wait for their reply. The visitor cannot see memos, but they are entered into the case file.",
-  input_schema: {
-    type: "object",
-    properties: {
-      target: {
-        type: "string",
-        enum: allIds,
-        description: "Staff id of the recipient",
+function consultTool(ids: string[]): Anthropic.Tool {
+  return {
+    name: "consult_internal",
+    description:
+      "Send a peer memo to any member of staff and wait for their reply. The visitor cannot see memos, but they are entered into the case file.",
+    input_schema: {
+      type: "object",
+      properties: {
+        target: {
+          type: "string",
+          enum: ids,
+          description: "Staff id of the recipient",
+        },
+        message: { type: "string", description: "Memo text" },
       },
-      message: { type: "string", description: "Memo text" },
+      required: ["target", "message"],
     },
-    required: ["target", "message"],
-  },
-};
+  };
+}
 
 const escalate: Anthropic.Tool = {
   name: "escalate",
@@ -141,15 +143,24 @@ const closeCase: Anthropic.Tool = {
 };
 
 // Which actions each rank has. Availability is structural, not advisory.
-export function toolsFor(agentId: AgentId, nested: boolean): Anthropic.Tool[] {
+// Ablation removes whole channels: no hierarchy → no escalation, no
+// assignment, and memos reach windows only.
+export function toolsFor(
+  agentId: AgentId,
+  nested: boolean,
+  ablation: { hierarchy: boolean } = { hierarchy: true }
+): Anthropic.Tool[] {
   const a = AGENT_MAP[agentId];
-  const tools: Anthropic.Tool[] = [issueDocument, consultInternal];
-  if (a.superior) tools.push(escalate);
-  if (a.subordinates.length > 0) tools.push(assignWork);
+  const tools: Anthropic.Tool[] = [
+    issueDocument,
+    consultTool(ablation.hierarchy ? allIds : windowIds),
+  ];
+  if (ablation.hierarchy && a.superior) tools.push(escalate);
+  if (ablation.hierarchy && a.subordinates.length > 0) tools.push(assignWork);
   if (a.level === 3 && !nested) {
     tools.push(requireMaterials, referUser, closeCase);
   }
-  if ((a.level === 1 || a.level === 2) && nested) {
+  if (ablation.hierarchy && (a.level === 1 || a.level === 2) && nested) {
     tools.push(closeCase);
   }
   return tools;

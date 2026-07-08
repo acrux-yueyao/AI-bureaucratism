@@ -37,6 +37,24 @@
 - 无数据库：办件状态在 localStorage；API 路由无状态
 - `.env.local` 里的 `ANTHROPIC_API_KEY`（绝不入库）
 
+## 实验基建（2026-07-08 起，让主张立得住的四件套）
+
+1. **消融开关**（lib/ablation.ts）：五条件 full / flat（无层级）/ no_trail（无问责）/
+   no_memory（失忆）/ bare（全关=模仿检验）。开关贯穿 buildSystemPrompt 与 toolsFor
+   （层级关→无请示/派工工具、函件只达窗口、无会签规则；留痕关→删问责条款；
+   记忆关→无台账/笔记/档案注入）。网页始终跑 full；实验脚本任选。
+2. **预注册编码**：CODEBOOK.md（先 commit 后跑=预注册；H1 结构效应/H2 模仿检验/
+   H3 记忆效应；机械码 9 项 + 文本码 T1-T5 定义与排除条款）。
+3. **跨模型**：lib/llm.ts 适配器（anthropic / openai 兼容含 Ollama、vLLM）；
+   lib/engine.ts 统一级联引擎，网页 API 与批量实验共用同一实现。
+4. **独立编码员**：scripts/analyze.ts --code 强制编码员与被试异家族（--allow-same-family
+   可越过但降级独立性）；双次编码一致性（percent agreement + kappa，t2 加权）；
+   --blind-sheet 导出条件盲化人工编码表（key 分离存放）。
+
+跑批：`npm run exp -- --conditions full,bare --n 15 --yes`（无 --yes 为 dry-run 报成本）；
+分析：`npm run exp:analyze -- --run <label> [--code --coder-provider openai --coder-model …]`。
+原始数据在 experiments/runs/（gitignore，summary 可另行提交）。
+
 ## 组织结构（2026-07-07 起为四层级）
 
 ```text

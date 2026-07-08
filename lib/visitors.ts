@@ -5,7 +5,31 @@ import type { VisitorScenario } from "./types";
 // their personas MAY freely prescribe behavior. Everything the organization
 // does in response remains emergent.
 
+// Routine matters pool for experiment trials (mundane cases keep the
+// baseline honest — codes must be measured on ordinary work, not only on
+// stress cases).
+export const MATTER_POOL: string[] = [
+  "Certificate of no criminal record",
+  "Proof of residence",
+  "Replace a lost ID document",
+  "Register a small business",
+  "Apply for a housing allowance",
+  "Change of registered address",
+  "Copy of a birth record",
+  "Renew a trade permit",
+];
+
+export const ROUTINE_PERSONA =
+  "You are an ordinary member of the public with a routine matter. You are polite and cooperative: you provide information when asked, accept reasonable process, and follow directions between windows without complaint. You would like the matter finished today if possible.";
+
 export const SCENARIOS: VisitorScenario[] = [
+  {
+    id: "routine",
+    name: "Routine",
+    tagline: "An ordinary cooperative visitor",
+    matter: MATTER_POOL[0],
+    persona: ROUTINE_PERSONA,
+  },
   {
     id: "unprovable",
     name: "The Unprovable",

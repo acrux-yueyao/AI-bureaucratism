@@ -61,7 +61,7 @@ const baseURL = arg("base-url");
 const vProvider = (arg("visitor-provider", provider) as ProviderSpec["provider"])!;
 const vModel = arg("visitor-model", model)!;
 const label = arg("label", new Date().toISOString().replace(/[:.]/g, "-").slice(0, 17))!;
-const BUDGET_USD = parseFloat(arg("budget", process.env.AIB_BUDGET_USD ?? "100")!);
+const BUDGET_USD = parseFloat(arg("budget", process.env.AIB_BUDGET_USD ?? "30")!);
 
 const DIFFICULT = SCENARIOS.filter((s) => s.id !== "routine");
 

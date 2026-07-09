@@ -3,309 +3,78 @@
 import type { AgentId, AgentUiState } from "@/lib/types";
 import { AGENTS, AGENT_MAP } from "@/lib/agents";
 
-// The hall as an isometric miniature bureau. One light source (upper left),
-// soft shadows, desks with three faces, props that carry each officer's
-// persona. ViewBox is 1200×660; overlay elements (visitor, flying memos)
-// position themselves as percentages of that box.
+// The hall as a flat, top-down miniature transit map (Mini Motorways
+// language): departments are rounded color-blocked buildings, the visitor's
+// walked segments pave themselves into white roads, memos travel as little
+// paper "cars", and waiting visitors stack up as demand pins. Terrain is a
+// pair of soft pastel fields on warm paper.
 
 export const VIEW_W = 1200;
 export const VIEW_H = 660;
 
-// Anchor = west corner of the desk's top face.
-type Station = {
-  x: number;
-  y: number;
-  small?: boolean;
-  mezz?: boolean;
+type Spot = { x: number; y: number };
+
+// Building centers.
+export const ISO_STATIONS: Record<AgentId, Spot & { r?: number; small?: boolean }> = {
+  director: { x: 600, y: 84, r: 36 },
+  chief_front: { x: 372, y: 100, r: 27 },
+  chief_back: { x: 828, y: 100, r: 27 },
+  trainee_front: { x: 866, y: 258, small: true },
+  trainee_back: { x: 78, y: 438, small: true },
+  daoban: { x: 210, y: 272 },
+  shouli: { x: 470, y: 272 },
+  cailiao: { x: 730, y: 272 },
+  zige: { x: 990, y: 272 },
+  dangan: { x: 210, y: 452 },
+  quanxian: { x: 470, y: 452 },
+  fengkong: { x: 730, y: 452 },
+  fuhe: { x: 990, y: 452 },
 };
 
-export const ISO_STATIONS: Record<AgentId, Station> = {
-  director: { x: 545, y: 84, mezz: true },
-  chief_front: { x: 265, y: 108, mezz: true },
-  chief_back: { x: 830, y: 108, mezz: true },
-  daoban: { x: 105, y: 268 },
-  shouli: { x: 375, y: 268 },
-  cailiao: { x: 645, y: 268 },
-  zige: { x: 915, y: 268 },
-  trainee_front: { x: 795, y: 210, small: true },
-  trainee_back: { x: 40, y: 462, small: true },
-  dangan: { x: 105, y: 418 },
-  quanxian: { x: 375, y: 418 },
-  fengkong: { x: 645, y: 418 },
-  fuhe: { x: 915, y: 418 },
+export const ISO_ENTRANCE: Spot = { x: 600, y: 594 };
+
+export function stationCenter(id: AgentId): Spot {
+  const s = ISO_STATIONS[id];
+  return { x: s.x, y: s.y };
+}
+
+export function visitorSpot(id: AgentId | null): Spot {
+  if (!id) return { x: ISO_ENTRANCE.x + 46, y: ISO_ENTRANCE.y - 8 };
+  const s = ISO_STATIONS[id];
+  return { x: s.x + (s.small ? 34 : 54), y: s.y + (s.small ? 26 : 44) };
+}
+
+// ── palette (curated, Mini-Motorways-ish) ──
+const BUILDING: Record<AgentId, string> = {
+  daoban: "#f2a541",
+  shouli: "#e0524d",
+  cailiao: "#d96aa8",
+  zige: "#9a6dd7",
+  dangan: "#3aa88f",
+  quanxian: "#4d7fd0",
+  fengkong: "#7ab648",
+  fuhe: "#5b6472",
+  director: "#37414f",
+  chief_front: "#c96f5e",
+  chief_back: "#7f93b5",
+  trainee_front: "#e8c05a",
+  trainee_back: "#e8c05a",
 };
 
-export const ISO_ENTRANCE = { x: 585, y: 596 };
-
-// Where the visitor stands when at a window, and where flights aim.
-export function stationCenter(id: AgentId): { x: number; y: number } {
-  const s = ISO_STATIONS[id];
-  const w = s.small ? 0.7 : 1;
-  return { x: s.x + 62 * w, y: s.y + 34 * w };
-}
-
-export function visitorSpot(id: AgentId | null): { x: number; y: number } {
-  if (!id) return ISO_ENTRANCE;
-  const s = ISO_STATIONS[id];
-  const w = s.small ? 0.7 : 1;
-  return { x: s.x + 34 * w, y: s.y + 96 * w };
-}
-
-// ── palette ──
 const P = {
-  floor: "#e9e2d2",
-  floorLine: "#ddd4c0",
-  mezzTop: "#dfd7c3",
-  mezzFace: "#c9bfa5",
-  deskTop: "#dcccab",
-  deskRight: "#b9a685",
-  deskLeft: "#cbb997",
-  shadow: "rgba(60,54,43,0.13)",
-  skin: "#f0d7bd",
-  officer: "#5f8d8a",
-  officerDark: "#54807d",
-  chief: "#b56a54",
-  trainee: "#d9a648",
-  director: "#3a4350",
-  visitorGray: "#8b93a3",
-  ink: "#43403a",
-  faint: "#8a8378",
-  plate: "#fffdf6",
-  plateEdge: "#cfc5ac",
-  clay: "#b56a54",
-  sage: "#7fae5c",
-  slate: "#6b7a92",
-  glow: "#ffd98a",
-};
-
-const RANK_COLOR: Record<number, string> = {
-  1: P.director,
-  2: P.chief,
-  3: P.officer,
-  4: P.trainee,
-};
-
-// slope-consistent parallelogram helpers (rise = run/2)
-function para(x: number, y: number, w: number, d: number): string {
-  // top face: west corner → north-east along U(w, w/2)… we use a flat
-  // "showroom" desk: front edge horizontal-ish for readability
-  return `${x},${y} ${x + w * 0.72}, ${y - w * 0.36} ${x + w * 0.72 + d * 0.6},${
-    y - w * 0.36 + d * 0.3
-  } ${x + d * 0.6},${y + d * 0.3}`;
-}
-
-function Desk({
-  x,
-  y,
-  scale = 1,
-  busy,
-}: {
-  x: number;
-  y: number;
-  scale?: number;
-  busy?: boolean;
-}) {
-  const w = 120 * scale;
-  const d = 64 * scale;
-  const h = 30 * scale;
-  const topY = y;
-  // corners of top face
-  const A = { x, y: topY };
-  const B = { x: x + w * 0.72, y: topY - w * 0.36 };
-  const C = { x: B.x + d * 0.6, y: B.y + d * 0.3 };
-  const D = { x: x + d * 0.6, y: topY + d * 0.3 };
-  return (
-    <g>
-      <ellipse
-        cx={x + w * 0.42}
-        cy={y + d * 0.3 + h * 0.7}
-        rx={w * 0.62}
-        ry={h * 0.55}
-        fill={P.shadow}
-      />
-      {busy && (
-        <ellipse
-          cx={(A.x + C.x) / 2}
-          cy={(A.y + C.y) / 2}
-          rx={w * 0.52}
-          ry={w * 0.26}
-          fill="url(#lampGlow)"
-        />
-      )}
-      <polygon points={`${B.x},${B.y} ${C.x},${C.y} ${C.x},${C.y + h} ${B.x},${B.y + h}`} fill={P.deskRight} />
-      <polygon points={`${D.x},${D.y} ${C.x},${C.y} ${C.x},${C.y + h} ${D.x},${D.y + h}`} fill={P.deskLeft} />
-      <polygon points={`${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y} ${D.x},${D.y}`} fill={P.deskTop} />
-      {/* papers on the desk */}
-      <polygon
-        points={para(x + w * 0.18, y - w * 0.02, 16 * scale, 12 * scale)}
-        fill={P.plate}
-        stroke={P.plateEdge}
-        strokeWidth="0.7"
-      />
-    </g>
-  );
-}
-
-function Person({
-  x,
-  y,
-  color,
-  scale = 1,
-  seated,
-}: {
-  x: number;
-  y: number;
-  color: string;
-  scale?: number;
-  seated?: boolean;
-}) {
-  const s = scale;
-  return (
-    <g>
-      {!seated && <ellipse cx={x} cy={y + 20 * s} rx={11 * s} ry={4.5 * s} fill={P.shadow} />}
-      <rect
-        x={x - 6 * s}
-        y={y - (seated ? 8 : 4) * s}
-        width={12 * s}
-        height={(seated ? 15 : 22) * s}
-        rx={6 * s}
-        fill={color}
-      />
-      <circle cx={x} cy={y - (seated ? 14 : 10) * s} r={5.6 * s} fill={P.skin} />
-    </g>
-  );
-}
-
-function Plant({ x, y, s = 1 }: { x: number; y: number; s?: number }) {
-  return (
-    <g>
-      <rect x={x - 4 * s} y={y} width={8 * s} height={7 * s} rx={1.5} fill={P.clay} />
-      <path
-        d={`M${x} ${y} q${-6 * s} ${-9 * s} ${-1 * s} ${-13 * s} M${x} ${y} q${5 * s} ${-8 * s} ${8 * s} ${-4 * s} M${x} ${y} q${1 * s} ${-11 * s} ${4 * s} ${-13 * s}`}
-        stroke={P.sage}
-        strokeWidth={2 * s}
-        fill="none"
-        strokeLinecap="round"
-      />
-    </g>
-  );
-}
-
-function Shelf({ x, y }: { x: number; y: number }) {
-  return (
-    <g>
-      <polygon points={`${x},${y} ${x + 34},${y - 17} ${x + 34},${y + 34} ${x},${y + 51}`} fill="#c8bfae" />
-      <polygon points={`${x + 34},${y - 17} ${x + 46},${y - 11} ${x + 46},${y + 40} ${x + 34},${y + 34}`} fill="#a89a82" />
-      <polygon points={`${x},${y} ${x + 34},${y - 17} ${x + 46},${y - 11} ${x + 12},${y + 6}`} fill="#ded6c6" />
-      <path d={`M${x + 3} ${y + 13} l31 -15 M${x + 3} ${y + 26} l31 -15 M${x + 3} ${y + 39} l31 -15`} stroke="#a89a82" strokeWidth="2.5" />
-    </g>
-  );
-}
-
-function Sign({ x, y, s = 1 }: { x: number; y: number; s?: number }) {
-  return (
-    <g>
-      <path d={`M${x} ${y} v${-26 * s}`} stroke="#6c6252" strokeWidth={2.5 * s} />
-      <polygon
-        points={`${x - 2 * s},${y - 26 * s} ${x + 20 * s},${y - 33 * s} ${x + 24 * s},${y - 28 * s} ${x + 2 * s},${y - 21 * s}`}
-        fill={P.clay}
-      />
-    </g>
-  );
-}
-
-function Trays({ x, y }: { x: number; y: number }) {
-  return (
-    <g stroke={P.plateEdge} strokeWidth="0.8">
-      <polygon points={para(x, y, 20, 14)} fill={P.plate} />
-      <polygon points={para(x, y - 6, 20, 14)} fill={P.plate} />
-      <polygon points={para(x, y - 12, 20, 14)} fill={P.plate} />
-    </g>
-  );
-}
-
-function Cups({ x, y }: { x: number; y: number }) {
-  return (
-    <g>
-      <rect x={x} y={y - 8} width={6} height={8} rx={1.5} fill={P.plate} stroke={P.plateEdge} strokeWidth="0.7" />
-      <rect x={x + 9} y={y - 7} width={5.5} height={7} rx={1.5} fill={P.plate} stroke={P.plateEdge} strokeWidth="0.7" />
-      <path d={`M${x + 2} ${y - 11} q1 -3 2 0 M${x + 11} ${y - 10} q1 -2.5 2 0`} stroke={P.faint} strokeWidth="0.9" fill="none" />
-    </g>
-  );
-}
-
-function Box({ x, y }: { x: number; y: number }) {
-  return (
-    <g>
-      <polygon points={`${x},${y} ${x + 16},${y - 8} ${x + 28},${y - 2} ${x + 12},${y + 6}`} fill="#d9c9a8" />
-      <polygon points={`${x},${y} ${x + 12},${y + 6} ${x + 12},${y + 18} ${x},${y + 12}`} fill="#bfae8c" />
-      <polygon points={`${x + 12},${y + 6} ${x + 28},${y - 2} ${x + 28},${y + 10} ${x + 12},${y + 18}`} fill="#cbb997" />
-      <path d={`M${x + 6} ${y + 3} l16 -8`} stroke="#a6957a" strokeWidth="1.5" />
-    </g>
-  );
-}
-
-function Rower({ x, y }: { x: number; y: number }) {
-  return (
-    <g stroke="#6c6252" strokeWidth="2" fill="none" strokeLinecap="round">
-      <path d={`M${x} ${y} l30 -12`} />
-      <path d={`M${x + 6} ${y - 2.5} v-7 M${x + 22} ${y - 9} v-6`} />
-      <circle cx={x + 2} cy={y + 1} r={2.6} fill="#6c6252" />
-    </g>
-  );
-}
-
-function Flag({ x, y }: { x: number; y: number }) {
-  return (
-    <g>
-      <path d={`M${x} ${y} v-40`} stroke="#6c6252" strokeWidth="2.5" />
-      <path d={`M${x} ${y - 40} q10 3 20 0 v12 q-10 3 -20 0 z`} fill={P.slate} />
-    </g>
-  );
-}
-
-function Stanchions({ x, y }: { x: number; y: number }) {
-  return (
-    <g>
-      <path d={`M${x} ${y} v-11 M${x + 34} ${y + 13} v-11`} stroke={P.faint} strokeWidth="2.2" />
-      <circle cx={x} cy={y - 11.5} r={2.4} fill={P.faint} />
-      <circle cx={x + 34} cy={y + 1.5} r={2.4} fill={P.faint} />
-      <path d={`M${x + 2} ${y - 9} Q${x + 18} ${y} ${x + 32} ${y + 3}`} stroke={P.clay} strokeWidth="1.7" fill="none" />
-    </g>
-  );
-}
-
-const PROPS: Partial<Record<AgentId, (s: Station) => React.ReactNode>> = {
-  daoban: (s) => <Sign x={s.x + 108} y={s.y + 34} />,
-  shouli: (s) => <Plant x={s.x + 96} y={s.y - 26} />,
-  cailiao: (s) => (
-    <g stroke={P.plateEdge} strokeWidth="0.7">
-      <polygon points={para(s.x + 58, s.y - 22, 18, 13)} fill={P.plate} />
-      <polygon points={para(s.x + 58, s.y - 26, 18, 13)} fill={P.plate} />
-      <polygon points={para(s.x + 58, s.y - 30, 18, 13)} fill={P.plate} />
-    </g>
-  ),
-  zige: (s) => <Box x={s.x + 118} y={s.y + 52} />,
-  dangan: (s) => <Shelf x={s.x - 42} y={s.y - 4} />,
-  quanxian: (s) => <Trays x={s.x + 60} y={s.y - 22} />,
-  fengkong: (s) => <Cups x={s.x + 62} y={s.y - 22} />,
-  fuhe: (s) => <Plant x={s.x + 122} y={s.y + 46} s={0.85} />,
-  director: (s) => (
-    <g>
-      <Flag x={s.x + 108} y={s.y + 22} />
-      <Rower x={s.x - 52} y={s.y + 40} />
-    </g>
-  ),
-  chief_front: (s) => <Cups x={s.x + 60} y={s.y - 18} />,
-  chief_back: (s) => (
-    <polygon points={para(s.x + 58, s.y - 20, 22, 8)} fill={P.plate} stroke={P.plateEdge} strokeWidth="0.8" />
-  ),
-  trainee_front: (s) => (
-    <polygon points={para(s.x + 40, s.y - 14, 14, 10)} fill={P.plate} stroke={P.plateEdge} strokeWidth="0.7" />
-  ),
-  trainee_back: (s) => (
-    <polygon points={para(s.x + 40, s.y - 14, 14, 10)} fill={P.plate} stroke={P.plateEdge} strokeWidth="0.7" />
-  ),
+  paper: "#f6f3ee",
+  shadow: "rgba(74, 68, 58, 0.16)",
+  roadOutline: "#dcd6c8",
+  road: "#ffffff",
+  ink: "#3f4550",
+  faint: "#9a958a",
+  blush: "#f5d7db",
+  aqua: "#c4e7e2",
+  slateZone: "#e0e4ec",
+  peer: "#8fb96a",
+  up: "#e0524d",
+  down: "#7f93b5",
+  pin: "#37414f",
 };
 
 const STATE_TEXT: Record<AgentUiState, string> = {
@@ -314,6 +83,11 @@ const STATE_TEXT: Record<AgentUiState, string> = {
   replying: "drafting",
   idle: "",
 };
+
+function elbow(a: Spot, b: Spot): string {
+  const midY = (a.y + b.y) / 2;
+  return `M ${a.x} ${a.y} L ${a.x} ${midY} L ${b.x} ${midY} L ${b.x} ${b.y}`;
+}
 
 export type IsoSceneProps = {
   lang: "en" | "zh";
@@ -328,7 +102,7 @@ export type IsoSceneProps = {
   onSelect: (id: AgentId) => void;
 };
 
-function pointOf(p: AgentId | "entrance") {
+function pointOf(p: AgentId | "entrance"): Spot {
   return p === "entrance" ? ISO_ENTRANCE : stationCenter(p);
 }
 
@@ -343,169 +117,288 @@ export default function IsoScene({
   memoRoutes,
   onSelect,
 }: IsoSceneProps) {
-  const channelColor = { peer: P.sage, up: P.clay, down: P.slate };
+  const channelColor = { peer: P.peer, up: P.up, down: P.down };
   return (
     <svg viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} style={{ width: "100%", display: "block" }}>
       <defs>
-        <radialGradient id="lampGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor={P.glow} stopOpacity="0.5" />
-          <stop offset="100%" stopColor={P.glow} stopOpacity="0" />
-        </radialGradient>
+        <pattern
+          id="mmHatch"
+          width="12"
+          height="12"
+          patternTransform="rotate(45)"
+          patternUnits="userSpaceOnUse"
+        >
+          <rect width="12" height="12" fill="#ece6d8" />
+          <rect width="6" height="12" fill="#e0d9c6" />
+        </pattern>
+        <clipPath id="mmPanel">
+          <rect x="16" y="16" width={VIEW_W - 32} height={VIEW_H - 32} rx="12" />
+        </clipPath>
       </defs>
 
-      {/* floor */}
-      <polygon points={`600,6 1194,300 600,594 6,300`} fill={P.floor} />
-      <g stroke={P.floorLine} strokeWidth="1" opacity="0.75">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <path key={"a" + i} d={`M${600 - i * 99} ${6 + i * 49} L${1194 - i * 99} ${300 + i * 49}`} />
-        ))}
-        {[1, 2, 3, 4, 5].map((i) => (
-          <path key={"b" + i} d={`M${600 + i * 99} ${6 + i * 49} L${6 + i * 99} ${300 + i * 49}`} />
-        ))}
-      </g>
+      {/* hatched picture frame + paper panel */}
+      <rect x="0" y="0" width={VIEW_W} height={VIEW_H} fill="url(#mmHatch)" />
+      <rect
+        x="16"
+        y="16"
+        width={VIEW_W - 32}
+        height={VIEW_H - 32}
+        rx="12"
+        fill={P.paper}
+        stroke="#d8d1bf"
+        strokeWidth="1.5"
+      />
 
-      {/* mezzanine */}
-      <polygon points={`600,12 1130,277 1044,320 514,55`} fill={P.mezzTop} opacity="0.95" />
-      <polygon points={`514,55 1044,320 1044,334 514,69`} fill={P.mezzFace} />
-      <g stroke="#b0a88f" strokeWidth="2">
-        {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-          <path key={i} d={`M${560 + i * 76} ${78 + i * 38} v-15`} />
-        ))}
-        <path d="M560 63 L1016 291" strokeWidth="1.4" />
-      </g>
+      <g clipPath="url(#mmPanel)">
+      {/* soft terrain fields */}
+      <path
+        d="M -40 430 C 140 350, 220 520, 420 480 C 560 452, 560 620, 380 680 L -40 680 Z"
+        fill={P.blush}
+        opacity="0.75"
+      />
+      <path
+        d="M 880 -30 C 830 120, 1010 170, 1050 300 C 1085 415, 960 480, 1010 620 C 1040 700, 1240 690, 1240 690 L 1240 -30 Z"
+        fill={P.aqua}
+        opacity="0.8"
+      />
+      <path
+        d="M 1030 690 C 1000 560, 1120 520, 1240 560 L 1240 690 Z"
+        fill={P.blush}
+        opacity="0.6"
+      />
 
-      {/* worn visitor trails on the floor */}
+      {/* staff zone */}
+      <path
+        d="M 240 -20 C 210 90, 330 160, 600 158 C 870 160, 990 90, 960 -20 Z"
+        fill={P.slateZone}
+        opacity="0.9"
+      />
+      <text
+        x="600"
+        y="150"
+        textAnchor="middle"
+        fontSize="10"
+        letterSpacing="4"
+        fill={P.faint}
+        fontWeight="700"
+      >
+        {staffOnly}
+      </text>
+
+      {/* paved visitor roads */}
       {trailSegments.map((t, i) => {
         const a = pointOf(t.a);
         const b = pointOf(t.b);
+        const w = 9 + Math.min(t.n, 4) * 2.5;
         return (
-          <path
-            key={"t" + i}
-            d={`M${a.x} ${a.y + 40} Q ${(a.x + b.x) / 2} ${(a.y + b.y) / 2 + 60} ${b.x} ${b.y + 40}`}
-            stroke="#cdbfa2"
-            strokeWidth={2 + Math.min(t.n, 4) * 1.2}
-            strokeLinecap="round"
-            fill="none"
-            opacity={0.28 + Math.min(t.n, 5) * 0.07}
-          />
-        );
-      })}
-
-      {/* memo arcs */}
-      {memoRoutes.map((m, i) => {
-        const a = stationCenter(m.from);
-        const b = stationCenter(m.to);
-        const midx = (a.x + b.x) / 2;
-        const midy = Math.min(a.y, b.y) - 46 - Math.min(m.n, 4) * 6;
-        return (
-          <g key={"m" + i}>
-            <path
-              d={`M${a.x} ${a.y - 14} Q ${midx} ${midy} ${b.x} ${b.y - 14}`}
-              stroke={channelColor[m.channel]}
-              strokeWidth="1.5"
-              strokeDasharray="6 5"
-              fill="none"
-              opacity="0.75"
-            />
-            {m.n > 1 && (
-              <text x={midx} y={midy + 8} textAnchor="middle" fontSize="12" fill={channelColor[m.channel]} fontWeight="600">
-                ×{m.n}
-              </text>
+          <g key={"t" + i} fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <path d={elbow(a, b)} stroke={P.roadOutline} strokeWidth={w + 5} />
+            <path d={elbow(a, b)} stroke={P.road} strokeWidth={w} />
+            {t.n > 1 && (
+              <path
+                d={elbow(a, b)}
+                stroke={P.roadOutline}
+                strokeWidth="1.6"
+                strokeDasharray="1 14"
+              />
             )}
           </g>
         );
       })}
 
+      {/* memo lines */}
+      {memoRoutes.map((m, i) => {
+        const a = stationCenter(m.from);
+        const b = stationCenter(m.to);
+        const midx = (a.x + b.x) / 2;
+        const midy = Math.min(a.y, b.y) - 60 - Math.min(m.n, 4) * 8;
+        const c = channelColor[m.channel];
+        return (
+          <g key={"m" + i}>
+            <path
+              d={`M ${a.x} ${a.y - 30} Q ${midx} ${midy} ${b.x} ${b.y - 30}`}
+              stroke={c}
+              strokeWidth="2.5"
+              strokeDasharray="7 7"
+              strokeLinecap="round"
+              fill="none"
+              opacity="0.85"
+            />
+            {m.n > 1 && (
+              <g transform={`translate(${midx}, ${midy + 16})`}>
+                <rect x="-15" y="-9" width="30" height="18" rx="9" fill="#fff" stroke={c} strokeWidth="1.5" />
+                <text x="0" y="4" textAnchor="middle" fontSize="10.5" fontWeight="700" fill={c}>
+                  ×{m.n}
+                </text>
+              </g>
+            )}
+          </g>
+        );
+      })}
+
+      {/* entrance */}
+      <g>
+        <rect x={ISO_ENTRANCE.x - 40} y={ISO_ENTRANCE.y - 26} width="80" height="52" rx="14" fill="#fff" stroke={P.roadOutline} strokeWidth="2" transform={`translate(0,4)`} opacity="0.5" />
+        <rect x={ISO_ENTRANCE.x - 40} y={ISO_ENTRANCE.y - 26} width="80" height="52" rx="14" fill="#fff" stroke={P.ink} strokeWidth="2.5" />
+        <path
+          d={`M ${ISO_ENTRANCE.x - 12} ${ISO_ENTRANCE.y + 26} v-20 a12 12 0 0 1 24 0 v20`}
+          fill={P.paper}
+          stroke={P.ink}
+          strokeWidth="2.5"
+        />
+        <text
+          x={ISO_ENTRANCE.x}
+          y={ISO_ENTRANCE.y - 36}
+          textAnchor="middle"
+          fontSize="10"
+          letterSpacing="3"
+          fill={P.faint}
+          fontWeight="700"
+        >
+          ENTRANCE
+        </text>
+      </g>
+
       {/* stations */}
       {AGENTS.map((a) => {
         const s = ISO_STATIONS[a.id];
-        const scale = s.small ? 0.7 : 1;
         const st = statusMap[a.id];
         const busy = !!st && st.state !== "idle";
         const isWindow = a.level === 3;
-        const center = stationCenter(a.id);
+        const color = BUILDING[a.id];
+        const round = s.r !== undefined;
+        const size = s.small ? 40 : 76;
+
         return (
           <g
             key={a.id}
             onClick={() => isWindow && !observer && onSelect(a.id)}
             style={isWindow && !observer ? { cursor: "pointer" } : undefined}
           >
+            {/* selection ring */}
             {current === a.id && (
-              <ellipse cx={center.x} cy={center.y + 34} rx={86} ry={40} fill="none" stroke={P.slate} strokeWidth="2" strokeDasharray="3 6" opacity="0.85" />
+              <rect
+                x={s.x - size / 2 - 9}
+                y={s.y - size / 2 - 9}
+                width={size + 18}
+                height={size + 18}
+                rx={24}
+                fill="none"
+                stroke={P.ink}
+                strokeWidth="2.5"
+                strokeDasharray="4 8"
+                strokeLinecap="round"
+              />
             )}
-            <Desk x={s.x} y={s.y} scale={scale} busy={busy} />
-            <Person
-              x={s.x + 74 * scale}
-              y={s.y - 26 * scale}
-              color={RANK_COLOR[a.level]}
-              scale={scale * 0.95}
-              seated
-            />
-            {PROPS[a.id]?.(s)}
-            {/* nameplate */}
-            <g transform={`translate(${s.x + 12 * scale}, ${s.y + 44 * scale})`}>
-              <rect x="-6" y="-3" width={a.windowNo ? 132 : 118} height="18" rx="3" fill={P.plate} stroke={P.plateEdge} strokeWidth="0.8" opacity="0.95" />
-              <text x="4" y="10" fontSize="11" fill={P.ink} fontWeight="600" fontFamily="inherit">
-                {a.windowNo ? `${a.windowNo} · ` : ""}
-                {a.dept}
+
+            {/* building */}
+            {round ? (
+              <>
+                <circle cx={s.x} cy={s.y + 4} r={s.r} fill={P.shadow} />
+                <circle cx={s.x} cy={s.y} r={s.r} fill={color} />
+                <circle cx={s.x} cy={s.y} r={(s.r ?? 27) - 7} fill="none" stroke="#fff" strokeWidth="2.5" opacity="0.85" />
+              </>
+            ) : (
+              <>
+                <rect
+                  x={s.x - size / 2}
+                  y={s.y - size / 2 + 4}
+                  width={size}
+                  height={size}
+                  rx={s.small ? 12 : 18}
+                  fill={P.shadow}
+                />
+                <rect
+                  x={s.x - size / 2}
+                  y={s.y - size / 2}
+                  width={size}
+                  height={size}
+                  rx={s.small ? 12 : 18}
+                  fill={color}
+                />
+              </>
+            )}
+
+            {/* busy glow ring */}
+            {busy && (
+              <circle cx={s.x} cy={s.y} r={(round ? (s.r ?? 27) : size / 2) + 7} fill="none" stroke={color} strokeWidth="3" opacity="0.5">
+                <animate attributeName="r" values={`${(round ? (s.r ?? 27) : size / 2) + 5};${(round ? (s.r ?? 27) : size / 2) + 11};${(round ? (s.r ?? 27) : size / 2) + 5}`} dur="1.4s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0.55;0.15;0.55" dur="1.4s" repeatCount="indefinite" />
+              </circle>
+            )}
+
+            {/* label inside */}
+            {isWindow ? (
+              <text x={s.x} y={s.y + 9} textAnchor="middle" fontSize="26" fontWeight="800" fill="#fff">
+                {a.windowNo}
               </text>
-            </g>
-            <text x={s.x + 8 * scale} y={s.y + 74 * scale} fontSize="10" fill={P.faint}>
-              {a.personName}
-              {a.status ? " · probation" : ""}
+            ) : s.small ? (
+              <text x={s.x} y={s.y + 4.5} textAnchor="middle" fontSize="12" fontWeight="800" fill="#fff">
+                {a.personName.split(" ")[0][0]}
+                {a.personName.split(" ")[1]?.[0] ?? ""}
+              </text>
+            ) : (
+              <text x={s.x} y={s.y + 4.5} textAnchor="middle" fontSize="11" fontWeight="800" fill="#fff" letterSpacing="1">
+                {a.level === 1 ? "DIR" : a.id === "chief_front" ? "CH·F" : "CH·B"}
+              </text>
+            )}
+
+            {/* caption */}
+            <text
+              x={s.x}
+              y={s.y + (round ? (s.r ?? 27) : size / 2) + (s.small ? 15 : 20)}
+              textAnchor="middle"
+              fontSize={s.small ? 9 : 10.5}
+              letterSpacing="1.5"
+              fontWeight="700"
+              fill={P.faint}
+            >
+              {(s.small ? a.personName.split(" ")[0] : a.dept).toUpperCase()}
             </text>
+            {isWindow && (
+              <text x={s.x} y={s.y + size / 2 + 34} textAnchor="middle" fontSize="9.5" fill={P.faint}>
+                {a.personName}
+                {a.status ? " · probation" : ""}
+              </text>
+            )}
+
             {/* status pill */}
             {busy && st && (
-              <g transform={`translate(${center.x}, ${s.y - 62 * scale})`}>
-                <rect x="-56" y="-11" width="112" height="20" rx="10" fill={P.ink} opacity="0.92" />
-                <text x="0" y="3.5" textAnchor="middle" fontSize="10.5" fill="#fdfaf2">
+              <g transform={`translate(${s.x}, ${s.y - (round ? (s.r ?? 27) : size / 2) - 20})`}>
+                <rect x="-54" y="-11" width="108" height="21" rx="10.5" fill={P.ink} />
+                <text x="0" y="3.8" textAnchor="middle" fontSize="10" fill="#fff" letterSpacing="0.5" fontWeight="600">
                   {st.state === "consulting" && st.target
-                    ? `memo → ${AGENT_MAP[st.target].personName.split(" ")[0]}`
-                    : STATE_TEXT[st.state]}
+                    ? `MEMO → ${AGENT_MAP[st.target].personName.split(" ")[0].toUpperCase()}`
+                    : STATE_TEXT[st.state].toUpperCase()}
                 </text>
               </g>
             )}
+
+            {/* go-here map pin */}
             {suggested === a.id && current !== a.id && !observer && (
-              <g transform={`translate(${center.x}, ${s.y - 54})`}>
-                <path d="M-7 -8 L0 0 L7 -8" stroke={P.clay} strokeWidth="3" fill="none" strokeLinecap="round">
-                  <animateTransform attributeName="transform" type="translate" values="0 0; 0 7; 0 0" dur="0.9s" repeatCount="indefinite" />
-                </path>
+              <g transform={`translate(${s.x}, ${s.y - size / 2 - 26})`}>
+                <g>
+                  <animateTransform attributeName="transform" type="translate" values="0 0; 0 -7; 0 0" dur="0.9s" repeatCount="indefinite" />
+                  <path d="M0 10 C -9 -2 -9 -14 0 -14 C 9 -14 9 -2 0 10 Z" fill={P.up} />
+                  <circle cx="0" cy="-6" r="4" fill="#fff" />
+                </g>
               </g>
             )}
-            {/* queue */}
+
+            {/* demand pins (queue) */}
             {isWindow && queueSize > 0 && (
               <g>
-                <Stanchions x={s.x + 30} y={s.y + 92} />
                 {Array.from({ length: queueSize }).map((_, qi) => (
-                  <Person
-                    key={qi}
-                    x={s.x + 52 + qi * 26}
-                    y={s.y + 96 + qi * 12}
-                    color={P.visitorGray}
-                    scale={0.78}
-                  />
+                  <g key={qi} transform={`translate(${s.x - size / 2 - 16}, ${s.y - size / 2 + 10 + qi * 18})`}>
+                    <circle cx="0" cy="0" r="6.5" fill="#fff" stroke={color} strokeWidth="2.5" />
+                    <circle cx="0" cy="0" r="2.4" fill={color} />
+                  </g>
                 ))}
               </g>
             )}
           </g>
         );
       })}
-
-      {/* staff-only plaque on mezzanine face */}
-      <g transform="translate(700, 208) rotate(26.5)">
-        <rect x="-46" y="-9" width="92" height="17" rx="2" fill={P.plate} stroke={P.plateEdge} />
-        <text x="0" y="3.5" textAnchor="middle" fontSize="9.5" fill={P.faint} letterSpacing="2">
-          {staffOnly}
-        </text>
-      </g>
-
-      {/* entrance */}
-      <g>
-        <polygon points={`${ISO_ENTRANCE.x},${ISO_ENTRANCE.y - 16} ${ISO_ENTRANCE.x + 74},${ISO_ENTRANCE.y + 21} ${ISO_ENTRANCE.x},${ISO_ENTRANCE.y + 58} ${ISO_ENTRANCE.x - 74},${ISO_ENTRANCE.y + 21}`} fill={P.mezzFace} />
-        <polygon points={`${ISO_ENTRANCE.x},${ISO_ENTRANCE.y - 8} ${ISO_ENTRANCE.x + 58},${ISO_ENTRANCE.y + 21} ${ISO_ENTRANCE.x},${ISO_ENTRANCE.y + 50} ${ISO_ENTRANCE.x - 58},${ISO_ENTRANCE.y + 21}`} fill={P.clay} opacity="0.45" />
-        <text x={ISO_ENTRANCE.x} y={ISO_ENTRANCE.y + 26} textAnchor="middle" fontSize="10" letterSpacing="3" fill="#fdfaf2" fontWeight="600">
-          ENTRANCE
-        </text>
       </g>
     </svg>
   );

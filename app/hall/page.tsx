@@ -38,6 +38,8 @@ function pct(p: { x: number; y: number }) {
   return { left: `${(p.x / VIEW_W) * 100}%`, top: `${(p.y / VIEW_H) * 100}%` };
 }
 
+const CHANNEL_COLOR = { peer: "#8fb96a", up: "#e0524d", down: "#7f93b5" };
+
 function FlightPaper({ flight, onDone }: { flight: Flight; onDone: (id: number) => void }) {
   const [pos, setPos] = useState(() => stationCenter(flight.from));
   useEffect(() => {
@@ -50,31 +52,34 @@ function FlightPaper({ flight, onDone }: { flight: Flight; onDone: (id: number) 
       clearTimeout(timer);
     };
   }, [flight, onDone]);
+  const c = CHANNEL_COLOR[flight.channel ?? "peer"];
   return (
-    <div
-      className={
-        "memo-fly" +
-        (flight.reply ? " reply" : "") +
-        (flight.channel === "up" ? " up" : flight.channel === "down" ? " down" : "")
-      }
-      style={pct({ x: pos.x, y: pos.y - 46 })}
-    >
-      <svg width="22" height="14" viewBox="0 0 22 14" aria-hidden>
-        <polygon points="3,7 13,1 19,4 9,10" fill="#fffdf4" stroke="#c9bda0" strokeWidth="0.8" />
-        <ellipse cx="11" cy="12" rx="6" ry="1.6" fill="rgba(60,54,43,0.18)" />
+    <div className="memo-fly" style={pct({ x: pos.x, y: pos.y - 38 })}>
+      <svg width="24" height="18" viewBox="0 0 24 18" aria-hidden>
+        <rect x="4" y="6" width="16" height="11" rx="3" fill="rgba(74,68,58,0.18)" />
+        <rect
+          x="4"
+          y="3"
+          width="16"
+          height="11"
+          rx="3"
+          fill="#fff"
+          stroke={c}
+          strokeWidth="2"
+          strokeDasharray={flight.reply ? "2.5 2.5" : undefined}
+        />
       </svg>
     </div>
   );
 }
 
 function VisitorToken({ synthetic }: { synthetic: boolean }) {
-  const body = synthetic ? "#b3402f" : "#37414f";
+  const c = synthetic ? "#e0524d" : "#37414f";
   return (
-    <svg width="30" height="42" viewBox="0 0 30 42" aria-hidden>
-      <ellipse cx="15" cy="38" rx="10" ry="3.6" fill="rgba(60,54,43,0.2)" />
-      <rect x="9" y="12" width="12" height="21" rx="6" fill={body} />
-      <circle cx="15" cy="7.5" r="6" fill="#f0d7bd" />
-      <rect x="20" y="21" width="9" height="7" rx="1.5" fill={synthetic ? "#3a4350" : "#b3402f"} />
+    <svg width="30" height="38" viewBox="0 0 30 38" aria-hidden>
+      <ellipse cx="15" cy="34" rx="7" ry="2.6" fill="rgba(74,68,58,0.25)" />
+      <path d="M15 33 C 4 19 4 5 15 5 C 26 5 26 19 15 33 Z" fill={c} stroke="#fff" strokeWidth="2.5" />
+      <circle cx="15" cy="14" r="4.5" fill="#fff" />
     </svg>
   );
 }

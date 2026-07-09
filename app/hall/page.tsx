@@ -2,13 +2,19 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AGENTS, AGENT_MAP } from "@/lib/agents";
+import { AGENT_MAP } from "@/lib/agents";
 import { loadCase, saveCase } from "@/lib/storage";
 import { SCENARIOS } from "@/lib/visitors";
-import { CONDITION_MAP } from "@/lib/conditions";
 import { digestsForAll, loadExperience } from "@/lib/experience";
 import { loadArchive, renderArchiveDigest } from "@/lib/archive";
 import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
+import IsoScene, {
+  ISO_ENTRANCE,
+  VIEW_H,
+  VIEW_W,
+  stationCenter,
+  visitorSpot,
+} from "./IsoHall";
 import type {
   AgentId,
   AgentUiState,
@@ -17,15 +23,6 @@ import type {
   StreamFrame,
   VisitorMove,
 } from "@/lib/types";
-
-import { ENTRANCE, HALL_LAYOUT, type Spot } from "@/lib/layout";
-
-const STATE_LABEL: Record<AgentUiState, string> = {
-  receiving: "attending",
-  consulting: "memo out",
-  replying: "drafting reply",
-  idle: "",
-};
 
 const MAX_OBSERVER_TURNS = 12;
 
@@ -37,64 +34,15 @@ type Flight = {
   channel?: "peer" | "up" | "down";
 };
 
-function spotOf(p: AgentId | "entrance"): Spot {
-  return p === "entrance" ? ENTRANCE : HALL_LAYOUT[p];
-}
-
-function DeskFigure({ flip }: { flip?: boolean }) {
-  return (
-    <svg
-      width="46"
-      height="40"
-      viewBox="0 0 48 40"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      style={flip ? { transform: "scaleX(-1)" } : undefined}
-      aria-hidden
-    >
-      <circle cx="31" cy="9" r="4.2" />
-      <path d="M31 13.5 L31 23" />
-      <path d="M31 17 L24 21.5" />
-      <path d="M31 23 L28 28 L28 35" />
-      <path d="M10 23.5 H36" />
-      <path d="M13 23.5 V35" />
-      <path d="M33.5 23.5 V35" />
-      <path d="M15 20.5 h7" />
-      <path d="M16 18.5 h5" />
-    </svg>
-  );
-}
-
-function VisitorFigure() {
-  return (
-    <svg
-      width="26"
-      height="38"
-      viewBox="0 0 26 38"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      aria-hidden
-    >
-      <circle cx="12" cy="5.5" r="4" />
-      <path d="M12 9.5 V21" />
-      <path d="M12 21 L7 33" />
-      <path d="M12 21 L17 32" />
-      <path d="M12 12.5 L5.5 18" />
-      <path d="M12 12.5 L18.5 17" />
-      <rect x="16.5" y="16.5" width="7.5" height="5.5" stroke="#cf3f36" />
-    </svg>
-  );
+function pct(p: { x: number; y: number }) {
+  return { left: `${(p.x / VIEW_W) * 100}%`, top: `${(p.y / VIEW_H) * 100}%` };
 }
 
 function FlightPaper({ flight, onDone }: { flight: Flight; onDone: (id: number) => void }) {
-  const [pos, setPos] = useState<Spot>(spotOf(flight.from));
+  const [pos, setPos] = useState(() => stationCenter(flight.from));
   useEffect(() => {
     const raf = requestAnimationFrame(() =>
-      requestAnimationFrame(() => setPos(spotOf(flight.to)))
+      requestAnimationFrame(() => setPos(stationCenter(flight.to)))
     );
     const timer = setTimeout(() => onDone(flight.id), 1500);
     return () => {
@@ -109,10 +57,25 @@ function FlightPaper({ flight, onDone }: { flight: Flight; onDone: (id: number) 
         (flight.reply ? " reply" : "") +
         (flight.channel === "up" ? " up" : flight.channel === "down" ? " down" : "")
       }
-      style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+      style={pct({ x: pos.x, y: pos.y - 46 })}
     >
-      ▤
+      <svg width="22" height="14" viewBox="0 0 22 14" aria-hidden>
+        <polygon points="3,7 13,1 19,4 9,10" fill="#fffdf4" stroke="#c9bda0" strokeWidth="0.8" />
+        <ellipse cx="11" cy="12" rx="6" ry="1.6" fill="rgba(60,54,43,0.18)" />
+      </svg>
     </div>
+  );
+}
+
+function VisitorToken({ synthetic }: { synthetic: boolean }) {
+  const body = synthetic ? "#b3402f" : "#37414f";
+  return (
+    <svg width="30" height="42" viewBox="0 0 30 42" aria-hidden>
+      <ellipse cx="15" cy="38" rx="10" ry="3.6" fill="rgba(60,54,43,0.2)" />
+      <rect x="9" y="12" width="12" height="21" rx="6" fill={body} />
+      <circle cx="15" cy="7.5" r="6" fill="#f0d7bd" />
+      <rect x="20" y="21" width="9" height="7" rx="1.5" fill={synthetic ? "#3a4350" : "#b3402f"} />
+    </svg>
   );
 }
 
@@ -218,7 +181,7 @@ export default function HallPage() {
   const memoRoutes = useMemo(() => {
     const counts = new Map<
       string,
-      { a: Spot; b: Spot; n: number; channel: "peer" | "up" | "down" }
+      { from: AgentId; to: AgentId; n: number; channel: "peer" | "up" | "down" }
     >();
     for (const e of events) {
       if (e.type !== "internal_memo" && e.type !== "internal_reply") continue;
@@ -226,49 +189,16 @@ export default function HallPage() {
       const key = [e.from, e.to].sort().join("|") + "|" + ch;
       const cur = counts.get(key);
       if (cur) cur.n += 1;
-      else
-        counts.set(key, {
-          a: HALL_LAYOUT[e.from],
-          b: HALL_LAYOUT[e.to],
-          n: 1,
-          channel: ch,
-        });
+      else counts.set(key, { from: e.from, to: e.to, n: 1, channel: ch });
     }
     return [...counts.values()];
   }, [events]);
 
-  const stationStats = useMemo(() => {
-    const m = new Map<AgentId, { visits: number; acts: number }>();
-    const bump = (id: AgentId, k: "visits" | "acts") => {
-      const s = m.get(id) ?? { visits: 0, acts: 0 };
-      s[k] += 1;
-      m.set(id, s);
-    };
-    for (const e of events) {
-      if (e.type === "user_message") bump(e.agentId, "visits");
-      else if (
-        e.type === "agent_message" ||
-        e.type === "document_issued" ||
-        e.type === "materials_required" ||
-        e.type === "case_closed"
-      )
-        bump(e.agentId, "acts");
-      else if (e.type === "internal_memo" || e.type === "internal_reply") {
-        bump(e.from, "acts");
-        bump(e.to, "acts");
-      }
-    }
-    return m;
-  }, [events]);
-
-  const queueSize = useMemo(() => {
-    if (cs?.conditionId === "rush") return 3;
-    if (cs?.conditionId === "ninth_hour") return 2;
-    return 0;
-  }, [cs?.conditionId]);
-
   const trailSegments = useMemo(() => {
-    const counts = new Map<string, { a: Spot; b: Spot; n: number }>();
+    const counts = new Map<
+      string,
+      { a: AgentId | "entrance"; b: AgentId | "entrance"; n: number }
+    >();
     for (let i = 1; i < path.length; i++) {
       const a = path[i - 1];
       const b = path[i];
@@ -276,10 +206,16 @@ export default function HallPage() {
       const key = [a, b].sort().join("|");
       const cur = counts.get(key);
       if (cur) cur.n += 1;
-      else counts.set(key, { a: spotOf(a), b: spotOf(b), n: 1 });
+      else counts.set(key, { a, b, n: 1 });
     }
     return [...counts.values()];
   }, [path]);
+
+  const queueSize = useMemo(() => {
+    if (cs?.conditionId === "rush") return 3;
+    if (cs?.conditionId === "ninth_hour") return 2;
+    return 0;
+  }, [cs?.conditionId]);
 
   const chatItems = useMemo(() => {
     if (!current) return [];
@@ -338,17 +274,14 @@ export default function HallPage() {
     }
   }, []);
 
-  const goTo = useCallback(
-    (id: AgentId) => {
-      setCurrent((cur) => {
-        if (id === cur) return cur;
-        setTab("chat");
-        setPath((p) => [...p, id]);
-        return id;
-      });
-    },
-    []
-  );
+  const goTo = useCallback((id: AgentId) => {
+    setCurrent((cur) => {
+      if (id === cur) return cur;
+      setTab("chat");
+      setPath((p) => [...p, id]);
+      return id;
+    });
+  }, []);
 
   const rollbackUserMessage = useCallback((agentId: AgentId, text: string) => {
     const base = csRef.current;
@@ -397,6 +330,7 @@ export default function HallPage() {
           setError(
             (data as { error?: string } | null)?.error ?? "Request failed. Try again."
           );
+          rollbackUserMessage(agentId, text);
           return false;
         }
         const reader = res.body.getReader();
@@ -558,7 +492,7 @@ export default function HallPage() {
   if (!cs) return null;
 
   const cur = current ? AGENT_MAP[current] : null;
-  const visitorSpot = current ? HALL_LAYOUT[current] : ENTRANCE;
+  const vSpot = current ? visitorSpot(current) : ISO_ENTRANCE;
   const scenario = observer ? SCENARIOS.find((s) => s.id === observer.scenarioId) : null;
 
   return (
@@ -633,197 +567,28 @@ export default function HallPage() {
         </div>
       )}
 
-      <div className="map-wrap">
-        <div className="map-note">
-          {t(lang, "observationLog")} · {cs.caseId}
-          {cs.conditionId && cs.conditionId !== "calm" && CONDITION_MAP[cs.conditionId] && (
-            <>
-              {" "}
-              · <span className="red">{CONDITION_MAP[cs.conditionId].name}</span>
-            </>
-          )}
-          {observer && (
-            <>
-              {" "}
-              · <span className="red">{t(lang, "syntheticTag")}</span>
-            </>
-          )}
-          {referralCount > 0 && (
-            <>
-              {" "}
-              <span className="red">
-                {referralCount} {t(lang, "referrals")}
-              </span>
-            </>
-          )}
-          {memoCount > 0 && (
-            <>
-              {" "}
-              · {memoCount} {t(lang, "memos")}
-            </>
-          )}
-        </div>
-        <svg className="web-layer" viewBox="0 0 100 100" preserveAspectRatio="none">
-          {memoRoutes.map((s, i) => (
-            <g key={i}>
-              <line
-                x1={s.a.x}
-                y1={s.a.y}
-                x2={s.b.x}
-                y2={s.b.y}
-                className={"web-line ch-" + s.channel}
-                vectorEffect="non-scaling-stroke"
-              />
-              <circle
-                cx={s.a.x + (s.b.x - s.a.x) * 0.84}
-                cy={s.a.y + (s.b.y - s.a.y) * 0.84}
-                r={0.55}
-                className={"web-dot ch-" + s.channel}
-              />
-            </g>
-          ))}
-        </svg>
-        <svg className="trail-layer" viewBox="0 0 100 100" preserveAspectRatio="none">
-          {trailSegments.map((s, i) => (
-            <line
-              key={i}
-              x1={s.a.x}
-              y1={s.a.y}
-              x2={s.b.x}
-              y2={s.b.y}
-              className="trail-line"
-              vectorEffect="non-scaling-stroke"
-            />
-          ))}
-        </svg>
-        {trailSegments
-          .filter((s) => s.n > 1)
-          .map((s, i) => (
-            <span
-              key={"t" + i}
-              className="trail-count"
-              style={{ left: `${(s.a.x + s.b.x) / 2}%`, top: `${(s.a.y + s.b.y) / 2}%` }}
-            >
-              ×{s.n}
-            </span>
-          ))}
-        {memoRoutes
-          .filter((s) => s.n > 1)
-          .map((s, i) => (
-            <span
-              key={"w" + i}
-              className="web-count"
-              style={{
-                left: `${(s.a.x + s.b.x) / 2 + 2}%`,
-                top: `${(s.a.y + s.b.y) / 2 - 3}%`,
-              }}
-            >
-              ×{s.n}
-            </span>
-          ))}
-
-        <div className="staff-divider">
-          <span>{t(lang, "staffOnly")}</span>
-        </div>
-
-        {AGENTS.map((a, idx) => {
-          const st = statusMap[a.id];
-          const busy = st && st.state !== "idle";
-          const isWindow = a.level === 3;
-          const stats = stationStats.get(a.id);
-          const heat = Math.min((stats?.visits ?? 0) + (stats?.acts ?? 0), 12);
-          return (
-            <button
-              key={a.id}
-              className={
-                "station" +
-                (isWindow ? "" : " staff") +
-                (current === a.id ? " active" : "") +
-                (busy ? " lit" : "") +
-                (suggested === a.id && current !== a.id ? " suggested" : "")
-              }
-              style={{ left: `${HALL_LAYOUT[a.id].x}%`, top: `${HALL_LAYOUT[a.id].y}%` }}
-              onClick={() => isWindow && !observer && goTo(a.id)}
-              tabIndex={isWindow ? 0 : -1}
-            >
-              {heat > 1 && (
-                <span
-                  className="halo"
-                  style={{
-                    inset: -(4 + heat),
-                    opacity: Math.min(0.18 + heat * 0.05, 0.62),
-                    borderColor: heat > 6 ? "var(--pencil-red)" : "#d9a33c",
-                    transform: `rotate(${(idx % 3) * 4 - 4}deg)`,
-                  }}
-                />
-              )}
-              {(stats?.visits ?? 0) > 1 && (
-                <span className="st-visits">×{stats!.visits}</span>
-              )}
-              <DeskFigure flip={idx % 2 === 1} />
-              <span className="st-label">
-                {a.windowNo ? `${a.windowNo} ` : ""}
-                {a.dept}
-              </span>
-              <span className="st-person">
-                {a.personName}
-                {a.status ? " ·" : ""}
-              </span>
-              {a.status && <span className="st-person">({a.status})</span>}
-              {busy && st && (
-                <span className="st-status">
-                  {st.state === "consulting" && st.target
-                    ? `memo → ${AGENT_MAP[st.target].personName}`
-                    : STATE_LABEL[st.state]}
-                </span>
-              )}
-              {suggested === a.id && current !== a.id && !observer && (
-                <span className="st-tag">go here →</span>
-              )}
-            </button>
-          );
-        })}
-
-        {queueSize > 0 &&
-          AGENTS.filter((a) => a.level === 3).map((a) =>
-            Array.from({ length: queueSize }).map((_, qi) => (
-              <div
-                key={a.id + "-q" + qi}
-                className="queue-fig"
-                style={{
-                  left: `${HALL_LAYOUT[a.id].x + 3.4 + qi * 1.8}%`,
-                  top: `${HALL_LAYOUT[a.id].y + 8 + (qi % 2) * 1.2}%`,
-                }}
-              >
-                <svg width="11" height="17" viewBox="0 0 12 18" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" aria-hidden>
-                  <circle cx="6" cy="3" r="2" />
-                  <path d="M6 5 V11" />
-                  <path d="M6 11 L3.5 16" />
-                  <path d="M6 11 L8.5 16" />
-                  <path d="M6 7 L3 9.5" />
-                  <path d="M6 7 L9 9" />
-                </svg>
-              </div>
-            ))
-          )}
-
+      <div className="map-wrap iso">
+        <IsoScene
+          lang={lang}
+          staffOnly={t(lang, "staffOnly")}
+          current={current}
+          suggested={suggested}
+          observer={!!observer}
+          statusMap={statusMap}
+          queueSize={queueSize}
+          trailSegments={trailSegments}
+          memoRoutes={memoRoutes}
+          onSelect={goTo}
+        />
         <div
           className={"visitor" + (observer ? " synthetic" : "")}
-          style={{ left: `${visitorSpot.x}%`, top: `${visitorSpot.y + 7}%` }}
+          style={pct(vSpot)}
         >
-          <VisitorFigure />
+          <VisitorToken synthetic={!!observer} />
         </div>
-
         {flights.map((f) => (
           <FlightPaper key={f.id} flight={f} onDone={removeFlight} />
         ))}
-
-        <div
-          className="entrance-label"
-          style={{ left: `${ENTRANCE.x}%`, top: `${ENTRANCE.y + 6}%` }}
-        >
-          {t(lang, "entrance")}
-        </div>
       </div>
 
       <div className="dock">

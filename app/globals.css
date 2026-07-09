@@ -361,16 +361,23 @@ textarea {
   color: var(--red);
 }
 
-/* ── field-note floor map (kept) ── */
+/* ── isometric miniature hall ── */
 .map-wrap {
   position: relative;
-  flex: 1;
-  min-height: 400px;
   margin: 12px auto 0;
   width: min(1280px, calc(100% - 32px));
-  background: var(--paper-note);
-  border: 1px solid #e8e5dc;
+  background: linear-gradient(180deg, #f4efe4 0%, #ece5d5 100%);
+  border: 1px solid #e0d8c4;
+  border-radius: 10px;
   overflow: hidden;
+}
+.map-wrap.iso {
+  aspect-ratio: 1200 / 660;
+}
+.map-wrap.iso > svg {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 .map-note {
   position: absolute;
@@ -571,25 +578,30 @@ textarea {
 }
 .memo-fly {
   position: absolute;
-  transform: translate(-50%, -50%) rotate(-6deg);
+  transform: translate(-50%, -50%);
   z-index: 7;
-  font-size: 15px;
-  color: var(--note-green);
-  background: #fff;
-  border: 1px solid #dcd8ca;
-  padding: 0 4px;
-  box-shadow: 1px 2px 0 rgba(0, 0, 0, 0.08);
   transition: left 1.2s ease-in-out, top 1.2s ease-in-out;
   pointer-events: none;
+  animation: fly-bob 0.6s ease-in-out infinite alternate;
 }
-.memo-fly.reply {
-  border-style: dashed;
+@keyframes fly-bob {
+  from {
+    margin-top: -3px;
+  }
+  to {
+    margin-top: 3px;
+  }
 }
-.memo-fly.up {
-  color: var(--pencil-red);
+.memo-fly.up svg polygon {
+  fill: #f6ddd4;
+  stroke: #b56a54;
 }
-.memo-fly.down {
-  color: #4a6fa5;
+.memo-fly.down svg polygon {
+  fill: #dde4ee;
+  stroke: #6b7a92;
+}
+.memo-fly.reply svg polygon {
+  stroke-dasharray: 3 2;
 }
 
 .station.staff {
@@ -628,34 +640,43 @@ textarea {
   color: var(--pencil);
 }
 
-/* ── dock ── */
+/* ── dock (miniature-bureau service desk) ── */
 .dock {
   width: min(1280px, calc(100% - 32px));
-  margin: 10px auto 14px;
-  background: #fff;
-  border: 1px solid var(--line);
+  margin: 12px auto 14px;
+  background: #fbf8f1;
+  border: 1px solid #e0d8c4;
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
   height: 320px;
   flex: none;
+  overflow: hidden;
 }
 .dock-tabs {
   display: flex;
-  border-bottom: 1px solid var(--line);
+  gap: 4px;
+  padding: 8px 10px 0;
+  background: #f1ebdd;
+  border-bottom: 1px solid #e0d8c4;
   flex: none;
 }
 .dock-tabs button {
-  border: none;
+  border: 1px solid transparent;
+  border-bottom: none;
   background: none;
-  padding: 10px 18px;
-  font-size: 14.5px;
-  color: var(--ink-2);
-  border-bottom: 4px solid transparent;
+  padding: 8px 16px 9px;
+  font-size: 14px;
+  color: #7a7261;
+  border-radius: 8px 8px 0 0;
 }
 .dock-tabs button.on {
-  color: var(--ink);
-  border-bottom-color: var(--blue);
+  color: #43403a;
+  background: #fbf8f1;
+  border-color: #e0d8c4;
   font-weight: 700;
+  position: relative;
+  top: 1px;
 }
 .dock-chat {
   flex: 1;
@@ -676,16 +697,18 @@ textarea {
   padding: 9px 13px;
   font-size: 14.5px;
   white-space: pre-wrap;
-  border: 1px solid var(--line-soft);
+  border: 1px solid #e7e0ce;
+  border-radius: 8px;
 }
 .msg.user {
   align-self: flex-end;
-  background: #eef4fa;
-  border-color: #cadcf0;
+  background: #f4e8dd;
+  border-color: #e2cebf;
 }
 .msg.agent {
   align-self: flex-start;
-  background: var(--grey-bg);
+  background: #fff;
+  box-shadow: 1px 2px 0 rgba(60, 54, 43, 0.05);
 }
 .msg .who {
   display: block;

@@ -37,6 +37,7 @@ type Props = {
   beamFlow: "up" | "down" | null;
   closed: boolean;
   conditionId: string | null;
+  ambient?: boolean;
   onSelect: (id: AgentId) => void;
 };
 
@@ -54,7 +55,7 @@ type Room = {
   papers?: number;
 };
 
-const ROOMS: Record<AgentId, Room> = {
+export const ROOMS: Record<AgentId, Room> = {
   daoban: { x: -5.8, y: 4.8, z: 2.8, w: 2.6, h: 1.6, d: 1.7, c: 0xf4c14b, num: "01" },
   shouli: { x: 6.1, y: 3.85, z: 1.4, w: 1.9, h: 1.6, d: 2.6, c: 0xe8484f, num: "02" },
   cailiao: { x: 3.8, y: 5.55, z: 3.4, w: 2.7, h: 1.8, d: 1.8, c: 0xe46fa4, num: "03" },
@@ -299,7 +300,13 @@ export default function Hall3D(props: Props) {
     scene.background = new THREE.Color(0x06070a);
     scene.fog = new THREE.FogExp2(0x06070a, 0.006);
     const camera = new THREE.PerspectiveCamera(42, 16 / 9, 0.1, 400);
-    const cam = { az: 0.55, pol: 1.12, dist: 30, target: new THREE.Vector3(0, 5.8, 0), auto: false };
+    const cam = {
+      az: 0.55,
+      pol: 1.12,
+      dist: 30,
+      target: new THREE.Vector3(0, 5.8, 0),
+      auto: !!propsRef.current.ambient,
+    };
 
     const amb = new THREE.AmbientLight(0x9fb2d6, 0.32);
     scene.add(amb);
@@ -865,7 +872,7 @@ export default function Hall3D(props: Props) {
             key = o.userData.key as AgentId | undefined;
             o = o.parent;
           }
-          if (key) {
+          if (key && !propsRef.current.ambient) {
             if (researcherRef.current) {
               setDossier(key);
             } else if (AGENT_MAP[key].level === 3 && !propsRef.current.synthetic) {
@@ -892,7 +899,7 @@ export default function Hall3D(props: Props) {
       const t = world.clock.elapsedTime;
       const p = propsRef.current;
 
-      if (cam.auto) cam.az += dt * 0.1;
+      if (cam.auto) cam.az += dt * (p.ambient ? 0.055 : 0.1);
 
       const goal = p.current ? groundSpot(p.current) : ENTRANCE_SPOT.clone();
       const dvec = new THREE.Vector3().subVectors(goal, me.position);
@@ -1401,11 +1408,14 @@ export default function Hall3D(props: Props) {
 
   return (
     <div className="void-wrap" ref={wrapRef}>
-      <div className="void-hint">
-        {researcher
-          ? "researcher view · click anyone to read their record"
-          : "click a window · drag to orbit · scroll to zoom"}
-      </div>
+      {!props.ambient && (
+        <div className="void-hint">
+          {researcher
+            ? "researcher view · click anyone to read their record"
+            : "click a window · drag to orbit · scroll to zoom"}
+        </div>
+      )}
+      {!props.ambient && (
       <div className="void-ui">
         <button onClick={() => setCam("my")}>MY VIEW</button>
         <button onClick={() => setCam("orbit")}>ORBIT</button>
@@ -1431,7 +1441,8 @@ export default function Hall3D(props: Props) {
           RESEARCHER: {researcher ? "ON" : "OFF"}
         </button>
       </div>
-      {doss && (
+      )}
+      {doss && !props.ambient && (
         <div className="void-doss">
           <button className="vd-close" onClick={() => setDossier(null)}>
             ×

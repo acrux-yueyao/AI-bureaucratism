@@ -162,6 +162,9 @@ export default function PortalPage() {
               </button>
             ))}
           </div>
+          <p style={{ marginTop: 14, marginBottom: 0 }}>
+            <a href="/study">Read the study — how this hall was built and what it found →</a>
+          </p>
         </section>
 
         <section className="stress-box">

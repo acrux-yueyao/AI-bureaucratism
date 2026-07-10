@@ -507,7 +507,7 @@ export default function HallPage() {
         </div>
       )}
 
-      <Hall3D
+      <div className="hall-main"><Hall3D
         current={current}
         suggested={suggested}
         synthetic={!!observer}
@@ -723,7 +723,7 @@ export default function HallPage() {
             ))}
           </div>
         )}
-      </div>
+      </div></div>
 
       {drawerOpen && (
         <>

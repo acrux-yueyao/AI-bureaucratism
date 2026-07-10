@@ -362,11 +362,19 @@ textarea {
 }
 
 /* ── the hall as an exploded hierarchy in a dark void (three.js) ── */
+.hall-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  width: calc(100% - 32px);
+  margin: 12px auto 14px;
+}
 .void-wrap {
   position: relative;
-  margin: 12px auto 0;
-  width: min(1280px, calc(100% - 32px));
-  aspect-ratio: 1200 / 640;
+  flex: 1;
+  min-width: 0;
   background: #06070a;
   border-radius: 14px;
   overflow: hidden;
@@ -412,16 +420,16 @@ textarea {
   cursor: pointer;
 }
 
-/* ── dock (miniature-bureau service desk) ── */
+/* ── dock (service-desk sidebar, right of the void) ── */
 .dock {
-  width: min(1280px, calc(100% - 32px));
-  margin: 12px auto 14px;
+  width: min(420px, 38vw);
+  margin: 0;
   background: #fdfcf8;
   border: 1px solid #e4ded0;
   border-radius: 14px;
   display: flex;
   flex-direction: column;
-  height: 320px;
+  height: auto;
   flex: none;
   overflow: hidden;
   box-shadow: 0 1px 0 rgba(74, 68, 58, 0.06);
@@ -962,8 +970,17 @@ textarea {
   .h-xl {
     font-size: 32px;
   }
+  .hall-main {
+    flex-direction: column;
+  }
+  .void-wrap {
+    flex: none;
+    aspect-ratio: 4 / 3;
+    width: 100%;
+  }
   .dock {
-    height: 300px;
+    width: 100%;
+    height: 320px;
   }
 }
 

@@ -466,9 +466,17 @@ export default function StudyPage() {
           <div className="st-halls">
             {HALLS.map((h, i) => (
               <div className={"st-hall" + (h.kept ? " kept" : "")} key={i}>
-                <div className="st-hall-thumb" style={{ background: h.c }}>
+                <a
+                  className="st-hall-thumb"
+                  style={{ background: h.c }}
+                  href={`/study/iter-${i + 1}.jpg`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`/study/iter-${i + 1}.jpg`} alt={L(h.en, h.zh)} loading="lazy" />
                   {!h.kept && <span className="st-stamp">{L("REJECTED", "否决")}</span>}
-                </div>
+                </a>
                 <strong>
                   {i + 1} · {L(h.en, h.zh)}
                 </strong>

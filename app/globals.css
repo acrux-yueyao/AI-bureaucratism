@@ -1734,8 +1734,21 @@ textarea {
 }
 .st-hall-thumb {
   position: relative;
-  height: 86px;
+  display: block;
+  height: 96px;
   border-radius: 8px;
+  overflow: hidden;
+}
+.st-hall-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 18%;
+  display: block;
+}
+.st-hall-thumb .st-stamp {
+  z-index: 2;
+  background: rgba(255, 250, 244, 0.85);
 }
 .st-hall.kept .st-hall-thumb {
   border: 1px solid #8fa2c0;

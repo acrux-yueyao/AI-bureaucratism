@@ -8,13 +8,7 @@ import { SCENARIOS } from "@/lib/visitors";
 import { digestsForAll, loadExperience } from "@/lib/experience";
 import { loadArchive, renderArchiveDigest } from "@/lib/archive";
 import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
-import IsoScene, {
-  ISO_ENTRANCE,
-  VIEW_H,
-  VIEW_W,
-  stationCenter,
-  visitorSpot,
-} from "./IsoHall";
+import Hall3D, { type HallFlight } from "./Hall3D";
 import type {
   AgentId,
   AgentUiState,
@@ -25,64 +19,6 @@ import type {
 } from "@/lib/types";
 
 const MAX_OBSERVER_TURNS = 12;
-
-type Flight = {
-  id: number;
-  from: AgentId;
-  to: AgentId;
-  reply: boolean;
-  channel?: "peer" | "up" | "down";
-};
-
-function pct(p: { x: number; y: number }) {
-  return { left: `${(p.x / VIEW_W) * 100}%`, top: `${(p.y / VIEW_H) * 100}%` };
-}
-
-const CHANNEL_COLOR = { peer: "#8fb96a", up: "#e0524d", down: "#7f93b5" };
-
-function FlightPaper({ flight, onDone }: { flight: Flight; onDone: (id: number) => void }) {
-  const [pos, setPos] = useState(() => stationCenter(flight.from));
-  useEffect(() => {
-    const raf = requestAnimationFrame(() =>
-      requestAnimationFrame(() => setPos(stationCenter(flight.to)))
-    );
-    const timer = setTimeout(() => onDone(flight.id), 1500);
-    return () => {
-      cancelAnimationFrame(raf);
-      clearTimeout(timer);
-    };
-  }, [flight, onDone]);
-  const c = CHANNEL_COLOR[flight.channel ?? "peer"];
-  return (
-    <div className="memo-fly" style={pct({ x: pos.x, y: pos.y - 38 })}>
-      <svg width="24" height="18" viewBox="0 0 24 18" aria-hidden>
-        <rect x="4" y="6" width="16" height="11" rx="3" fill="rgba(74,68,58,0.18)" />
-        <rect
-          x="4"
-          y="3"
-          width="16"
-          height="11"
-          rx="3"
-          fill="#fff"
-          stroke={c}
-          strokeWidth="2"
-          strokeDasharray={flight.reply ? "2.5 2.5" : undefined}
-        />
-      </svg>
-    </div>
-  );
-}
-
-function VisitorToken({ synthetic }: { synthetic: boolean }) {
-  const c = synthetic ? "#e0524d" : "#37414f";
-  return (
-    <svg width="30" height="38" viewBox="0 0 30 38" aria-hidden>
-      <ellipse cx="15" cy="34" rx="7" ry="2.6" fill="rgba(74,68,58,0.25)" />
-      <path d="M15 33 C 4 19 4 5 15 5 C 26 5 26 19 15 33 Z" fill={c} stroke="#fff" strokeWidth="2.5" />
-      <circle cx="15" cy="14" r="4.5" fill="#fff" />
-    </svg>
-  );
-}
 
 export default function HallPage() {
   const router = useRouter();
@@ -104,7 +40,7 @@ export default function HallPage() {
   const [statusMap, setStatusMap] = useState<
     Partial<Record<AgentId, { state: AgentUiState; target?: AgentId }>>
   >({});
-  const [flights, setFlights] = useState<Flight[]>([]);
+  const [flights, setFlights] = useState<HallFlight[]>([]);
   const [stream, setStream] = useState<{ agentId: AgentId; text: string } | null>(null);
   const [observer, setObserver] = useState<{
     scenarioId: string;
@@ -497,7 +433,6 @@ export default function HallPage() {
   if (!cs) return null;
 
   const cur = current ? AGENT_MAP[current] : null;
-  const vSpot = current ? visitorSpot(current) : ISO_ENTRANCE;
   const scenario = observer ? SCENARIOS.find((s) => s.id === observer.scenarioId) : null;
 
   return (
@@ -572,29 +507,19 @@ export default function HallPage() {
         </div>
       )}
 
-      <div className="map-wrap iso">
-        <IsoScene
-          lang={lang}
-          staffOnly={t(lang, "staffOnly")}
-          current={current}
-          suggested={suggested}
-          observer={!!observer}
-          statusMap={statusMap}
-          queueSize={queueSize}
-          trailSegments={trailSegments}
-          memoRoutes={memoRoutes}
-          onSelect={goTo}
-        />
-        <div
-          className={"visitor" + (observer ? " synthetic" : "")}
-          style={pct(vSpot)}
-        >
-          <VisitorToken synthetic={!!observer} />
-        </div>
-        {flights.map((f) => (
-          <FlightPaper key={f.id} flight={f} onDone={removeFlight} />
-        ))}
-      </div>
+      <Hall3D
+        current={current}
+        suggested={suggested}
+        synthetic={!!observer}
+        statusMap={statusMap}
+        queueSize={queueSize}
+        memoRoutes={memoRoutes}
+        trail={trailSegments}
+        flights={flights}
+        onFlightDone={removeFlight}
+        docCount={docs.length}
+        onSelect={goTo}
+      />
 
       <div className="dock">
         <div className="dock-tabs">

@@ -137,30 +137,33 @@ function textSprite(
   scale: number,
   color?: string,
   fontPx = 40,
-  weight = 500
+  weight = 500,
+  tight = false
 ): TextSprite {
   const cv = document.createElement("canvas");
   cv.width = 640;
   cv.height = Math.max(110, Math.round(fontPx * 2.1));
   const ch = cv.height;
-  const ctx = cv.getContext("2d")!;
+  const ctx = cv.getContext("2d")! as CanvasRenderingContext2D & { letterSpacing?: string };
   const tex = new THREE.CanvasTexture(cv);
   const draw = (text: string) => {
-    const spaced = text.split("").join(" ");
+    const shown = tight ? text : text.split("").join(" ");
     ctx.clearRect(0, 0, 640, ch);
     let px = fontPx;
     ctx.font = `${weight} ${px}px -apple-system, 'Segoe UI', Roboto, sans-serif`;
-    const w0 = ctx.measureText(spaced).width;
+    ctx.letterSpacing = tight ? `${Math.round(px * 0.08)}px` : "0px";
+    const w0 = ctx.measureText(shown).width;
     if (w0 > 616) {
       px = Math.max(18, Math.floor((fontPx * 616) / w0));
       ctx.font = `${weight} ${px}px -apple-system, 'Segoe UI', Roboto, sans-serif`;
+      ctx.letterSpacing = tight ? `${Math.round(px * 0.08)}px` : "0px";
     }
     ctx.fillStyle = color ?? "rgba(232,240,250,.95)";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.shadowColor = "rgba(6,8,12,.95)";
     ctx.shadowBlur = Math.max(6, px * 0.16);
-    ctx.fillText(spaced, 320, ch / 2 + px * 0.04);
+    ctx.fillText(shown, 320, ch / 2 + px * 0.04);
     ctx.shadowBlur = 0;
     tex.needsUpdate = true;
   };
@@ -481,7 +484,8 @@ export default function Hall3D(props: Props) {
         o.big ? 3.2 : short ? 2.4 : 1.8,
         "rgba(236,243,252,.96)",
         o.big ? 52 : short ? 120 : 54,
-        short && !o.big ? 300 : 400
+        short && !o.big ? 300 : 400,
+        short && !o.big
       );
       np.sprite.position.y = o.h / 2 + (short ? 0.55 : 0.45);
       g.add(np.sprite);

@@ -130,43 +130,52 @@ function muted(c: number, t: number): THREE.Color {
 
 type TextSprite = { sprite: THREE.Sprite; set: (txt: string) => void };
 
-function textSprite(txt: string, scale: number, boxed: boolean, color?: string): TextSprite {
+function textSprite(
+  txt: string,
+  scale: number,
+  boxed: boolean,
+  color?: string,
+  fontPx = 42
+): TextSprite {
   const cv = document.createElement("canvas");
   cv.width = 640;
-  cv.height = 110;
+  cv.height = Math.max(110, Math.round(fontPx * 2.1));
+  const ch = cv.height;
   const ctx = cv.getContext("2d")!;
   const tex = new THREE.CanvasTexture(cv);
   const draw = (text: string) => {
-    ctx.clearRect(0, 0, 640, 110);
-    ctx.font = "600 42px -apple-system, 'Segoe UI', Roboto, sans-serif";
+    ctx.clearRect(0, 0, 640, ch);
+    ctx.font = `700 ${fontPx}px -apple-system, 'Segoe UI', Roboto, sans-serif`;
     if (boxed) {
-      const tw = Math.min(ctx.measureText(text).width + 60, 630);
+      const tw = Math.min(ctx.measureText(text).width + fontPx * 1.2, 630);
       const x0 = (640 - tw) / 2;
-      const r = 26;
-      ctx.fillStyle = "rgba(14,18,26,.88)";
-      ctx.strokeStyle = "rgba(150,170,200,.4)";
-      ctx.lineWidth = 2;
+      const y0 = ch * 0.13;
+      const y1 = ch * 0.87;
+      const r = Math.min((y1 - y0) * 0.36, tw / 2);
+      ctx.fillStyle = "rgba(14,18,26,.9)";
+      ctx.strokeStyle = "rgba(150,170,200,.45)";
+      ctx.lineWidth = Math.max(2, fontPx * 0.06);
       ctx.beginPath();
-      ctx.moveTo(x0 + r, 16);
-      ctx.arcTo(x0 + tw, 16, x0 + tw, 94, r);
-      ctx.arcTo(x0 + tw, 94, x0, 94, r);
-      ctx.arcTo(x0, 94, x0, 16, r);
-      ctx.arcTo(x0, 16, x0 + tw, 16, r);
+      ctx.moveTo(x0 + r, y0);
+      ctx.arcTo(x0 + tw, y0, x0 + tw, y1, r);
+      ctx.arcTo(x0 + tw, y1, x0, y1, r);
+      ctx.arcTo(x0, y1, x0, y0, r);
+      ctx.arcTo(x0, y0, x0 + tw, y0, r);
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
     }
-    ctx.fillStyle = color ?? (boxed ? "#e8eef8" : "rgba(198,210,230,.85)");
+    ctx.fillStyle = color ?? (boxed ? "#eef3fa" : "rgba(198,210,230,.85)");
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(boxed ? text : text.split("").join(" "), 320, boxed ? 56 : 55);
+    ctx.fillText(boxed ? text : text.split("").join(" "), 320, ch / 2 + fontPx * 0.05);
     tex.needsUpdate = true;
   };
   draw(txt);
   const sprite = new THREE.Sprite(
     new THREE.SpriteMaterial({ map: tex, depthWrite: false, transparent: true })
   );
-  sprite.scale.set(scale, (scale * 110) / 640, 1);
+  sprite.scale.set(scale, (scale * ch) / 640, 1);
   return { sprite, set: draw };
 }
 
@@ -473,11 +482,18 @@ export default function Hall3D(props: Props) {
       const f = fig(o.c, Math.min(1, o.h / 1.7));
       f.position.set(lw ? -o.w * 0.16 : -o.w * 0.1, -o.h / 2 + 0.06, lw ? -o.d * 0.1 : -o.d * 0.18);
       g.add(f);
-      const np = textSprite(o.num, o.big ? 1.9 : 0.95, true);
-      np.sprite.position.y = o.h / 2 + 0.42;
+      const short = o.num.length <= 2;
+      const np = textSprite(
+        o.num,
+        o.big ? 3.1 : short ? 2.3 : 1.7,
+        true,
+        undefined,
+        o.big ? 56 : short ? 110 : 60
+      );
+      np.sprite.position.y = o.h / 2 + (short ? 0.6 : 0.5);
       g.add(np.sprite);
-      const status = textSprite("", o.big ? 2.0 : 1.7, true);
-      status.sprite.position.y = o.h / 2 + 1.0;
+      const status = textSprite("", o.big ? 2.6 : 2.2, true, undefined, 46);
+      status.sprite.position.y = o.h / 2 + (short ? 1.45 : 1.3);
       status.sprite.visible = false;
       g.add(status.sprite);
       g.position.set(o.x, o.y + driftY(id), o.z);

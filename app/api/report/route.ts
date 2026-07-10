@@ -1,3 +1,4 @@
+import { checkLivePass } from "@/lib/livepass";
 import Anthropic from "@anthropic-ai/sdk";
 import { buildObserverPrompt } from "@/lib/agents";
 import { renderCaseFile } from "@/lib/case-file";
@@ -9,6 +10,8 @@ export const maxDuration = 120;
 const MODEL = process.env.AIB_MODEL || "claude-sonnet-5";
 
 export async function POST(req: Request) {
+  const locked = checkLivePass(req);
+  if (locked) return locked;
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return Response.json(

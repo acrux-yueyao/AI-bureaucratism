@@ -9,6 +9,7 @@ import { archiveCase } from "@/lib/archive";
 import { SCENARIOS } from "@/lib/visitors";
 import { CONDITIONS } from "@/lib/conditions";
 import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
+import { REPLAYS } from "@/lib/replays";
 
 const QUICK_MATTERS = [
   "Certificate of no criminal record",
@@ -142,6 +143,26 @@ export default function PortalPage() {
             </li>
           ))}
         </ul>
+
+        <section className="stress-box">
+          <h3>Watch a replay</h3>
+          <p>
+            Recorded cases from the preregistered experiment runs, replayed in the hall —
+            no live agents, no waiting.
+          </p>
+          <div className="row">
+            {REPLAYS.map((r) => (
+              <button
+                key={r.id}
+                className="btn-plain"
+                title={`${r.blurb} (${r.stats})`}
+                onClick={() => router.push(`/hall?mode=replay&id=${r.id}`)}
+              >
+                {r.title} ▸
+              </button>
+            ))}
+          </div>
+        </section>
 
         <section className="stress-box">
           <h3>{t(lang, "conditionsTitle")}</h3>

@@ -8,6 +8,8 @@ import { SCENARIOS } from "@/lib/visitors";
 import { digestsForAll, loadExperience } from "@/lib/experience";
 import { loadArchive, renderArchiveDigest } from "@/lib/archive";
 import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
+import { REPLAYS, type ReplayFile } from "@/lib/replays";
+import { liveHeaders, setLivePass } from "@/lib/livepass";
 import Hall3D, { type HallFlight } from "./Hall3D";
 import type {
   AgentId,
@@ -47,14 +49,46 @@ export default function HallPage() {
     turn: number;
     note: string;
   } | null>(null);
+  const [replay, setReplay] = useState<{ id: string; title: string; note: string } | null>(
+    null
+  );
+  const [passInput, setPassInput] = useState("");
   const flightId = useRef(0);
   const bodyRef = useRef<HTMLDivElement>(null);
   const csRef = useRef<CaseState | null>(null);
   const stopRef = useRef(false);
   const observerStarted = useRef(false);
+  const replayRef = useRef(false);
+  const replayEvents = useRef<CaseEvent[] | null>(null);
+  const replayStarted = useRef(false);
 
   useEffect(() => {
     setLang(getLang());
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("mode") === "replay") {
+      const id = params.get("id") ?? "";
+      const meta = REPLAYS.find((r) => r.id === id);
+      if (meta) {
+        replayRef.current = true;
+        void fetch(`/replays/${id}.json`)
+          .then((res) => res.json() as Promise<ReplayFile>)
+          .then((data) => {
+            replayEvents.current = data.events;
+            const c: CaseState = {
+              caseId: data.caseId,
+              matter: data.matter,
+              startedAt: Date.now(),
+              events: [],
+              closed: false,
+            };
+            csRef.current = c;
+            setCs(c);
+            setReplay({ id, title: meta.title, note: "" });
+          })
+          .catch(() => router.replace("/"));
+        return;
+      }
+    }
     const c = loadCase();
     if (!c) {
       router.replace("/");
@@ -62,7 +96,6 @@ export default function HallPage() {
     }
     csRef.current = c;
     setCs(c);
-    const params = new URLSearchParams(window.location.search);
     if (params.get("mode") === "observer") {
       const scenarioId = params.get("scenario") ?? "";
       if (SCENARIOS.some((s) => s.id === scenarioId)) {
@@ -198,7 +231,7 @@ export default function HallPage() {
     };
     csRef.current = merged;
     setCs(merged);
-    saveCase(merged);
+    if (!replayRef.current) saveCase(merged);
     if (e.type === "agent_message") setStream(null);
     if (e.type === "internal_memo" || e.type === "internal_reply") {
       flightId.current += 1;
@@ -239,7 +272,7 @@ export default function HallPage() {
     const merged: CaseState = { ...base, events: evs };
     csRef.current = merged;
     setCs(merged);
-    saveCase(merged);
+    if (!replayRef.current) saveCase(merged);
   }, []);
 
   const dispatch = useCallback(
@@ -254,7 +287,7 @@ export default function HallPage() {
       try {
         const res = await fetch("/api/window", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...liveHeaders() },
           body: JSON.stringify({
             caseId: base.caseId,
             matter: base.matter,
@@ -335,7 +368,7 @@ export default function HallPage() {
   );
 
   async function send(preset?: string) {
-    if (!current || sending || closed || observer) return;
+    if (!current || sending || closed || observer || replay) return;
     const text = (preset ?? input).trim();
     if (!text) return;
     if (!preset) setInput("");
@@ -344,7 +377,7 @@ export default function HallPage() {
   }
 
   async function walkAndReport(target: AgentId, fromDept: string) {
-    if (sending || closed || observer) return;
+    if (sending || closed || observer || replay) return;
     goTo(target);
     await new Promise((r) => setTimeout(r, 950));
     await dispatch(
@@ -365,7 +398,7 @@ export default function HallPage() {
       try {
         const res = await fetch("/api/visitor", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...liveHeaders() },
           body: JSON.stringify({
             caseId: base.caseId,
             matter: base.matter,
@@ -412,9 +445,104 @@ export default function HallPage() {
     }
   }, [observer, cs, runObserver]);
 
+  // Replay: drive the hall from a recorded case, no API calls.
+  const runReplay = useCallback(async () => {
+    const evs = replayEvents.current;
+    if (!evs) return;
+    stopRef.current = false;
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    for (const e of evs) {
+      if (stopRef.current) return;
+      switch (e.type) {
+        case "user_message": {
+          goTo(e.agentId);
+          await wait(1000);
+          if (stopRef.current) return;
+          applyEvent(e);
+          setSending(true);
+          setStatusMap((m) => ({ ...m, [e.agentId]: { state: "receiving" } }));
+          await wait(700);
+          break;
+        }
+        case "agent_message": {
+          setStatusMap((m) => ({ ...m, [e.agentId]: { state: "replying" } }));
+          const text = e.text;
+          const total = Math.min(2600, 500 + text.length * 5);
+          const steps = 24;
+          for (let i = 1; i <= steps; i++) {
+            if (stopRef.current) return;
+            setStream({
+              agentId: e.agentId,
+              text: text.slice(0, Math.ceil((text.length * i) / steps)),
+            });
+            await wait(total / steps);
+          }
+          setSending(false);
+          applyEvent(e);
+          setStatusMap({});
+          await wait(600);
+          break;
+        }
+        case "internal_memo": {
+          setStatusMap((m) => ({ ...m, [e.from]: { state: "consulting", target: e.to } }));
+          applyEvent(e);
+          await wait(1900);
+          break;
+        }
+        case "internal_reply": {
+          applyEvent(e);
+          await wait(1500);
+          break;
+        }
+        case "document_issued": {
+          applyEvent(e);
+          await wait(1400);
+          break;
+        }
+        case "materials_required": {
+          applyEvent(e);
+          await wait(1000);
+          break;
+        }
+        case "referral": {
+          applyEvent(e);
+          await wait(900);
+          break;
+        }
+        case "case_closed": {
+          setSending(false);
+          setStream(null);
+          setStatusMap({});
+          applyEvent(e);
+          break;
+        }
+        default: {
+          applyEvent(e);
+          break;
+        }
+      }
+    }
+    setSending(false);
+    setStream(null);
+    setStatusMap({});
+    setReplay((r) => (r ? { ...r, note: "Replay finished." } : r));
+  }, [applyEvent, goTo]);
+
+  useEffect(() => {
+    if (replay && !replayStarted.current && cs) {
+      replayStarted.current = true;
+      void runReplay();
+    }
+  }, [replay, cs, runReplay]);
+
   function leave() {
     const base = csRef.current;
     if (!base) return;
+    if (replayRef.current) {
+      stopRef.current = true;
+      router.push("/");
+      return;
+    }
     if (!window.confirm(t(lang, "leaveConfirm"))) return;
     stopRef.current = true;
     const merged: CaseState = {
@@ -497,7 +625,50 @@ export default function HallPage() {
         </div>
       )}
 
-      {closed && !observer && (
+      {replay && (
+        <div className="stress-banner">
+          <strong>REPLAY</strong>
+          <span className="mono">{replay.title}</span>
+          <span className="mono">
+            {memoCount} memos · {docs.length} docs
+          </span>
+          {replay.note && <span>{replay.note}</span>}
+          {!replay.note ? (
+            <button
+              className="btn-warn"
+              style={{ marginLeft: "auto" }}
+              onClick={() => {
+                stopRef.current = true;
+                setSending(false);
+                setStream(null);
+                setStatusMap({});
+                setReplay((r) => (r ? { ...r, note: "Stopped." } : r));
+              }}
+            >
+              ■ Stop
+            </button>
+          ) : (
+            <button
+              className="btn-plain"
+              style={{ marginLeft: "auto" }}
+              onClick={() => window.location.reload()}
+            >
+              Play again
+            </button>
+          )}
+          <button
+            className="btn-plain"
+            onClick={() => {
+              stopRef.current = true;
+              router.push("/");
+            }}
+          >
+            Exit
+          </button>
+        </div>
+      )}
+
+      {closed && !observer && !replay && (
         <div className="closed-banner">
           <strong>{t(lang, "caseClosedBanner")}</strong>
           <span>{t(lang, "seeReport")}</span>
@@ -510,7 +681,7 @@ export default function HallPage() {
       <div className="hall-main"><Hall3D
         current={current}
         suggested={suggested}
-        synthetic={!!observer}
+        synthetic={!!observer || !!replay}
         statusMap={statusMap}
         queueSize={queueSize}
         memoRoutes={memoRoutes}
@@ -579,7 +750,7 @@ export default function HallPage() {
                         <div key={i} className="sys-note">
                           {t(lang, "referredTo")} {AGENT_MAP[e.to].windowNo} [
                           {AGENT_MAP[e.to].dept}] — {e.reason}
-                          {!observer && !closed && (
+                          {!observer && !replay && !closed && (
                             <button
                               className="btn-plain"
                               onClick={() => walkAndReport(e.to, AGENT_MAP[e.from].dept)}
@@ -634,7 +805,7 @@ export default function HallPage() {
                     </div>
                   )}
                 </div>
-                {!observer && !closed && (
+                {!observer && !replay && !closed && (
                   <div className="quick-row">
                     {[t(lang, "quickDocs"), t(lang, "quickWhat"), t(lang, "quickGo")].map(
                       (q) => (
@@ -650,7 +821,7 @@ export default function HallPage() {
                     )}
                   </div>
                 )}
-                {!observer && (
+                {!observer && !replay && (
                   <div className="counter-input">
                     <textarea
                       value={input}
@@ -684,7 +855,32 @@ export default function HallPage() {
             )}
             {error && (
               <div className="err" style={{ margin: "0 16px 12px" }}>
-                {error}
+                {error === "locked" ? (
+                  <span
+                    style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}
+                  >
+                    Live mode is locked on this deployment.
+                    <input
+                      value={passInput}
+                      onChange={(ev) => setPassInput(ev.target.value)}
+                      placeholder="access key"
+                      style={{ padding: "3px 8px", fontSize: 13, width: 130 }}
+                    />
+                    <button
+                      className="btn-plain"
+                      onClick={() => {
+                        setLivePass(passInput.trim());
+                        setPassInput("");
+                        setError("");
+                      }}
+                    >
+                      Unlock
+                    </button>
+                    <a href="/">or watch a replay →</a>
+                  </span>
+                ) : (
+                  error
+                )}
               </div>
             )}
           </div>

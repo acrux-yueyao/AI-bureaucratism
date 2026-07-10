@@ -1,3 +1,4 @@
+import { checkLivePass } from "@/lib/livepass";
 import { AGENT_MAP, WINDOW_AGENTS } from "@/lib/agents";
 import { renderConditions } from "@/lib/conditions";
 import { anthropicAdapter } from "@/lib/llm";
@@ -14,6 +15,8 @@ function isWindowId(v: unknown): v is AgentId {
 }
 
 export async function POST(req: Request) {
+  const locked = checkLivePass(req);
+  if (locked) return locked;
   let body: WindowRequest;
   try {
     body = (await req.json()) as WindowRequest;

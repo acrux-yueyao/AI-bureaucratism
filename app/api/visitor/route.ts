@@ -1,3 +1,4 @@
+import { checkLivePass } from "@/lib/livepass";
 import { anthropicAdapter } from "@/lib/llm";
 import { runVisitorMove } from "@/lib/engine";
 import { SCENARIOS } from "@/lib/visitors";
@@ -8,6 +9,8 @@ export const maxDuration = 120;
 const MODEL = process.env.AIB_MODEL || "claude-sonnet-5";
 
 export async function POST(req: Request) {
+  const locked = checkLivePass(req);
+  if (locked) return locked;
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return Response.json(

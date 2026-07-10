@@ -140,6 +140,13 @@ app/report/page.tsx  回执 + 统计 + 观察员分析 + 导出
 - 压力实验"为难的是 Agent，不是测试用户"
 - git 提交必须归属 acrux-yueyao（GitHub noreply 邮箱已配全局）
 
+## 部署（回放模式 + live 口令门）
+
+- **回放模式**：`/hall?mode=replay&id=<id>`——零 API 调用，从 `public/replays/*.json`（main01 精选案卷：paper-avalanche / closed-with-friction / the-contradiction）以真实节奏驱动整个大厅 UI（打字流、函件脉冲、跑腿、落纸）；不写 localStorage、隐藏输入框与报告链接；门户 "Watch a replay" 区是公开访客的主入口。元数据在 lib/replays.ts
+- **live 口令门**：设置环境变量 `AIB_LIVE_PASS` 后，四个 API 路由（window/visitor/report/shift-notes）要求 `x-aib-pass` 头匹配，否则 401 `{error:"locked"}`；客户端 lib/livepass.ts 从 localStorage(`aib-live-pass`) 附带头，大厅 401 时内联输入框解锁。**不设该变量 = 本地全开**（开发不受影响）
+- Vercel 环境变量：`ANTHROPIC_API_KEY`、`AIB_LIVE_PASS`（公开部署必设，否则任何访客都在烧 key）
+- 公开部署的预期形态：访客看回放，研究者输入口令进 live
+
 ## Git
 
 - `main` 推送到 github.com/acrux-yueyao/AI-bureaucratism（默认分支）

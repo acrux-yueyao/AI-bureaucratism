@@ -1,3 +1,4 @@
+import { checkLivePass } from "@/lib/livepass";
 import { AGENT_MAP } from "@/lib/agents";
 import { anthropicAdapter } from "@/lib/llm";
 import { writeShiftNotes } from "@/lib/notes";
@@ -8,6 +9,8 @@ export const maxDuration = 300;
 const MODEL = process.env.AIB_MODEL || "claude-sonnet-5";
 
 export async function POST(req: Request) {
+  const locked = checkLivePass(req);
+  if (locked) return locked;
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return Response.json(

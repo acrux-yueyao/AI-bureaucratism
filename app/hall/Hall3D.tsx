@@ -130,12 +130,14 @@ function muted(c: number, t: number): THREE.Color {
 
 type TextSprite = { sprite: THREE.Sprite; set: (txt: string) => void };
 
+// Bare letterspaced glow text — the same voice as the floor-axis labels.
+// No boxes: labels belong to the drawing, not to the UI.
 function textSprite(
   txt: string,
   scale: number,
-  boxed: boolean,
   color?: string,
-  fontPx = 42
+  fontPx = 40,
+  weight = 500
 ): TextSprite {
   const cv = document.createElement("canvas");
   cv.width = 640;
@@ -144,31 +146,22 @@ function textSprite(
   const ctx = cv.getContext("2d")!;
   const tex = new THREE.CanvasTexture(cv);
   const draw = (text: string) => {
+    const spaced = text.split("").join(" ");
     ctx.clearRect(0, 0, 640, ch);
-    ctx.font = `700 ${fontPx}px -apple-system, 'Segoe UI', Roboto, sans-serif`;
-    if (boxed) {
-      const tw = Math.min(ctx.measureText(text).width + fontPx * 1.2, 630);
-      const x0 = (640 - tw) / 2;
-      const y0 = ch * 0.13;
-      const y1 = ch * 0.87;
-      const r = Math.min((y1 - y0) * 0.36, tw / 2);
-      ctx.fillStyle = "rgba(14,18,26,.9)";
-      ctx.strokeStyle = "rgba(150,170,200,.45)";
-      ctx.lineWidth = Math.max(2, fontPx * 0.06);
-      ctx.beginPath();
-      ctx.moveTo(x0 + r, y0);
-      ctx.arcTo(x0 + tw, y0, x0 + tw, y1, r);
-      ctx.arcTo(x0 + tw, y1, x0, y1, r);
-      ctx.arcTo(x0, y1, x0, y0, r);
-      ctx.arcTo(x0, y0, x0 + tw, y0, r);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
+    let px = fontPx;
+    ctx.font = `${weight} ${px}px -apple-system, 'Segoe UI', Roboto, sans-serif`;
+    const w0 = ctx.measureText(spaced).width;
+    if (w0 > 616) {
+      px = Math.max(18, Math.floor((fontPx * 616) / w0));
+      ctx.font = `${weight} ${px}px -apple-system, 'Segoe UI', Roboto, sans-serif`;
     }
-    ctx.fillStyle = color ?? (boxed ? "#eef3fa" : "rgba(198,210,230,.85)");
+    ctx.fillStyle = color ?? "rgba(232,240,250,.95)";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(boxed ? text : text.split("").join(" "), 320, ch / 2 + fontPx * 0.05);
+    ctx.shadowColor = "rgba(6,8,12,.95)";
+    ctx.shadowBlur = Math.max(6, px * 0.16);
+    ctx.fillText(spaced, 320, ch / 2 + px * 0.04);
+    ctx.shadowBlur = 0;
     tex.needsUpdate = true;
   };
   draw(txt);
@@ -350,7 +343,7 @@ export default function Hall3D(props: Props) {
     for (let i = 0; i <= 4; i++) {
       const fy = i * 3;
       line(new THREE.Vector3(-9.95, fy, 0), new THREE.Vector3(-9.25, fy, 0), 0x55617a, 0.9);
-      const lb = textSprite(i === 0 ? "G" : i + "F", 1.1, false);
+      const lb = textSprite(i === 0 ? "G" : i + "F", 1.1);
       lb.sprite.position.set(-10.6, fy, 0);
       scene.add(lb.sprite);
     }
@@ -362,7 +355,7 @@ export default function Hall3D(props: Props) {
         [12.6, "DIRECTOR"],
       ] as [number, string][]
     ).forEach(([y, txt]) => {
-      const lb = textSprite(txt, 2.9, false);
+      const lb = textSprite(txt, 2.9);
       lb.sprite.position.set(-9.6, y + 0.55, 0);
       scene.add(lb.sprite);
     });
@@ -373,7 +366,7 @@ export default function Hall3D(props: Props) {
       ] as [number, string, string, number][]
     ).forEach(([y, txt, css, col]) => {
       line(new THREE.Vector3(-9.85, y, 0), new THREE.Vector3(-9.35, y, 0), col, 0.95);
-      const lb = textSprite(txt, 1.6, false, css);
+      const lb = textSprite(txt, 1.6, css, 40, 600);
       lb.sprite.position.set(-8.2, y, 0);
       scene.add(lb.sprite);
     });
@@ -485,15 +478,15 @@ export default function Hall3D(props: Props) {
       const short = o.num.length <= 2;
       const np = textSprite(
         o.num,
-        o.big ? 3.1 : short ? 2.3 : 1.7,
-        true,
-        undefined,
-        o.big ? 56 : short ? 110 : 60
+        o.big ? 3.2 : short ? 2.4 : 1.8,
+        "rgba(236,243,252,.96)",
+        o.big ? 52 : short ? 120 : 54,
+        short && !o.big ? 300 : 400
       );
-      np.sprite.position.y = o.h / 2 + (short ? 0.6 : 0.5);
+      np.sprite.position.y = o.h / 2 + (short ? 0.55 : 0.45);
       g.add(np.sprite);
-      const status = textSprite("", o.big ? 2.6 : 2.2, true, undefined, 46);
-      status.sprite.position.y = o.h / 2 + (short ? 1.45 : 1.3);
+      const status = textSprite("", o.big ? 2.6 : 2.3, "#" + accent.getHexString(), 44, 500);
+      status.sprite.position.y = o.h / 2 + (short ? 1.42 : 1.28);
       status.sprite.visible = false;
       g.add(status.sprite);
       g.position.set(o.x, o.y + driftY(id), o.z);

@@ -32,6 +32,9 @@ type Props = {
   flights: HallFlight[];
   onFlightDone: (id: number) => void;
   docCount: number;
+  todoCount: number;
+  beamFlow: "up" | "down" | null;
+  closed: boolean;
   onSelect: (id: AgentId) => void;
 };
 
@@ -175,13 +178,31 @@ function makeStream(
   return { curve, pos, ph, n, geo, obj };
 }
 
+type RoomRef = {
+  group: THREE.Group;
+  floor: THREE.MeshStandardMaterial;
+  status: TextSprite;
+  fig: THREE.Group;
+  figWorld: THREE.Vector3;
+};
+
+type Trip = {
+  id: number;
+  out: THREE.QuadraticBezierCurve3;
+  back: THREE.QuadraticBezierCurve3;
+  g: THREE.Group;
+  t: number;
+  phase: 0 | 1 | 2;
+  fig: THREE.Group;
+};
+
 type World = {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
   clock: THREE.Clock;
   cam: { az: number; pol: number; dist: number; target: THREE.Vector3; auto: boolean };
-  rooms: Map<AgentId, { group: THREE.Group; floor: THREE.MeshStandardMaterial; status: TextSprite }>;
+  rooms: Map<AgentId, RoomRef>;
   me: THREE.Group;
   meMats: THREE.MeshStandardMaterial[];
   stack: THREE.Group;
@@ -193,7 +214,10 @@ type World = {
   streams: Stream[];
   trailGroup: THREE.Group;
   pulses: { id: number; curve: THREE.QuadraticBezierCurve3; mesh: THREE.Mesh; t: number }[];
-  papers: { mesh: THREE.Mesh; t: number; from: THREE.Vector3 }[];
+  papers: { mesh: THREE.Mesh; t: number; from: THREE.Vector3; ghost?: boolean }[];
+  trips: Trip[];
+  mkFig: (c: number, sc: number) => THREE.Group;
+  closedT: number;
   dusts: { pos: Float32Array; n: number; speed: number; top: number; geo: THREE.BufferGeometry }[];
   colGeo: THREE.BufferGeometry;
   colPos: Float32Array;
@@ -212,6 +236,7 @@ export default function Hall3D(props: Props) {
   propsRef.current = props;
   const spawned = useRef(new Set<number>());
   const prevDocs = useRef(-1);
+  const prevTodos = useRef(-1);
   const [autoLabel, setAutoLabel] = useState(false);
 
   useEffect(() => {
@@ -328,7 +353,7 @@ export default function Hall3D(props: Props) {
       return g;
     };
 
-    const rooms = new Map<AgentId, { group: THREE.Group; floor: THREE.MeshStandardMaterial; status: TextSprite }>();
+    const rooms = new Map<AgentId, RoomRef>();
     const pickables: THREE.Object3D[] = [];
 
     (Object.keys(ROOMS) as AgentId[]).forEach((id) => {
@@ -420,7 +445,13 @@ export default function Hall3D(props: Props) {
       });
       scene.add(g);
       pickables.push(g);
-      rooms.set(id, { group: g, floor: floorMat, status });
+      rooms.set(id, {
+        group: g,
+        floor: floorMat,
+        status,
+        fig: f,
+        figWorld: new THREE.Vector3(o.x + f.position.x, o.y + f.position.y, o.z + f.position.z),
+      });
     });
 
     const plants: THREE.Points[] = [];
@@ -634,6 +665,25 @@ export default function Hall3D(props: Props) {
     beam.visible = false;
     scene.add(beam);
 
+    // words rise, replies fall: particles inside the beam
+    const flowN = 42;
+    const flowPos = new Float32Array(flowN * 3);
+    const flowPh = new Float32Array(flowN);
+    const flowOff = new Float32Array(flowN * 2);
+    for (let j = 0; j < flowN; j++) {
+      flowPh[j] = Math.random();
+      const a = Math.random() * 6.283;
+      const r = Math.random() * 0.09;
+      flowOff[j * 2] = Math.cos(a) * r;
+      flowOff[j * 2 + 1] = Math.sin(a) * r;
+    }
+    const flowGeo = new THREE.BufferGeometry();
+    flowGeo.setAttribute("position", new THREE.BufferAttribute(flowPos, 3));
+    const flowMat = new THREE.PointsMaterial({ color: 0xffd9d4, size: 0.11, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
+    const flowPts = new THREE.Points(flowGeo, flowMat);
+    flowPts.visible = false;
+    scene.add(flowPts);
+
     const suggestPin = new THREE.Group();
     const spCone = new THREE.Mesh(
       new THREE.CylinderGeometry(0.02, 0.18, 0.44, 12),
@@ -676,6 +726,9 @@ export default function Hall3D(props: Props) {
       trailGroup,
       pulses: [],
       papers: [],
+      trips: [],
+      mkFig: fig,
+      closedT: 0,
       dusts,
       colGeo,
       colPos,
@@ -789,17 +842,40 @@ export default function Hall3D(props: Props) {
       });
 
       if (p.current) {
-        beam.visible = true;
         const top = new THREE.Vector3(me.position.x, me.position.y + 0.7, me.position.z);
         const bot = boxBottom(p.current);
         const bd = new THREE.Vector3().subVectors(bot, top);
         const bl = bd.length();
         beam.position.copy(new THREE.Vector3().addVectors(top, bot).multiplyScalar(0.5));
         beam.scale.set(1, bl, 1);
-        beam.quaternion.setFromUnitVectors(yAxis, bd.normalize());
-        beamMat.opacity = 0.2 + 0.12 * Math.sin(t * 2.6);
+        beam.quaternion.setFromUnitVectors(yAxis, bd.clone().normalize());
+        if (p.closed) {
+          world.closedT += dt;
+          beamMat.color.setHex(0x6ed6af);
+          beamMat.opacity = Math.max(0, 0.32 - world.closedT * 0.09);
+        } else {
+          world.closedT = 0;
+          beamMat.color.setHex(0xf0847e);
+          beamMat.opacity = 0.2 + 0.12 * Math.sin(t * 2.6);
+        }
+        beam.visible = beamMat.opacity > 0.01;
+        if (p.beamFlow && !p.closed) {
+          flowPts.visible = true;
+          flowMat.color.setHex(p.beamFlow === "up" ? 0xffd9d4 : 0xcfe2ff);
+          for (let j = 0; j < flowN; j++) {
+            const raw = p.beamFlow === "up" ? t * 0.5 + flowPh[j] : -t * 0.5 + flowPh[j];
+            const u = ((raw % 1) + 1) % 1;
+            flowPos[j * 3] = top.x + bd.x * u + flowOff[j * 2];
+            flowPos[j * 3 + 1] = top.y + bd.y * u;
+            flowPos[j * 3 + 2] = top.z + bd.z * u + flowOff[j * 2 + 1];
+          }
+          flowGeo.attributes.position.needsUpdate = true;
+        } else {
+          flowPts.visible = false;
+        }
       } else {
         beam.visible = false;
+        flowPts.visible = false;
       }
 
       if (p.suggested && p.suggested !== p.current) {
@@ -860,6 +936,41 @@ export default function Hall3D(props: Props) {
         }
       }
 
+      // staff errands: the sender personally carries peer and upward memos
+      for (let k = world.trips.length - 1; k >= 0; k--) {
+        const tr = world.trips[k];
+        if (tr.phase === 0) {
+          tr.t += dt / 1.3;
+          if (tr.t >= 1) {
+            tr.phase = 1;
+            tr.t = 0;
+            tr.g.position.copy(tr.out.getPoint(1));
+          } else {
+            const e = tr.t * tr.t * (3 - 2 * tr.t);
+            tr.g.position.copy(tr.out.getPoint(e));
+          }
+        } else if (tr.phase === 1) {
+          tr.t += dt / 0.9;
+          const p0 = tr.out.getPoint(1);
+          tr.g.position.set(p0.x, p0.y + Math.abs(Math.sin(t * 6)) * 0.04, p0.z);
+          if (tr.t >= 1) {
+            tr.phase = 2;
+            tr.t = 0;
+          }
+        } else {
+          tr.t += dt / 1.3;
+          if (tr.t >= 1) {
+            scene.remove(tr.g);
+            tr.fig.visible = true;
+            world.trips.splice(k, 1);
+            propsRef.current.onFlightDone(tr.id);
+          } else {
+            const e = tr.t * tr.t * (3 - 2 * tr.t);
+            tr.g.position.copy(tr.back.getPoint(e));
+          }
+        }
+      }
+
       for (let k = world.papers.length - 1; k >= 0; k--) {
         const pa = world.papers[k];
         pa.t += dt;
@@ -875,10 +986,19 @@ export default function Hall3D(props: Props) {
         pa.mesh.rotation.z = kk * 2.4;
         pa.mesh.rotation.x = -1.1 + kk * 0.5;
         if (kk >= 1) {
-          scene.remove(pa.mesh);
-          world.papers.splice(k, 1);
-          world.stackShown += 1;
-          world.rebuildStack();
+          if (pa.ghost) {
+            const fade = 1 - (pa.t - 1.35) / 0.6;
+            (pa.mesh.material as THREE.MeshStandardMaterial).opacity = Math.max(0, fade);
+            if (fade <= 0) {
+              scene.remove(pa.mesh);
+              world.papers.splice(k, 1);
+            }
+          } else {
+            scene.remove(pa.mesh);
+            world.papers.splice(k, 1);
+            world.stackShown += 1;
+            world.rebuildStack();
+          }
         }
       }
 
@@ -989,11 +1109,45 @@ export default function Hall3D(props: Props) {
     for (const f of props.flights) {
       if (spawned.current.has(f.id)) continue;
       spawned.current.add(f.id);
+      const ch = f.channel ?? "peer";
+      const sender = world.rooms.get(f.from);
+      if (!f.reply && sender && sender.fig.visible && (ch === "peer" || ch === "up")) {
+        // consults and escalations are carried in person
+        const o = ROOMS[f.from];
+        const to = ROOMS[f.to];
+        const start = sender.figWorld.clone();
+        const end = new THREE.Vector3(to.x, to.y - to.h / 2 + 0.06, to.z + to.d * 0.32);
+        const mid = new THREE.Vector3(
+          (start.x + end.x) / 2,
+          Math.max(o.y + o.h / 2, to.y + to.h / 2) + 1.6,
+          (start.z + end.z) / 2
+        );
+        const g = world.mkFig(o.c, Math.min(1, o.h / 1.7));
+        const memo = new THREE.Mesh(
+          new THREE.BoxGeometry(0.22, 0.04, 0.16),
+          new THREE.MeshStandardMaterial({ color: 0xf2f4f6, emissive: 0xf2f4f6, emissiveIntensity: 0.45 })
+        );
+        memo.position.set(0.22, 0.78, 0.05);
+        g.add(memo);
+        g.position.copy(start);
+        world.scene.add(g);
+        sender.fig.visible = false;
+        world.trips.push({
+          id: f.id,
+          out: new THREE.QuadraticBezierCurve3(start, mid, end),
+          back: new THREE.QuadraticBezierCurve3(end, mid, start),
+          g,
+          t: 0,
+          phase: 0,
+          fig: sender.fig,
+        });
+        continue;
+      }
       const a = boxTop(f.from).add(new THREE.Vector3(0, 0.15, 0));
       const b = boxTop(f.to).add(new THREE.Vector3(0, 0.15, 0));
       const mid = new THREE.Vector3((a.x + b.x) / 2, Math.max(a.y, b.y) + 2.2, (a.z + b.z) / 2);
       const curve = new THREE.QuadraticBezierCurve3(a, mid, b);
-      const color = CHANNEL_COLOR[f.channel ?? "peer"];
+      const color = CHANNEL_COLOR[ch];
       const mesh = new THREE.Mesh(
         new THREE.SphereGeometry(f.reply ? 0.12 : 0.16, 12, 10),
         new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false })
@@ -1032,6 +1186,34 @@ export default function Hall3D(props: Props) {
     }
     prevDocs.current = props.docCount;
   }, [props.docCount, props.current]);
+
+  // a required-materials slip drops and dissolves on the ground
+  useEffect(() => {
+    const world = worldRef.current;
+    if (!world) return;
+    if (prevTodos.current === -1) {
+      prevTodos.current = props.todoCount;
+      return;
+    }
+    if (props.todoCount > prevTodos.current && props.current) {
+      const from = boxBottom(props.current);
+      const mesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.34, 0.44),
+        new THREE.MeshStandardMaterial({
+          color: 0xffd9d4,
+          emissive: 0xf0847e,
+          emissiveIntensity: 0.4,
+          side: THREE.DoubleSide,
+          transparent: true,
+        })
+      );
+      mesh.position.copy(from);
+      mesh.rotation.x = -1.1;
+      world.scene.add(mesh);
+      world.papers.push({ mesh, t: 0, from, ghost: true });
+    }
+    prevTodos.current = props.todoCount;
+  }, [props.todoCount, props.current]);
 
   useEffect(() => {
     const world = worldRef.current;

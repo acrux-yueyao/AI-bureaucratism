@@ -518,6 +518,9 @@ export default function HallPage() {
         flights={flights}
         onFlightDone={removeFlight}
         docCount={docs.length}
+        todoCount={todos.length}
+        beamFlow={stream ? "down" : sending ? "up" : null}
+        closed={closed}
         onSelect={goTo}
       />
 

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { AGENT_MAP, AGENTS } from "@/lib/agents";
+import { loadExperience } from "@/lib/experience";
 import type { AgentId, AgentUiState } from "@/lib/types";
 
 // The hall as an exploded hierarchy: glass rooms suspended in a dark void,
@@ -35,6 +36,7 @@ type Props = {
   todoCount: number;
   beamFlow: "up" | "down" | null;
   closed: boolean;
+  conditionId: string | null;
   onSelect: (id: AgentId) => void;
 };
 
@@ -77,6 +79,35 @@ const STATE_TEXT: Record<AgentUiState, string> = {
   idle: "",
 };
 
+// Standing accrues: altitude drifts upward with accumulated service
+// (experience tallies), on top of the frozen design coordinates.
+const DRIFT: Partial<Record<AgentId, number>> = {};
+
+function driftY(id: AgentId): number {
+  return DRIFT[id] ?? 0;
+}
+
+function computeDrift() {
+  try {
+    const exp = loadExperience();
+    (Object.keys(ROOMS) as AgentId[]).forEach((id) => {
+      const tl = exp.tallies[id];
+      if (!tl) {
+        delete DRIFT[id];
+        return;
+      }
+      const d = Math.min(
+        0.5,
+        tl.cases * 0.05 + (tl.memosIn + tl.memosOut) * 0.008 + tl.docs * 0.02
+      );
+      if (d > 0.004) DRIFT[id] = d;
+      else delete DRIFT[id];
+    });
+  } catch {
+    // localStorage unavailable: keep frozen altitudes
+  }
+}
+
 function groundSpot(id: AgentId | "entrance"): THREE.Vector3 {
   if (id === "entrance") return ENTRANCE_SPOT.clone();
   const r = ROOMS[id];
@@ -85,12 +116,12 @@ function groundSpot(id: AgentId | "entrance"): THREE.Vector3 {
 
 function boxBottom(id: AgentId): THREE.Vector3 {
   const r = ROOMS[id];
-  return new THREE.Vector3(r.x, r.y - r.h / 2, r.z);
+  return new THREE.Vector3(r.x, r.y + driftY(id) - r.h / 2, r.z);
 }
 
 function boxTop(id: AgentId): THREE.Vector3 {
   const r = ROOMS[id];
-  return new THREE.Vector3(r.x, r.y + r.h / 2, r.z);
+  return new THREE.Vector3(r.x, r.y + driftY(id) + r.h / 2, r.z);
 }
 
 function muted(c: number, t: number): THREE.Color {
@@ -218,6 +249,10 @@ type World = {
   trips: Trip[];
   mkFig: (c: number, sc: number) => THREE.Group;
   closedT: number;
+  amb: THREE.AmbientLight;
+  dl: THREE.DirectionalLight;
+  baseGlow: number;
+  dustBoost: number;
   dusts: { pos: Float32Array; n: number; speed: number; top: number; geo: THREE.BufferGeometry }[];
   colGeo: THREE.BufferGeometry;
   colPos: Float32Array;
@@ -238,6 +273,9 @@ export default function Hall3D(props: Props) {
   const prevDocs = useRef(-1);
   const prevTodos = useRef(-1);
   const [autoLabel, setAutoLabel] = useState(false);
+  const [researcher, setResearcher] = useState(false);
+  const researcherRef = useRef(false);
+  const [dossier, setDossier] = useState<AgentId | null>(null);
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -248,13 +286,16 @@ export default function Hall3D(props: Props) {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     wrap.appendChild(renderer.domElement);
 
+    computeDrift();
+
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x06070a);
     scene.fog = new THREE.FogExp2(0x06070a, 0.006);
     const camera = new THREE.PerspectiveCamera(42, 16 / 9, 0.1, 400);
     const cam = { az: 0.55, pol: 1.12, dist: 30, target: new THREE.Vector3(0, 5.8, 0), auto: false };
 
-    scene.add(new THREE.AmbientLight(0x9fb2d6, 0.32));
+    const amb = new THREE.AmbientLight(0x9fb2d6, 0.32);
+    scene.add(amb);
     const dl = new THREE.DirectionalLight(0xdfe8ff, 0.28);
     dl.position.set(10, 26, 8);
     scene.add(dl);
@@ -439,7 +480,7 @@ export default function Hall3D(props: Props) {
       status.sprite.position.y = o.h / 2 + 1.0;
       status.sprite.visible = false;
       g.add(status.sprite);
-      g.position.set(o.x, o.y, o.z);
+      g.position.set(o.x, o.y + driftY(id), o.z);
       g.traverse((m) => {
         m.userData.key = id;
       });
@@ -450,7 +491,11 @@ export default function Hall3D(props: Props) {
         floor: floorMat,
         status,
         fig: f,
-        figWorld: new THREE.Vector3(o.x + f.position.x, o.y + f.position.y, o.z + f.position.z),
+        figWorld: new THREE.Vector3(
+          o.x + f.position.x,
+          o.y + driftY(id) + f.position.y,
+          o.z + f.position.z
+        ),
       });
     });
 
@@ -729,6 +774,10 @@ export default function Hall3D(props: Props) {
       trips: [],
       mkFig: fig,
       closedT: 0,
+      amb,
+      dl,
+      baseGlow: 0.34,
+      dustBoost: 1,
       dusts,
       colGeo,
       colPos,
@@ -800,8 +849,12 @@ export default function Hall3D(props: Props) {
             key = o.userData.key as AgentId | undefined;
             o = o.parent;
           }
-          if (key && AGENT_MAP[key].level === 3 && !propsRef.current.synthetic) {
-            propsRef.current.onSelect(key);
+          if (key) {
+            if (researcherRef.current) {
+              setDossier(key);
+            } else if (AGENT_MAP[key].level === 3 && !propsRef.current.synthetic) {
+              propsRef.current.onSelect(key);
+            }
           }
         }
       }
@@ -909,7 +962,9 @@ export default function Hall3D(props: Props) {
       rooms.forEach((r, id) => {
         const st = p.statusMap[id];
         const busy = !!st && st.state !== "idle";
-        r.floor.emissiveIntensity = busy ? 0.45 + 0.18 * Math.sin(t * 4) : 0.34;
+        r.floor.emissiveIntensity = busy
+          ? world.baseGlow + 0.11 + 0.18 * Math.sin(t * 4)
+          : world.baseGlow;
       });
 
       world.streams.forEach((s) => {
@@ -1004,7 +1059,7 @@ export default function Hall3D(props: Props) {
 
       dusts.forEach((D) => {
         for (let j = 0; j < D.n; j++) {
-          D.pos[j * 3 + 1] += dt * D.speed;
+          D.pos[j * 3 + 1] += dt * D.speed * world.dustBoost;
           if (D.pos[j * 3 + 1] > D.top) D.pos[j * 3 + 1] = 0;
         }
         D.geo.attributes.position.needsUpdate = true;
@@ -1116,10 +1171,10 @@ export default function Hall3D(props: Props) {
         const o = ROOMS[f.from];
         const to = ROOMS[f.to];
         const start = sender.figWorld.clone();
-        const end = new THREE.Vector3(to.x, to.y - to.h / 2 + 0.06, to.z + to.d * 0.32);
+        const end = boxBottom(f.to).add(new THREE.Vector3(0, 0.06, to.d * 0.32));
         const mid = new THREE.Vector3(
           (start.x + end.x) / 2,
-          Math.max(o.y + o.h / 2, to.y + to.h / 2) + 1.6,
+          Math.max(boxTop(f.from).y, boxTop(f.to).y) + 1.6,
           (start.z + end.z) / 2
         );
         const g = world.mkFig(o.c, Math.min(1, o.h / 1.7));
@@ -1234,22 +1289,111 @@ export default function Hall3D(props: Props) {
     });
   }, [props.statusMap]);
 
+  // hall conditions change the weather of the void
+  useEffect(() => {
+    const w = worldRef.current;
+    if (!w) return;
+    const c = props.conditionId;
+    const bg = c === "ninth_hour" ? 0x0a0712 : 0x06070a;
+    (w.scene.background as THREE.Color).setHex(bg);
+    (w.scene.fog as THREE.FogExp2).color.setHex(bg);
+    if (c === "ninth_hour") {
+      w.amb.color.setHex(0xc9a68e);
+      w.amb.intensity = 0.22;
+      w.dl.color.setHex(0xff9f6a);
+      w.dl.intensity = 0.42;
+      w.dl.position.set(-14, 10, -6);
+      w.baseGlow = 0.46;
+      w.dustBoost = 0.8;
+    } else if (c === "rush") {
+      w.amb.color.setHex(0x9fb2d6);
+      w.amb.intensity = 0.36;
+      w.dl.color.setHex(0xdfe8ff);
+      w.dl.intensity = 0.3;
+      w.dl.position.set(10, 26, 8);
+      w.baseGlow = 0.36;
+      w.dustBoost = 1.8;
+    } else if (c === "ten_to_five") {
+      w.amb.color.setHex(0xb6c4dd);
+      w.amb.intensity = 0.3;
+      w.dl.color.setHex(0xe8eeff);
+      w.dl.intensity = 0.34;
+      w.dl.position.set(16, 20, 10);
+      w.baseGlow = 0.34;
+      w.dustBoost = 0.9;
+    } else {
+      w.amb.color.setHex(0x9fb2d6);
+      w.amb.intensity = 0.32;
+      w.dl.color.setHex(0xdfe8ff);
+      w.dl.intensity = 0.28;
+      w.dl.position.set(10, 26, 8);
+      w.baseGlow = 0.34;
+      w.dustBoost = 1;
+    }
+  }, [props.conditionId]);
+
+  const setCam = (which: "my" | "orbit" | "elev") => {
+    const w = worldRef.current;
+    if (!w) return;
+    const c = w.cam;
+    if (which === "orbit") {
+      c.az = 0.55;
+      c.pol = 1.12;
+      c.dist = 30;
+      c.target.set(0, 5.8, 0);
+    } else if (which === "elev") {
+      c.az = 0;
+      c.pol = 1.35;
+      c.dist = 34;
+      c.target.set(0, 6, 0);
+    } else {
+      const m = w.me.position;
+      c.target.set(m.x, 4.2, m.z);
+      c.dist = 15;
+      c.pol = 1.42;
+      const l = Math.hypot(m.x, m.z) || 1;
+      c.az = Math.atan2(m.x / l, m.z / l);
+    }
+  };
+
+  const doss = dossier
+    ? (() => {
+        const a = AGENT_MAP[dossier];
+        const o = ROOMS[dossier];
+        const st = props.statusMap[dossier];
+        const exp = loadExperience();
+        const tl = exp.tallies[dossier];
+        const lastNote = (exp.notes[dossier] ?? []).slice(-1)[0];
+        const drift = driftY(dossier);
+        const role =
+          a.level === 1
+            ? "Director"
+            : a.level === 2
+              ? "Section chief"
+              : a.level === 3
+                ? `Window ${a.windowNo} officer`
+                : "Trainee";
+        const live =
+          st && st.state !== "idle"
+            ? st.state === "consulting" && st.target
+              ? `memo → ${AGENT_MAP[st.target].personName}`
+              : STATE_TEXT[st.state].toLowerCase()
+            : "idle";
+        return { a, o, tl, lastNote, drift, role, live };
+      })()
+    : null;
+
   return (
     <div className="void-wrap" ref={wrapRef}>
-      <div className="void-hint">click a window · drag to orbit · scroll to zoom</div>
+      <div className="void-hint">
+        {researcher
+          ? "researcher view · click anyone to read their record"
+          : "click a window · drag to orbit · scroll to zoom"}
+      </div>
       <div className="void-ui">
-        <button
-          onClick={() => {
-            const w = worldRef.current;
-            if (!w) return;
-            w.cam.az = 0.55;
-            w.cam.pol = 1.12;
-            w.cam.dist = 30;
-            w.cam.target.set(0, 5.8, 0);
-          }}
-        >
-          RESET VIEW
-        </button>
+        <button onClick={() => setCam("my")}>MY VIEW</button>
+        <button onClick={() => setCam("orbit")}>ORBIT</button>
+        <button onClick={() => setCam("elev")}>ELEVATION</button>
         <button
           onClick={() => {
             const w = worldRef.current;
@@ -1258,9 +1402,62 @@ export default function Hall3D(props: Props) {
             setAutoLabel(w.cam.auto);
           }}
         >
-          AUTO ORBIT: {autoLabel ? "ON" : "OFF"}
+          AUTO: {autoLabel ? "ON" : "OFF"}
+        </button>
+        <button
+          onClick={() => {
+            const next = !researcher;
+            setResearcher(next);
+            researcherRef.current = next;
+            if (!next) setDossier(null);
+          }}
+        >
+          RESEARCHER: {researcher ? "ON" : "OFF"}
         </button>
       </div>
+      {doss && (
+        <div className="void-doss">
+          <button className="vd-close" onClick={() => setDossier(null)}>
+            ×
+          </button>
+          <div className="vd-name">{doss.a.personName}</div>
+          <div className="vd-dept">
+            <span
+              className="vd-dot"
+              style={{ background: `#${doss.o.c.toString(16).padStart(6, "0")}` }}
+            />
+            {doss.a.dept} · {doss.role}
+          </div>
+          <div className="vd-floor">
+            altitude: floor {((doss.o.y + doss.drift) / 3).toFixed(2)}F
+            {doss.drift > 0 ? ` (+${doss.drift.toFixed(2)} earned)` : ""}
+          </div>
+          <div className="vd-line">
+            {doss.a.tenureYears} yrs in the hall
+            {doss.a.status ? ` · ${doss.a.status}` : ""}
+          </div>
+          <div className="vd-line">now: {doss.live}</div>
+          {doss.tl ? (
+            <>
+              <div className="vd-line">
+                cases {doss.tl.cases} · replies {doss.tl.exchanges} · docs {doss.tl.docs}
+              </div>
+              <div className="vd-line">
+                memos {doss.tl.memosOut} out / {doss.tl.memosIn} in · escalated{" "}
+                {doss.tl.escalations} · assigned {doss.tl.assignmentsReceived}
+              </div>
+            </>
+          ) : (
+            <div className="vd-line">no service record yet</div>
+          )}
+          {doss.lastNote && (
+            <div className="vd-note">
+              “{doss.lastNote.text.length > 120 ? doss.lastNote.text.slice(0, 120) + "…" : doss.lastNote.text}”
+            </div>
+          )}
+          <div className="vd-foot">RESEARCHER VIEW · LIVE SERVICE RECORD</div>
+        </div>
+      )}
     </div>
   );
 }

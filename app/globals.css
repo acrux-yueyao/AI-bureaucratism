@@ -408,6 +408,11 @@ textarea {
   display: flex;
   gap: 8px;
 }
+.void-ui {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: 70%;
+}
 .void-ui button {
   background: rgba(18, 24, 34, 0.9);
   border: 1px solid rgba(120, 140, 170, 0.35);
@@ -418,6 +423,70 @@ textarea {
   letter-spacing: 1.2px;
   color: #dfe6f2;
   cursor: pointer;
+}
+.void-doss {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 4;
+  width: 244px;
+  background: rgba(13, 17, 24, 0.93);
+  border: 1px solid rgba(120, 140, 170, 0.28);
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: #e8eef8;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.void-doss .vd-close {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #8b95a4;
+  font-size: 15px;
+  cursor: pointer;
+}
+.void-doss .vd-name {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+  padding-right: 16px;
+}
+.void-doss .vd-dept {
+  color: #93a0b4;
+  margin-bottom: 2px;
+}
+.void-doss .vd-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+.void-doss .vd-floor {
+  color: #7ec9bb;
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+.void-doss .vd-line {
+  color: #c3cbd8;
+}
+.void-doss .vd-note {
+  color: #aab6c8;
+  font-style: italic;
+  margin-top: 6px;
+  border-left: 2px solid rgba(120, 140, 170, 0.35);
+  padding-left: 8px;
+}
+.void-doss .vd-foot {
+  border-top: 1px solid rgba(255, 255, 255, 0.13);
+  margin-top: 8px;
+  padding-top: 6px;
+  color: #8b95a4;
+  font-size: 10.5px;
+  letter-spacing: 1px;
 }
 
 /* ── dock (service-desk sidebar, right of the void) ── */

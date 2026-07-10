@@ -521,6 +521,7 @@ export default function HallPage() {
         todoCount={todos.length}
         beamFlow={stream ? "down" : sending ? "up" : null}
         closed={closed}
+        conditionId={cs.conditionId ?? null}
         onSelect={goTo}
       />
 

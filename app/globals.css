@@ -966,3 +966,195 @@ textarea {
     height: 300px;
   }
 }
+
+/* ── hall dark theme: past the portal, the whole page joins the void ──
+   The GOV.UK portal stays daylight-white (the public face); once inside
+   the hall, every surface adopts the 3D scene's glass-panel language.
+   Paper artifacts (the A4 document) stay white — paper is the brightest
+   thing in this world. Channel colors match the particle streams. */
+.hall-page {
+  background: #06070a;
+}
+.hall-page .hall-head-meta {
+  color: #aab6c8;
+  opacity: 1;
+}
+.hall-page .stress-banner {
+  background: rgba(46, 24, 20, 0.75);
+  border-bottom: 1px solid rgba(240, 132, 126, 0.35);
+  color: #f2c7c1;
+}
+.hall-page .stress-banner .mono {
+  color: #f0a49d;
+}
+.hall-page .closed-banner {
+  background: rgba(15, 30, 25, 0.75);
+  border: 1px solid rgba(110, 214, 175, 0.35);
+  border-radius: 10px;
+  color: #cfeee0;
+}
+.hall-page .closed-banner strong {
+  color: #6ed6af;
+}
+.hall-page .btn-plain {
+  background: rgba(18, 24, 34, 0.9);
+  border: 1px solid rgba(120, 140, 170, 0.35);
+  color: #dfe6f2;
+  border-radius: 8px;
+  box-shadow: none;
+}
+.hall-page .btn-plain:hover {
+  background: rgba(28, 36, 50, 0.95);
+  border-color: rgba(180, 200, 230, 0.6);
+  color: #fff;
+}
+.hall-page .btn-green {
+  background: #1f9d74;
+  color: #fff;
+  border-radius: 8px;
+  box-shadow: none;
+}
+.hall-page .btn-green:hover {
+  background: #26af83;
+}
+.hall-page .btn-warn {
+  background: rgba(58, 26, 26, 0.9);
+  border: 1px solid rgba(224, 82, 77, 0.5);
+  color: #f0a9a4;
+  border-radius: 8px;
+  box-shadow: none;
+}
+.hall-page .dock {
+  background: rgba(13, 17, 24, 0.92);
+  border: 1px solid rgba(120, 140, 170, 0.25);
+}
+.hall-page .dock-tabs {
+  background: rgba(9, 12, 17, 0.9);
+  border-bottom: 1px solid rgba(120, 140, 170, 0.2);
+}
+.hall-page .dock-tabs button {
+  color: #7f8b9d;
+}
+.hall-page .dock-tabs button.on {
+  color: #eef2f8;
+  border-bottom-color: #7aade0;
+}
+.hall-page .msg {
+  border-color: rgba(120, 140, 170, 0.22);
+}
+.hall-page .msg.user {
+  background: #26303f;
+  border-color: #3c4c62;
+  color: #e8eef8;
+}
+.hall-page .msg.agent {
+  background: rgba(23, 29, 39, 0.92);
+  color: #dfe6f2;
+  box-shadow: none;
+}
+.hall-page .msg .who {
+  color: #8b95a4;
+}
+.hall-page .msg.streaming::after {
+  color: #7aade0;
+}
+.hall-page .sys-note {
+  background: rgba(120, 140, 170, 0.12);
+  color: #9aa6b8;
+  border-radius: 6px;
+}
+.hall-page .counter-empty {
+  color: #6d7889;
+}
+.hall-page .counter-input {
+  border-top: 1px solid rgba(120, 140, 170, 0.2);
+}
+.hall-page .counter-input textarea {
+  background: #10151d;
+  border: 1px solid rgba(120, 140, 170, 0.35);
+  color: #eef2f8;
+  border-radius: 8px;
+}
+.hall-page .counter-input textarea::placeholder {
+  color: #5d6879;
+}
+.hall-page .counter-input textarea:focus {
+  outline: 2px solid #7aade0;
+  border-color: transparent;
+}
+.hall-page .chip {
+  background: rgba(18, 24, 34, 0.9);
+  border: 1px solid rgba(120, 140, 170, 0.3);
+  color: #aab6c8;
+  border-radius: 999px;
+}
+.hall-page .chip:hover {
+  border-color: rgba(180, 200, 230, 0.55);
+  color: #dfe6f2;
+  background: rgba(28, 36, 50, 0.95);
+}
+.hall-page .dock-pane .empty {
+  color: #6d7889;
+}
+.hall-page .doc-item {
+  background: rgba(23, 29, 39, 0.92);
+  border: 1px solid rgba(120, 140, 170, 0.25);
+  color: #dfe6f2;
+  border-radius: 8px;
+}
+.hall-page .doc-item:hover {
+  border-color: rgba(180, 200, 230, 0.55);
+}
+.hall-page .doc-item .ref {
+  color: #8b95a4;
+}
+.hall-page .todo-item {
+  color: #cfd7e2;
+  border-bottom: 1px solid rgba(120, 140, 170, 0.15);
+}
+.hall-page .todo-item em {
+  color: #8b95a4;
+}
+.hall-page .err {
+  background: rgba(58, 26, 26, 0.6);
+  border-left-color: #e0524d;
+  color: #f2c7c1;
+}
+.hall-page .spin {
+  border-color: rgba(120, 140, 170, 0.35);
+  border-top-color: #7aade0;
+}
+.hall-page .drawer {
+  background: #0d1118;
+  color: #dfe6f2;
+  border-left: 1px solid rgba(120, 140, 170, 0.25);
+  box-shadow: -6px 0 24px rgba(0, 0, 0, 0.5);
+}
+.hall-page .drawer-head {
+  background: rgba(9, 12, 17, 0.95);
+  border-bottom: 1px solid rgba(120, 140, 170, 0.2);
+}
+.hall-page .memo {
+  background: rgba(23, 29, 39, 0.85);
+  color: #cfd7e2;
+  border-left-color: #a8cf90;
+  border-radius: 0 8px 8px 0;
+}
+.hall-page .memo .route {
+  color: #8b95a4;
+}
+.hall-page .memo.reply {
+  border-left-color: rgba(120, 140, 170, 0.4);
+}
+.hall-page .memo.ch-up {
+  border-left-color: #f0847e;
+}
+.hall-page .memo.ch-down {
+  border-left-color: #9fbce8;
+}
+.hall-page .drawer-empty {
+  color: #6d7889;
+}
+.hall-page .doc-mask {
+  background: rgba(4, 6, 10, 0.72);
+}

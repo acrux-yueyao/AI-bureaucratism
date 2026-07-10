@@ -148,19 +148,17 @@ function textSprite(
   cv.width = 640;
   cv.height = Math.max(110, Math.round(fontPx * 2.1));
   const ch = cv.height;
-  const ctx = cv.getContext("2d")! as CanvasRenderingContext2D & { letterSpacing?: string };
+  const ctx = cv.getContext("2d")!;
   const tex = new THREE.CanvasTexture(cv);
   const draw = (text: string) => {
     const shown = tight ? text : text.split("").join(" ");
     ctx.clearRect(0, 0, 640, ch);
     let px = fontPx;
     ctx.font = `${weight} ${px}px ${family}`;
-    ctx.letterSpacing = tight ? `${Math.round(px * 0.05)}px` : "0px";
     const w0 = ctx.measureText(shown).width;
     if (w0 > 616) {
       px = Math.max(18, Math.floor((fontPx * 616) / w0));
       ctx.font = `${weight} ${px}px ${family}`;
-      ctx.letterSpacing = tight ? `${Math.round(px * 0.05)}px` : "0px";
     }
     ctx.fillStyle = color ?? "rgba(232,240,250,.95)";
     ctx.textAlign = "center";
@@ -488,7 +486,7 @@ export default function Hall3D(props: Props) {
         o.big ? 3.2 : short ? 2.4 : 1.8,
         "rgba(236,243,252,.96)",
         o.big ? 52 : short ? 120 : 54,
-        short && !o.big ? 600 : 400,
+        400,
         short && !o.big,
         short && !o.big ? MONO : SANS
       );

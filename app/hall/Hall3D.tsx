@@ -132,13 +132,17 @@ type TextSprite = { sprite: THREE.Sprite; set: (txt: string) => void };
 
 // Bare letterspaced glow text — the same voice as the floor-axis labels.
 // No boxes: labels belong to the drawing, not to the UI.
+const SANS = "-apple-system, 'Segoe UI', Roboto, sans-serif";
+const MONO = "Menlo, 'SF Mono', Consolas, 'Roboto Mono', monospace";
+
 function textSprite(
   txt: string,
   scale: number,
   color?: string,
   fontPx = 40,
   weight = 500,
-  tight = false
+  tight = false,
+  family = SANS
 ): TextSprite {
   const cv = document.createElement("canvas");
   cv.width = 640;
@@ -150,13 +154,13 @@ function textSprite(
     const shown = tight ? text : text.split("").join(" ");
     ctx.clearRect(0, 0, 640, ch);
     let px = fontPx;
-    ctx.font = `${weight} ${px}px -apple-system, 'Segoe UI', Roboto, sans-serif`;
-    ctx.letterSpacing = tight ? `${Math.round(px * 0.08)}px` : "0px";
+    ctx.font = `${weight} ${px}px ${family}`;
+    ctx.letterSpacing = tight ? `${Math.round(px * 0.05)}px` : "0px";
     const w0 = ctx.measureText(shown).width;
     if (w0 > 616) {
       px = Math.max(18, Math.floor((fontPx * 616) / w0));
-      ctx.font = `${weight} ${px}px -apple-system, 'Segoe UI', Roboto, sans-serif`;
-      ctx.letterSpacing = tight ? `${Math.round(px * 0.08)}px` : "0px";
+      ctx.font = `${weight} ${px}px ${family}`;
+      ctx.letterSpacing = tight ? `${Math.round(px * 0.05)}px` : "0px";
     }
     ctx.fillStyle = color ?? "rgba(232,240,250,.95)";
     ctx.textAlign = "center";
@@ -484,8 +488,9 @@ export default function Hall3D(props: Props) {
         o.big ? 3.2 : short ? 2.4 : 1.8,
         "rgba(236,243,252,.96)",
         o.big ? 52 : short ? 120 : 54,
-        short && !o.big ? 300 : 400,
-        short && !o.big
+        short && !o.big ? 600 : 400,
+        short && !o.big,
+        short && !o.big ? MONO : SANS
       );
       np.sprite.position.y = o.h / 2 + (short ? 0.55 : 0.45);
       g.add(np.sprite);

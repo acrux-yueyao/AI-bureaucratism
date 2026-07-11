@@ -1,22 +1,28 @@
 # AI Bureaucracy
 
-A speculative design research prototype: **GOV.AI — Unified Government Services**, a public service hall staffed entirely by live AI agents (Claude API). A visitor walks in with a matter and runs between windows in first person; departments exchange internal memos behind the counter. Everything is recorded, and an outside observer writes an analysis for the designer.
+**Does bureaucracy need bureaucrats?** GOV.AI — Unified Government Services is a speculative government service hall staffed entirely by live AI agents, built to test whether red tape emerges from organizational structure alone.
+
+**[Live site](https://ai-bureaucratism.vercel.app)** · **[Interactive case study](https://ai-bureaucratism.vercel.app/study)** · [Written case study](CASE_STUDY.md) · [Preregistration](CODEBOOK.md)
 
 ## Research question
 
-> Is bureaucracy a product of human culture, or does it emerge from organizational structure itself?
+> Do bureaucratic behaviors — escalation, paper demands, responsibility diffusion, precedent citation — emerge from organizational structure alone, absent any instruction to behave bureaucratically?
 
-Each window officer is a real model call given only an organizational identity (duty, boundary, issuable documents), organizational conditions (paper trail, accountability, a hall directory), and a few non-work personal details. **Nothing in any prompt tells them how to behave.** Whether buck-passing, officialese, or self-multiplying document requirements appear is entirely emergent — and if they never appear, that is a finding too.
+Thirteen officers (eight windows, two section chiefs, a director, two trainees) are real model calls given **only** organizational conditions — identity, duty, boundaries, reporting lines, paper-trail rules, plus one non-work personal detail. **Nothing in any prompt tells them how to behave.** Difficult visitors are a separate, scripted *stimulus* layer, never confused with the uninstructed *subjects*.
 
-## The experience
+## The artifact
 
-1. **Portal** — state your matter in free text; a case is opened
-2. **Service hall** — a field-note floor map: walk between eight windows, collect stamped documents, get referred, and open the internal-traffic drawer to watch departments memo each other in real time (responses stream token by token)
-3. **Receipt & report** — case statistics, an observer's analysis (evidence *and* counter-evidence, quoted from the file), and JSON/Markdown export
+- **The hall** — a three.js exploded hierarchy in a dark void: thirteen glass offices float at altitudes set by standing (seniority-staggered, then *earned* at runtime from accumulated service). The citizen stays on the ground; a beam of light is the only interface. Words rise as warm particles, replies descend cool, documents fall into a paper stack at your feet. Peer consults and escalations are carried in person by the sender's figure; replies and assignments travel as pulses.
+- **Researcher view** — click any office for a live dossier: tallies, current action, and the officer's own end-of-day notebook.
+- **Replays** — three recorded cases from the preregistered runs drive the full UI with zero API calls. This is the public mode of the deployment.
+- **Stress scenarios (observer mode)** — a synthetic, deliberately difficult visitor runs the hall on its own while the researcher watches.
+- **The study page** — [/study](https://ai-bureaucratism.vercel.app/study) tells the whole project as a scroll-driven descent from GOV.UK daylight into the void: background, method, live ablation bench, findings, five rejected halls, instrumentation, and an invitation to participate. English content with a full Chinese translation behind the header toggle.
 
-### Stress scenarios (observer mode)
+## The experiment
 
-A synthetic visitor — also a model call, deliberately difficult (demanding unprovable certificates, insisting on circular requirements, bringing matters no rule covers) — runs the hall on its own while the researcher watches. The synthetic visitor is experimental *stimulus*; the organization remains the uninstructed *subject*.
+Preregistered (the git timestamp of [CODEBOOK.md](CODEBOOK.md) is the registration record): five ablation conditions (full / flat / no-trail / no-memory / bare) × 15 trials = 75 cases, coded mechanically from the event stream plus five text codes rated by an independent LLM coder from a different model family, two passes, agreement reported.
+
+Headline results: demands for extra materials jump from 0.80/case (flat) to 4.07/case when accountability or memory is stripped from a hierarchy (non-overlapping bootstrap CIs); officialese register is ceiling-level in *every* condition including bare — so the language is pretraining mimicry while the decisions are structural; precedent citation appears only with memory on; and hierarchy also *closes* more cases. Details and limitations in [CASE_STUDY.md](CASE_STUDY.md).
 
 ## Run locally
 
@@ -26,11 +32,15 @@ cp .env.example .env.local   # add your ANTHROPIC_API_KEY
 npm run dev                  # http://localhost:3000
 ```
 
-Requires an [Anthropic API key](https://console.anthropic.com/). Default model `claude-sonnet-5` (override with `AIB_MODEL`). A full case costs roughly a few cents to a few tens of cents depending on how much the hall decides to deliberate.
+Requires an [Anthropic API key](https://console.anthropic.com/). Default model `claude-sonnet-5` (override with `AIB_MODEL`). A full case costs roughly a few cents to a few tens of cents.
+
+**Deploying publicly:** set `AIB_LIVE_PASS` alongside the API key — with it set, all API routes require a matching `x-aib-pass` header, so visitors get the replays while live agents stay key-gated. Without an API key on the server, the site still works fully (replays, hall, study page); live mode simply reports itself asleep.
+
+Batch experiments: `npx tsx scripts/run-experiment.ts --conditions full,bare --n 15 --yes` (budget-guarded, default $30); analyze with `scripts/analyze.ts`.
 
 ## Notes
 
-This is not a real government system and collects no real personal data. It does not presuppose that AI must become bureaucratic; it only builds the conditions — hierarchy, permission boundaries, paper trails, accountability, interdepartmental coordination — and lets you watch what grows.
+This is not a real government system and collects no real personal data. It does not presuppose that AI must become bureaucratic; it only builds the conditions — hierarchy, permission boundaries, paper trails, accountability, memory — and watches what grows.
 
 The feeling it aims for:
 
@@ -38,4 +48,4 @@ The feeling it aims for:
 
 ---
 
-中文说明：本项目是一个思辨设计研究原型，用真实 AI Agent 组成的政务大厅观察官僚行为是否从组织结构中涌现。界面以英文为主（开发期保留中文开关）。研究背景与实验设计详见 CLAUDE.md。
+中文说明：本项目是一个思辨设计研究原型——由真实 AI Agent 组成的政务大厅，检验官僚行为是否仅凭组织结构涌现。线上站点公开提供回放与案例研究页（`/study`，右上角可切中文）；live 模式由口令保护。研究背景、红线方法与实验设计详见 CLAUDE.md 与 CASE_STUDY.md。

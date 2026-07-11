@@ -2,7 +2,7 @@
 
 **Does bureaucracy need bureaucrats? A speculative government service hall staffed entirely by LLM agents — built to test whether red tape emerges from organizational structure alone.**
 
-> *[Fig 1 — hero: the exploded-hierarchy hall in the void, ORBIT camera, mid-case with a red escalation stream rising. Capture at /hall during the "Paper Avalanche" replay.]*
+![The hall mid-replay: a red escalation stream rises toward the chiefs' band while a document falls down the citizen's beam of light](public/study/iter-5.jpg)
 
 ---
 
@@ -15,8 +15,8 @@
 | **Timeline** | ~2 weeks, July 2026 |
 | **Methods** | Prompt ablation experiment (preregistered), computational + qualitative coding, independent LLM coder with cross-family guard, design iteration through five visual systems |
 | **Stack** | Next.js / React / TypeScript, three.js, Claude API (subjects), GPT (independent coder), SSE streaming |
-| **Output** | Interactive web artifact (live + replay modes) · preregistered study, 75 trials · this case study |
-| **Links** | [Repository](https://github.com/acrux-yueyao/AI-bureaucratism) · Live demo (replays are public; live agents are key-gated) |
+| **Output** | Deployed web artifact (public replays, key-gated live mode) · interactive case-study page ([/study](https://ai-bureaucratism.vercel.app/study)) · preregistered study, 75 trials · this document |
+| **Links** | [Live site](https://ai-bureaucratism.vercel.app) · [Interactive case study](https://ai-bureaucratism.vercel.app/study) · [Repository](https://github.com/acrux-yueyao/AI-bureaucratism) |
 
 ---
 
@@ -41,7 +41,7 @@ This matters beyond the satire. Organizations are already staffing real workflow
 The project is research through design in both directions:
 
 - **The artifact is the apparatus.** The hall is not an illustration of findings — it is the instrument that generates them. Every memo, referral, and stamp in the interface is a real event from a real model call.
-- **The design is hypothesis-laden.** Every visual decision encodes a claim about the system (§6). The exploded hierarchy is not decoration; it is the org chart made falsifiable to the eye.
+- **The design is hypothesis-laden.** Every visual decision encodes a claim about the system (§7). The exploded hierarchy is not decoration; it is the org chart made falsifiable to the eye.
 
 Two methodological commitments made the claim defensible:
 
@@ -62,6 +62,8 @@ The thirteen officers are **subjects** — never behaviorally steered. Difficult
 **Organization.** Four levels: Director Eleanor Byrne; two section chiefs (Victor Roth, front; Priya Nair, back — appointed eight months ago, after window officer Amara Diallo had acted in the role); eight window officers with distinct jurisdictions (intake, document review, eligibility, records, authorization, compliance, appeals); two trainees who sign under their own names. Invisible hierarchy is built from facts, not adjectives: tenure years, probation status, who covers whose shift.
 
 **Tools, not scripts.** Agents act through typed tools — `issue_document`, `require_materials`, `refer_user`, `consult_internal` (peer), `escalate` (upward only), `assign_work` (downward only), `close_case`. Tool availability follows rank: only superiors can assign; only subordinates can escalate. Memos cascade — a consulted officer can consult further, up to depth 4.
+
+**One officer, disassembled.** Every officer is assembled from seven — and only seven — organizational layers: identity, duty, boundary, hierarchy & roster, paper-trail rules, hall conditions, and the self-written service record. The last layer is the loop: at day's end each participant writes one to three sentences about the shift, no required subject or tone, and tomorrow those sentences are part of their context. Repetition is how the institution gets under an agent's skin.
 
 **Accumulated experience.** After each case, every participating officer writes a private end-of-day notebook line (content never prescribed) and their mechanical tally updates (cases, memos in/out, documents, escalations). Both are fed back into future cases as "[Your service record in this hall]". Repetition is a first-class experimental variable.
 
@@ -87,6 +89,8 @@ Preregistered before any confirmatory run (the git commit of `CODEBOOK.md` is th
 
 **Measurement.** Mechanical codes need no judgment (escalations per case, materials demanded, closure). Text codes (hedging, officialese register, precedent citation, rule invention, responsibility-shifting) were rated by an **independent LLM coder from a different model family than the subjects** — enforced by a same-family guard in the analysis script — in two passes, with agreement statistics (presence κ 0.67–1.00 across codes; weighted κ 0.68 for register). Blind coding sheets with a separate key were generated for human verification.
 
+**The lab equipment is a deliverable.** The hall ships with its own laboratory: a budget-guarded batch runner (`scripts/run-experiment.ts`, hard stop at $30 on deliberately conservative list prices, graceful mid-trial shutdown), the preregistered codebook (commit `6da6942` — the git timestamp is the registration record), and a two-pass analyzer whose coder is barred by code from sharing a model lineage with its subjects. For a research program, the instrumentation is as much the contribution as any single batch.
+
 ---
 
 ## 5 · Findings
@@ -107,7 +111,18 @@ Preregistered before any confirmatory run (the git commit of `CODEBOOK.md` is th
 
 ---
 
-## 6 · Designing the observatory
+## 6 · The space it opens
+
+Hierarchy, paper trail, memory — the three switches span a 2³ design space of which the study sampled five corners; three remain honestly unrun. The deeper contribution is the instrument, not any single experiment: **any org chart you can wire, the hall can crash-test.** Four uses beyond the paper:
+
+- **Org-design sandbox** — A/B-test agent org charts before deployment; the ablation bench is the dashboard. Worked example: *should the support team share memory?* Wire `full` vs `no_memory`, run 15 synthetic days each, read the tape — materials demanded 2.67 vs 4.07 per case, precedent citations 0.90 vs 0.20. The decision is informed before a single real user meets it.
+- **Audit theater** — replay an agent organization's complete paper trail as evidence; every memo is on the record by construction.
+- **Civic installation** — a museum kiosk where visitors petition an institution with nobody inside.
+- **Negotiation training ground** — how do people negotiate values with institutional AI? My next research question lives here (see §10).
+
+---
+
+## 7 · Designing the observatory
 
 The interface went through **five full visual systems** — each rejected for a articulable reason, which is the process story:
 
@@ -117,7 +132,9 @@ The interface went through **five full visual systems** — each rejected for a 
 4. **Flat transit-map (Mini Motorways language)** → clean process-tracing, but flattened the one thing the study is about: **rank**.
 5. **Exploded hierarchy in a void** *(final)* — thirteen glass offices suspended in darkness, on a measured axis.
 
-> *[Fig 4 — the five iterations side by side. Screenshots exist in git history at tags/commits for each rewrite.]*
+| 1 · rejected | 2 · rejected | 3 · rejected | 4 · rejected | 5 · kept |
+|---|---|---|---|---|
+| ![Portal pastiche](public/study/iter-1.jpg) | ![Field-notes map](public/study/iter-2.jpg) | ![Isometric bureau](public/study/iter-3.jpg) | ![Transit map](public/study/iter-4.jpg) | ![Exploded void](public/study/iter-5.jpg) |
 
 The final system encodes findings as space:
 
@@ -134,7 +151,7 @@ The final system encodes findings as space:
 
 ---
 
-## 7 · Limitations
+## 8 · Limitations
 
 - **One subject model family** in the confirmatory batch (Claude). The runner supports cross-model replication (`--provider openai`) but those batches are future work; claims are scoped accordingly.
 - **Short horizons.** Six visitor turns per case; institutional drift is observed across ~15 cases per condition, not months.
@@ -144,7 +161,7 @@ The final system encodes findings as space:
 
 ---
 
-## 8 · What this project argues
+## 9 · What this project argues
 
 1. **Structure is a behavioral prompt.** Role, rank, trail, and memory steer LLM agents as strongly as any instruction — while remaining invisible in the prompt text that most audits would inspect.
 2. **Evaluate agent organizations at the decision level.** Register and tone are pretraining mimicry (F2); audits of multi-agent systems should code what agents *do*, not how they sound.
@@ -152,7 +169,7 @@ The final system encodes findings as space:
 
 ---
 
-## 9 · If I continued
+## 10 · If I continued
 
 Cross-model replication (is the structure→behavior mapping model-general?); a fourth ablation axis on **communication topology** (all-channel vs. department-only vs. chain-of-command — the org-chart variable modern agent frameworks actually expose); human blind coding; long-horizon drift with the earned-altitude system as its visualization.
 

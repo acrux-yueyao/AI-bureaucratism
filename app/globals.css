@@ -1950,3 +1950,237 @@ textarea {
     min-height: 88vh;
   }
 }
+
+/* /study additions: meta strip, clerk exploded, cube, apps, instruments */
+.st-meta {
+  display: flex;
+  gap: 8px 22px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 22px;
+  font-size: 10.5px;
+  letter-spacing: 2px;
+  color: #8b95a4;
+}
+.st-meta-kw {
+  margin-top: 8px;
+}
+.st-meta-kw span {
+  border: 1px solid rgba(120, 140, 170, 0.35);
+  border-radius: 99px;
+  padding: 2px 10px;
+  letter-spacing: 1px;
+}
+.st-clerk {
+  display: flex;
+  gap: 26px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.st-clerk-layers {
+  flex: 1.25;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.st-layercard {
+  background: #fff;
+  border: 1px solid #d2d2d8;
+  border-left: 5px solid #1d70b8;
+  padding: 9px 13px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  max-width: 520px;
+  box-shadow: 0 1px 0 rgba(20, 24, 34, 0.06);
+}
+.st-layercard b {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #6f7684;
+  margin-bottom: 3px;
+}
+.st-layercard span {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: #3a4150;
+}
+.st-clerk-side {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.st-sidehead {
+  font-style: normal;
+  font-size: 10.5px;
+  letter-spacing: 2px;
+  color: #6f7684;
+  margin-bottom: 2px;
+}
+.st-toolrow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: #fff;
+  border: 1px solid #d2d2d8;
+  padding: 6px 11px;
+  font-size: 12px;
+}
+.st-toolrow i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+.st-toolrow code {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: #1d1d1f;
+}
+.st-toolrow span {
+  color: #6f7684;
+  font-size: 11px;
+  margin-left: auto;
+  text-align: right;
+}
+.st-loopnote {
+  border-top: 2px dashed #9aa2b0;
+  padding-top: 10px;
+  margin-top: 6px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #3a4150;
+}
+.st-cube {
+  width: 100%;
+  max-width: 640px;
+  display: block;
+  margin: 6px 0 4px;
+}
+.st-quadgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.st-quadgrid > div {
+  background: rgba(13, 17, 24, 0.8);
+  border: 1px solid rgba(120, 140, 170, 0.28);
+  border-radius: 10px;
+  padding: 14px 17px;
+  font-size: 13.5px;
+  line-height: 1.66;
+}
+.st-quadgrid strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #eef2f8;
+  font-size: 11.5px;
+  letter-spacing: 1.5px;
+}
+.st-ba {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.st-ba > div {
+  flex: 1;
+  min-width: 260px;
+  border-radius: 10px;
+  padding: 14px 17px;
+  font-size: 14px;
+  line-height: 1.66;
+}
+.st-ba strong {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+.st-ba .before {
+  background: rgba(224, 82, 77, 0.12);
+  border: 1px solid rgba(224, 82, 77, 0.35);
+}
+.st-ba .before strong {
+  color: #f0a49d;
+}
+.st-ba .after {
+  background: rgba(110, 214, 175, 0.1);
+  border: 1px solid rgba(110, 214, 175, 0.35);
+}
+.st-ba .after strong {
+  color: #7edeb0;
+}
+.st-worked {
+  margin-top: 14px;
+  background: rgba(13, 17, 24, 0.85);
+  border: 1px solid rgba(120, 140, 170, 0.28);
+  border-radius: 10px;
+  padding: 14px 17px;
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+.st-worked strong {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: 2px;
+  color: #7ec9bb;
+  margin-bottom: 6px;
+}
+.st-instr {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.st-term {
+  background: #0a0d13;
+  border: 1px solid rgba(120, 140, 170, 0.3);
+  border-radius: 10px;
+  padding: 13px 15px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.85;
+  color: #c9d2e0;
+  white-space: pre-wrap;
+}
+.st-term .p {
+  color: #7ec9bb;
+}
+.st-instrcard {
+  background: rgba(13, 17, 24, 0.85);
+  border: 1px solid rgba(120, 140, 170, 0.28);
+  border-radius: 10px;
+  padding: 14px 17px;
+  font-size: 13px;
+  line-height: 1.66;
+}
+.st-instrcard strong {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: 2px;
+  color: #eef2f8;
+  margin-bottom: 7px;
+}
+.st-pipe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+  font-size: 11.5px;
+  margin-top: 4px;
+}
+.st-pipe span {
+  background: rgba(120, 140, 170, 0.12);
+  border: 1px solid rgba(120, 140, 170, 0.3);
+  border-radius: 99px;
+  padding: 3px 10px;
+}
+.st-pipe i {
+  font-style: normal;
+  opacity: 0.6;
+}

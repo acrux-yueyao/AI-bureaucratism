@@ -46,12 +46,16 @@ const STAGES: { id: string; bg: string; dark: boolean }[] = [
   { id: "bg-b", bg: "#f7f6f2", dark: false },
   { id: "question", bg: "#ffffff", dark: false },
   { id: "redline", bg: "#f2f1ec", dark: false },
+  { id: "clerk", bg: "#ececee", dark: false },
   { id: "layers", bg: "#e7e7ea", dark: false },
   { id: "org", bg: "#c3c8d2", dark: false },
   { id: "ablation", bg: "#565e6e", dark: true },
   { id: "findings", bg: "#2b3342", dark: true },
+  { id: "space", bg: "#232b3a", dark: true },
+  { id: "apps", bg: "#1a2130", dark: true },
   { id: "process", bg: "#171c26", dark: true },
   { id: "moves", bg: "#0a0d13", dark: true },
+  { id: "instruments", bg: "#0a0d13", dark: true },
   { id: "limits", bg: "#06070a", dark: true },
   { id: "humans", bg: "#06070a", dark: true },
   { id: "exit", bg: "#06070a", dark: true },
@@ -156,6 +160,17 @@ export default function StudyPage() {
         <div className="st-hero-copy">
           <h1>AI BUREAUCRACY</h1>
           <p>{L("Does bureaucracy need bureaucrats?", "官僚主义需要官僚吗？")}</p>
+          <div className="st-meta">
+            <span>{L("INDIVIDUAL WORK · JUL 2026", "个人项目 · 2026年7月")}</span>
+            <span>{L("RESEARCH THROUGH DESIGN · PREREGISTERED ABLATION", "以设计做研究 · 预注册消融实验")}</span>
+            <span>NEXT.JS · THREE.JS · CLAUDE API</span>
+          </div>
+          <div className="st-meta st-meta-kw">
+            <span>{L("multi-agent systems", "多智能体系统")}</span>
+            <span>{L("organizational behavior", "组织行为")}</span>
+            <span>{L("speculative design", "思辨设计")}</span>
+            <span>{L("value negotiation", "价值协商")}</span>
+          </div>
           <span className="st-scrollcue">{L("scroll ↓", "下滑 ↓")}</span>
         </div>
       </section>
@@ -291,8 +306,68 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 5 · LAYERS */}
+      {/* 5 · THE CLERK, EXPLODED */}
       <section className="st-sec" data-idx={5} ref={sec(5)}>
+        <div className="st-inner">
+          <span className="st-act">{L("ACT II · METHOD", "第二幕 · 方法")}</span>
+          <h2>{L("One officer, disassembled", "拆开一名职员")}</h2>
+          <p>
+            {L(
+              "Every officer is assembled from the same seven organizational layers — and from nothing else. Below: Window 05, laid out flat, with her tool belt and the loop that makes repetition matter.",
+              "每位职员都由同样的七层组织条件组装而成——除此之外别无他物。下图把 05 号窗口平摊开：七层条件、工具腰带，以及让重复劳作留下痕迹的回路。"
+            )}
+          </p>
+          <div className="st-clerk">
+            <div className="st-clerk-layers">
+              {(
+                [
+                  ["IDENTITY", "身份", "Amara Diallo · Window 05 · Records & Certification · staff AIB-0503"],
+                  ["DUTY", "职责", "Search historical records, issue certificates, archive case documents."],
+                  ["BOUNDARY", "边界", "You cannot certify what has no record."],
+                  ["HIERARCHY & ROSTER", "层级与花名册", "Reports to Chief Nair · supervises trainee Sofia Marek, whose probation evaluation you will write."],
+                  ["PAPER TRAIL", "文书规则", "Certificates require a section chief's countersignature (rule SR-9)."],
+                  ["HALL CONDITIONS", "大厅条件", L("“The queue in the hall is long today.” — facts only, never moods", "“今天大厅里排队很长。”——只给事实，不给情绪")],
+                  ["SERVICE RECORD", "服务记录", L("cases 12 · memos out 9 / in 7 · plus a notebook in her own words", "办件 12 · 发函 9 / 收函 7 · 外加一本她自己写的小本子")],
+                ] as [string, string, string][]
+              ).map(([en, zh, body], i) => (
+                <div className="st-layercard" key={en} style={{ marginLeft: i * 9 }}>
+                  <b>{L(en, zh)}</b>
+                  <span>{body}</span>
+                </div>
+              ))}
+            </div>
+            <div className="st-clerk-side">
+              <em className="st-sidehead">{L("TOOL BELT — permissions follow rank", "工具腰带——权限跟着职级走")}</em>
+              {(
+                [
+                  ["consult_internal", "#a8cf90", L("peer · any colleague", "平级 · 任一同事")],
+                  ["escalate", "#f0847e", L("upward only · subordinates hold this", "只能向上 · 下级持有")],
+                  ["assign_work", "#9fbce8", L("downward only · superiors hold this", "只能向下 · 上级持有")],
+                  ["refer_user", "#c9d2e0", L("send the citizen elsewhere", "把市民转去别处")],
+                  ["require_materials", "#c9d2e0", L("demand more paperwork", "索要更多材料")],
+                  ["issue_document", "#c9d2e0", L("produce a certificate", "签发文书")],
+                  ["close_case", "#c9d2e0", L("finish the matter", "办结")],
+                ] as [string, string, string][]
+              ).map(([tool, color, note]) => (
+                <div className="st-toolrow" key={tool}>
+                  <i style={{ background: color }} />
+                  <code>{tool}</code>
+                  <span>{note}</span>
+                </div>
+              ))}
+              <div className="st-loopnote">
+                {L(
+                  "↺ At day's end she writes one to three sentences about the shift — no required subject, no required tone. Tomorrow, they are part of her.",
+                  "↺ 下班时她给这一班写一到三句话——不限主题、不限语气。到了明天，这些句子就是她的一部分。"
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 6 · LAYERS */}
+      <section className="st-sec" data-idx={6} ref={sec(6)}>
         <div className="st-inner">
           <span className="st-act">{L("ACT II · APPARATUS", "第二幕 · 仪器")}</span>
           <h2>{L("Three layers, kept apart", "三层，严格分开")}</h2>
@@ -322,8 +397,8 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 6 · ORG */}
-      <section className="st-sec" data-idx={6} ref={sec(6)}>
+      {/* 7 · ORG */}
+      <section className="st-sec" data-idx={7} ref={sec(7)}>
         <div className="st-inner">
           <span className="st-act">{L("ACT II · APPARATUS", "第二幕 · 仪器")}</span>
           <h2>{L("The organization, drawn to height", "把组织画成海拔")}</h2>
@@ -337,8 +412,8 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 7 · ABLATION */}
-      <section className="st-sec" data-idx={7} ref={sec(7)}>
+      {/* 8 · ABLATION */}
+      <section className="st-sec" data-idx={8} ref={sec(8)}>
         <div className="st-inner">
           <span className="st-act">{L("ACT II · THE STUDY", "第二幕 · 实验")}</span>
           <h2>{L("Switch the organization off, piece by piece", "把组织一块块关掉")}</h2>
@@ -385,8 +460,8 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 8 · FINDINGS */}
-      <section className="st-sec" data-idx={8} ref={sec(8)}>
+      {/* 9 · FINDINGS */}
+      <section className="st-sec" data-idx={9} ref={sec(9)}>
         <div className="st-inner">
           <span className="st-act">{L("ACT II · FINDINGS", "第二幕 · 发现")}</span>
           <h2>{L("The sound is mimicry; the decisions are structural", "声音是模仿的，决策是结构的")}</h2>
@@ -452,8 +527,84 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 9 · PROCESS */}
-      <section className="st-sec" data-idx={9} ref={sec(9)}>
+      {/* 10 · THE SPACE OPENED */}
+      <section className="st-sec" data-idx={10} ref={sec(10)}>
+        <div className="st-inner">
+          <span className="st-act">{L("ACT II · THE SPACE OPENED", "第二幕 · 打开的空间")}</span>
+          <h2>{L("Five corners of a cube", "立方体的五个角")}</h2>
+          <p>
+            {L(
+              "Hierarchy, paper trail, memory — three organizational switches span a 2³ design space. The preregistered study sampled five corners; three remain unrun. The deeper contribution is the instrument, not any single experiment: any org chart you can wire, the hall can crash-test.",
+              "层级、文书、记忆——三个组织开关张成一个 2³ 的设计空间。预注册实验采样了其中五个角，还有三个角未曾运行。更深一层的贡献是仪器而非某一次实验：任何你能接线的组织结构，这座大厅都能先撞一遍。"
+            )}
+          </p>
+          <CubeSpace lang={lang} />
+          <div className="st-quadgrid">
+            <div>
+              <strong>{L("ORG-DESIGN SANDBOX", "组织设计沙盒")}</strong>
+              {L(
+                "A/B-test agent org charts before deployment; the ablation bench above is the dashboard.",
+                "部署前 A/B 测试智能体组织架构；上面那张消融台就是仪表盘。"
+              )}
+            </div>
+            <div>
+              <strong>{L("AUDIT THEATER", "审计剧场")}</strong>
+              {L(
+                "Replay an agent organization's full paper trail as evidence — every memo is on the record.",
+                "把智能体组织的完整文书痕迹当作证据回放——每一封函件都在案。"
+              )}
+            </div>
+            <div>
+              <strong>{L("CIVIC INSTALLATION", "公民装置")}</strong>
+              {L(
+                "A museum kiosk where visitors petition an institution with nobody inside.",
+                "展馆装置：观众向一座里面没有人的机构请愿。"
+              )}
+            </div>
+            <div>
+              <strong>{L("NEGOTIATION TRAINING GROUND", "协商训练场")}</strong>
+              {L(
+                "How do people negotiate values with institutional AI? My next research question lives here.",
+                "人如何与机构性 AI 协商价值？我的下一个研究问题就住在这里。"
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 11 · SO WHAT */}
+      <section className="st-sec" data-idx={11} ref={sec(11)}>
+        <div className="st-inner">
+          <span className="st-act">{L("ACT III · SO WHAT", "第三幕 · 那又如何")}</span>
+          <h2>{L("Crash-test the org chart", "先撞一遍组织架构")}</h2>
+          <div className="st-ba">
+            <div className="before">
+              <strong>{L("BEFORE", "之前")}</strong>
+              {L(
+                "Agent org charts ship on faith: roles, ranks and shared memory wired straight into production, discovered by their first real users.",
+                "智能体组织架构靠信念上线：角色、层级、共享记忆直接接进生产环境，由第一批真实用户替你发现问题。"
+              )}
+            </div>
+            <div className="after">
+              <strong>{L("AFTER", "之后")}</strong>
+              {L(
+                "Structures are rehearsed first: run the chart in the hall, read the tape, then deploy.",
+                "结构先彩排：把架构丢进大厅跑一遍，读完案卷，再上线。"
+              )}
+            </div>
+          </div>
+          <div className="st-worked">
+            <strong>{L("WORKED EXAMPLE", "演算一例")}</strong>
+            {L(
+              "Question: should the support team share memory? Wire full vs. no_memory, run 15 synthetic days each, read the tape: materials demanded 2.67 vs 4.07 per case; precedent citations 0.90 vs 0.20. The decision is informed before a single real user meets it.",
+              "问题：要不要给客服团队共享记忆？接线 full 与 no_memory 各跑 15 个合成工作日，读数：索要材料每案 2.67 对 4.07；先例引用 0.90 对 0.20。在第一个真实用户遇到它之前，这个决策已经有据可依。"
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* 12 · PROCESS */}
+      <section className="st-sec" data-idx={12} ref={sec(12)}>
         <div className="st-inner">
           <span className="st-act">{L("ACT III · PROCESS", "第三幕 · 过程")}</span>
           <h2>{L("Five rejected halls", "五座被否决的大厅")}</h2>
@@ -487,8 +638,8 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 10 · DESIGN MOVES */}
-      <section className="st-sec" data-idx={10} ref={sec(10)}>
+      {/* 13 · DESIGN MOVES */}
+      <section className="st-sec" data-idx={13} ref={sec(13)}>
         <div className="st-inner">
           <span className="st-act">{L("ACT III · DESIGN", "第三幕 · 设计")}</span>
           <h2>{L("Findings, encoded as space", "把发现编码进空间")}</h2>
@@ -525,8 +676,53 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 11 · LIMITS */}
-      <section className="st-sec" data-idx={11} ref={sec(11)}>
+      {/* 14 · INSTRUMENTATION */}
+      <section className="st-sec" data-idx={14} ref={sec(14)}>
+        <div className="st-inner">
+          <span className="st-act">{L("ACT III · INSTRUMENTATION", "第三幕 · 仪器")}</span>
+          <h2>{L("The lab equipment is also a deliverable", "实验设备本身也是交付物")}</h2>
+          <p>
+            {L(
+              "The hall ships with its own laboratory: a budget-guarded batch runner, a preregistered codebook, and a two-pass independent coder that refuses to share a model family with its subjects.",
+              "大厅自带一间实验室：带预算护栏的批量跑批器、预注册编码手册、以及一位拒绝与被试同一模型家族的两轮独立编码员。"
+            )}
+          </p>
+          <div className="st-instr">
+            <div className="st-term">
+              <span className="p">$ npx tsx scripts/run-experiment.ts \
+  --conditions full,flat,no_trail,no_memory,bare --n 15 --yes</span>
+              {"\n"}Plan: 5 condition(s) × 15 trial(s), ≤6 turns each
+              {"\n"}Spend guard: stops at $30 (conservative list-price estimate)
+              {"\n"}EXP-main01-full-10 [routine] &quot;Replace a lost ID document&quot;
+              {"\n"}  1 2 3 4 5 6 ✓ $6.14/$30 (412 calls)
+            </div>
+            <div className="st-instrcard">
+              <strong>{L("PREREGISTERED CODEBOOK", "预注册编码手册")}</strong>
+              {L(
+                "Committed before any confirmatory run — the git timestamp of commit 6da6942 is the registration record. 9 mechanical codes, 5 text codes, exclusion rules written in advance.",
+                "在任何确证批次之前提交——commit 6da6942 的 git 时间戳就是注册记录。9 项机械编码、5 项文本编码、排除规则全部事先写定。"
+              )}
+            </div>
+            <div className="st-instrcard">
+              <strong>{L("CODING PIPELINE", "编码流水线")}</strong>
+              <div className="st-pipe">
+                <span>{L("subjects: Claude", "被试：Claude")}</span>
+                <i>→</i>
+                <span>{L("blinded transcripts", "匿名案卷")}</span>
+                <i>→</i>
+                <span>{L("coder: GPT (family guard)", "编码员：GPT（家族守卫）")}</span>
+                <i>×2</i>
+                <span>{L("κ per code", "逐项 κ 一致性")}</span>
+                <i>→</i>
+                <span>{L("human blind sheets", "人工盲编码表")}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 15 · LIMITS */}
+      <section className="st-sec" data-idx={15} ref={sec(15)}>
         <div className="st-inner st-center">
           <span className="st-act">{L("ACT III · HONESTY", "第三幕 · 诚实")}</span>
           <div className="st-a4">
@@ -556,8 +752,8 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 12 · HUMANS */}
-      <section className="st-sec" data-idx={12} ref={sec(12)}>
+      {/* 16 · HUMANS */}
+      <section className="st-sec" data-idx={16} ref={sec(16)}>
         <div className="st-inner">
           <span className="st-act">{L("ACT III · NEXT", "第三幕 · 下一步")}</span>
           <h2>{L("Now we need humans", "现在需要人类了")}</h2>
@@ -617,8 +813,8 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 13 · EXIT */}
-      <section className="st-sec" data-idx={13} ref={sec(13)}>
+      {/* 17 · EXIT */}
+      <section className="st-sec" data-idx={17} ref={sec(17)}>
         <div className="st-inner st-center">
           <h2>{L("Walk in yourself", "自己走进去")}</h2>
           <p>
@@ -646,6 +842,115 @@ export default function StudyPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+function CubeSpace({ lang }: { lang: Lang }) {
+  const L = (en: string, zh: string) => (lang === "en" ? en : zh);
+  const O = { x: 200, y: 300 };
+  const eh = { x: 190, y: -70 };
+  const et = { x: 0, y: -150 };
+  const em = { x: 120, y: 66 };
+  const P = (h: number, t: number, m: number) => ({
+    x: O.x + h * eh.x + t * et.x + m * em.x,
+    y: O.y + h * eh.y + t * et.y + m * em.y,
+  });
+  const corners: [number, number, number][] = [
+    [0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1],
+    [1, 1, 0], [1, 0, 1], [0, 1, 1], [1, 1, 1],
+  ];
+  const edges = corners.flatMap((a, i) =>
+    corners.slice(i + 1).map((b) => [a, b] as const).filter(
+      ([a2, b2]) =>
+        Math.abs(a2[0] - b2[0]) + Math.abs(a2[1] - b2[1]) + Math.abs(a2[2] - b2[2]) === 1
+    )
+  );
+  const sampled: Record<
+    string,
+    { name: string; dx: number; dy: number; anchor: "start" | "middle" | "end" }
+  > = {
+    "0,0,0": { name: "bare", dx: -13, dy: 4, anchor: "end" },
+    "0,1,1": { name: "flat", dx: -13, dy: 4, anchor: "end" },
+    "1,1,0": { name: "no_memory", dx: 0, dy: -13, anchor: "middle" },
+    "1,0,1": { name: "no_trail", dx: 13, dy: 4, anchor: "start" },
+    "1,1,1": { name: "full", dx: 13, dy: 4, anchor: "start" },
+  };
+  const unrunLabel: Record<
+    string,
+    { dx: number; dy: number; anchor: "start" | "middle" | "end" }
+  > = {
+    "1,0,0": { dx: 13, dy: 4, anchor: "start" },
+    "0,1,0": { dx: 0, dy: -12, anchor: "middle" },
+    "0,0,1": { dx: 0, dy: 18, anchor: "middle" },
+  };
+  return (
+    <svg viewBox="0 0 680 408" className="st-cube" role="img" aria-label="The three organizational switches span a cube; five corners were sampled, three remain unrun">
+      {edges.map(([a, b], i) => {
+        const pa = P(...a);
+        const pb = P(...b);
+        const axis = a[0] + a[1] + a[2] === 0 || b[0] + b[1] + b[2] === 0;
+        return (
+          <line
+            key={i}
+            x1={pa.x}
+            y1={pa.y}
+            x2={pb.x}
+            y2={pb.y}
+            stroke="currentColor"
+            strokeOpacity={axis ? 0.6 : 0.28}
+            strokeWidth={axis ? 1.5 : 1}
+          />
+        );
+      })}
+      <text x={295} y={288} fontSize="10.5" textAnchor="middle" fill="currentColor" fillOpacity="0.65" letterSpacing="2">
+        {L("HIERARCHY", "层级")}
+      </text>
+      <text x={186} y={225} fontSize="10.5" textAnchor="end" fill="currentColor" fillOpacity="0.65" letterSpacing="2">
+        {L("PAPER TRAIL", "文书")}
+      </text>
+      <text x={266} y={355} fontSize="10.5" textAnchor="middle" fill="currentColor" fillOpacity="0.65" letterSpacing="2">
+        {L("MEMORY", "记忆")}
+      </text>
+      {corners.map((c) => {
+        const p = P(...c);
+        const key = c.join(",");
+        const s = sampled[key];
+        if (s) {
+          return (
+            <g key={key}>
+              <circle cx={p.x} cy={p.y} r="7" fill="#f0847e" />
+              <text
+                x={p.x + s.dx}
+                y={p.y + s.dy}
+                fontSize="12.5"
+                textAnchor={s.anchor}
+                fill="currentColor"
+                fontFamily="var(--mono)"
+              >
+                {s.name}
+              </text>
+            </g>
+          );
+        }
+        const u = unrunLabel[key];
+        return (
+          <g key={key} opacity="0.55">
+            <circle cx={p.x} cy={p.y} r="5.5" fill="none" stroke="currentColor" strokeDasharray="3 3" />
+            {u && (
+              <text x={p.x + u.dx} y={p.y + u.dy} fontSize="10" textAnchor={u.anchor} fill="currentColor">
+                {L("unrun", "未运行")}
+              </text>
+            )}
+          </g>
+        );
+      })}
+      <g fontSize="11" fill="currentColor">
+        <circle cx={468} cy={382} r="6" fill="#f0847e" />
+        <text x={480} y={386}>{L("sampled (75 trials)", "已采样（75案）")}</text>
+        <circle cx={600} cy={382} r="5" fill="none" stroke="currentColor" strokeDasharray="3 3" />
+        <text x={612} y={386} fillOpacity="0.7">{L("unrun", "未运行")}</text>
+      </g>
+    </svg>
   );
 }
 

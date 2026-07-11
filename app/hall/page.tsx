@@ -855,7 +855,13 @@ export default function HallPage() {
             )}
             {error && (
               <div className="err" style={{ margin: "0 16px 12px" }}>
-                {error === "locked" ? (
+                {error === "live_disabled" ? (
+                  <span>
+                    Live mode is not enabled on this deployment — the officers are
+                    asleep.{" "}
+                    <a href="/hall?mode=replay&id=paper-avalanche">Watch a replay →</a>
+                  </span>
+                ) : error === "locked" ? (
                   <span
                     style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}
                   >

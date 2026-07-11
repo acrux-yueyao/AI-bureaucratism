@@ -46,7 +46,7 @@ export async function POST(req: Request) {
           signal: {
             type: "error",
             message:
-              "The server is missing ANTHROPIC_API_KEY. Set it in .env.local and restart.",
+              "live_disabled",
           },
         });
         finish();

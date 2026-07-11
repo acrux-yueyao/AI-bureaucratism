@@ -15,7 +15,7 @@ export async function POST(req: Request) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return Response.json(
-      { analysis: "", error: "The server is missing ANTHROPIC_API_KEY." },
+      { analysis: "", error: "live_disabled" },
       { status: 500 }
     );
   }

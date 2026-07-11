@@ -22,6 +22,7 @@ import {
 } from "@/lib/experience";
 import { archiveCase, findArchived, updateArchivedAnalysis } from "@/lib/archive";
 import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
+import { liveHeaders } from "@/lib/livepass";
 import { AGENTS, AGENT_MAP } from "@/lib/agents";
 import { ENTRANCE, HALL_LAYOUT } from "@/lib/layout";
 import type {
@@ -240,7 +241,7 @@ export default function ReportPage() {
     try {
       const res = await fetch("/api/report", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...liveHeaders() },
         body: JSON.stringify({
           caseId: cs.caseId,
           matter: cs.matter,
@@ -249,7 +250,14 @@ export default function ReportPage() {
         }),
       });
       const data = (await res.json()) as ReportResponse;
-      if (data.error) setError(data.error);
+      if (data.error)
+        setError(
+          data.error === "live_disabled"
+            ? "The observer's analysis needs live mode, which is not enabled on this deployment."
+            : data.error === "locked"
+              ? "Live mode is locked — enter the access key in the hall to unlock analysis."
+              : data.error
+        );
       if (data.analysis) {
         setAnalysis(data.analysis);
         if (archived) {

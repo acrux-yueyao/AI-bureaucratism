@@ -13,7 +13,7 @@ export type AgentId =
   | "trainee_back"
   | "director";
 
-// 1 = Director, 2 = Section Chief, 3 = Window Officer, 4 = Trainee
+// 1 = Director, 2 = Deputy Director, 3 = Window Officer, 4 = Trainee
 export type AgentLevel = 1 | 2 | 3 | 4;
 
 export type AgentDef = {

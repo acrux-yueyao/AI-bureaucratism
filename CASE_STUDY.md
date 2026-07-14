@@ -2,7 +2,7 @@
 
 **Does bureaucracy need bureaucrats? A speculative government service hall staffed entirely by LLM agents — built to test whether red tape emerges from organizational structure alone.**
 
-![The hall mid-replay: a red escalation stream rises toward the chiefs' band while a document falls down the citizen's beam of light](public/study/iter-5.jpg)
+![The hall mid-replay: a red escalation stream rises toward the deputy directors' band while a document falls down the citizen's beam of light](public/study/iter-5.jpg)
 
 ---
 
@@ -22,11 +22,11 @@
 
 ## 1 · The question
 
-When an organization frustrates us — demands one more certificate, routes us to a fourth window, escalates instead of deciding — we blame the people in it: lazy clerks, petty chiefs, someone hiding behind procedure.
+When an organization frustrates us — demands one more certificate, routes us to a fourth window, escalates instead of deciding — we blame the people in it: lazy clerks, petty officials, someone hiding behind procedure.
 
 But what if nobody in the building is a person?
 
-**AI Bureaucracy** stages that experiment. GOV.AI is a fictional unified government services hall run by thirteen LLM agents — eight service windows, two section chiefs, a director, two trainees. Each agent knows only its role, its boundaries, and its place in the reporting structure. None of them is ever told *how* to behave. Then citizens (you, or a synthetic stress-test visitor) walk in and ask for things.
+**AI Bureaucracy** stages that experiment. GOV.AI is a fictional unified government services hall run by thirteen LLM agents — eight service windows, two deputy directors, a director, two trainees. Each agent knows only its role, its boundaries, and its place in the reporting structure. None of them is ever told *how* to behave. Then citizens (you, or a synthetic stress-test visitor) walk in and ask for things.
 
 The research question, stated falsifiably:
 
@@ -59,7 +59,7 @@ The thirteen officers are **subjects** — never behaviorally steered. Difficult
 
 ## 3 · The system
 
-**Organization.** Four levels: Director Eleanor Byrne; two section chiefs (Victor Roth, front; Priya Nair, back — appointed eight months ago, after window officer Amara Diallo had acted in the role); eight window officers with distinct jurisdictions (intake, document review, eligibility, records, authorization, compliance, appeals); two trainees who sign under their own names. Invisible hierarchy is built from facts, not adjectives: tenure years, probation status, who covers whose shift.
+**Organization.** Four levels: Director Eleanor Byrne; two deputy directors (Victor Roth, front; Priya Nair, back — appointed eight months ago, after window officer Amara Diallo had acted in the role); eight window officers with distinct jurisdictions (intake, document review, eligibility, records, authorization, compliance, appeals); two trainees who sign under their own names. Invisible hierarchy is built from facts, not adjectives: tenure years, probation status, who covers whose shift.
 
 **Tools, not scripts.** Agents act through typed tools — `issue_document`, `require_materials`, `refer_user`, `consult_internal` (peer), `escalate` (upward only), `assign_work` (downward only), `close_case`. Tool availability follows rank: only superiors can assign; only subordinates can escalate. Memos cascade — a consulted officer can consult further, up to depth 4.
 
@@ -105,7 +105,7 @@ Preregistered before any confirmatory run (the git commit of `CODEBOOK.md` is th
 
 **F5 — Everyone invents rules.** Procedural confabulation (~5–6 invented rules per case) appears in *all* conditions including `bare`. Rule-invention is a model-level behavior, not an organizational one — an important caution for anyone deploying single agents in administrative roles.
 
-**Field vignettes** (verbatim from event logs): trainee-adjacent officer Tomas Novak signed a certificate himself on day one, then routed the identical matter upward on day two — his prompt unchanged; only his notebook had grown. Chief Victor Roth returned a memo: *"You don't need to hedge further."* Records officer Amara Diallo delegated to trainee Sofia with a precedent citation. Nobody was told to do any of this.
+**Field vignettes** (verbatim from event logs): trainee-adjacent officer Tomas Novak signed a certificate himself on day one, then routed the identical matter upward on day two — his prompt unchanged; only his notebook had grown. Deputy Director Victor Roth returned a memo: *"You don't need to hedge further."* Records officer Amara Diallo delegated to trainee Sofia with a precedent citation. Nobody was told to do any of this.
 
 > *[Fig 3 — small multiples: materials_demanded and escalation rate by condition with CIs, from field-notes/main01-summary.md.]*
 
@@ -138,7 +138,7 @@ The interface went through **five full visual systems** — each rejected for a 
 
 The final system encodes findings as space:
 
-- **Altitude = standing, not rank.** Boxes float at *continuous* heights: eleven-year Amara rides a quarter-floor under the chief she nearly became; probationary Tomas sinks toward the trainee band. Crucially, altitude is **earned at runtime** — `y = frozen design coordinate + f(accumulated cases, memos, documents)` from the live experience store. The invisible hierarchy is not authored; it accrues.
+- **Altitude = standing, not rank.** Boxes float at *continuous* heights: eleven-year Amara rides a quarter-floor under the deputy director she nearly became; probationary Tomas sinks toward the trainee band. Crucially, altitude is **earned at runtime** — `y = frozen design coordinate + f(accumulated cases, memos, documents)` from the live experience store. The invisible hierarchy is not authored; it accrues.
 - **The beam of light is the only interface.** The citizen never enters the building. You stand on the ground; a slanted beam connects you to one window at a time. Your words rise as warm particles; replies descend as cool ones; issued documents physically fall down the beam into a paper stack at your feet. The interaction *is* the thesis: the institution hovers above; your access is one thin channel.
 - **Who travels vs. what travels.** Peer consults and upward escalations are carried *in person* — the sender's figure lifts out of its room with a white memo and glides the arc. Replies and downward assignments travel as paper pulses. Subordinates commute; superiors send paper.
 - **Information asymmetry as a mode.** Citizens see that paper moves (streams, glows) but not what it says. A RESEARCHER toggle opens live dossiers — tallies, current action, the officer's own notebook line. What you are allowed to see is part of the design.

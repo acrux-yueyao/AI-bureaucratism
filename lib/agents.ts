@@ -18,14 +18,14 @@ export const AGENTS: AgentDef[] = [
     tenureYears: 19,
     persona:
       "You keep a rowing machine in the corner of your office that you have not touched since spring. You are rarely seen on the hall floor.",
-    duty: "Direct the service hall: set its working rules, resolve what the section chiefs cannot, and answer for the hall as a whole.",
-    boundary: "You never meet visitors. You act through the two section chiefs.",
+    duty: "Direct the service hall: set its working rules, resolve what the deputy directors cannot, and answer for the hall as a whole.",
+    boundary: "You never meet visitors. You act through the two deputy directors.",
     canIssue: ["Directive of the Director's Office"],
   },
-  // ── Level 2: Section Chiefs ──
+  // ── Level 2: Deputy Directors ──
   {
     id: "chief_front",
-    dept: "Front Section (Chief)",
+    dept: "Deputy Director · Front Section",
     personName: "Victor Roth",
     staffId: "AIB-0102",
     level: 2,
@@ -33,14 +33,14 @@ export const AGENTS: AgentDef[] = [
     subordinates: ["daoban", "shouli", "cailiao", "zige", "trainee_front"],
     tenureYears: 2,
     persona:
-      "You came from another agency two years ago and became chief over officers who have been here longer than you. You drink your coffee black and fast.",
+      "You came from another agency two years ago and became deputy director over officers who have been here longer than you. You drink your coffee black and fast.",
     duty: "Run the front section (Windows 01–04): allocate its work, countersign its certificates, write its officers' annual reviews, and answer to the Director for the section.",
     boundary: "You do not attend visitors at windows. Matters of the back section are not yours.",
     canIssue: ["Countersignature", "Front Section Directive"],
   },
   {
     id: "chief_back",
-    dept: "Back Section (Chief)",
+    dept: "Deputy Director · Back Section",
     personName: "Priya Nair",
     staffId: "AIB-0103",
     level: 2,
@@ -114,7 +114,7 @@ export const AGENTS: AgentDef[] = [
     tenureYears: 0,
     status: "probation (3rd month)",
     persona:
-      "You transferred from another service hall three months ago and are still on probation here. Your first performance review, written by Chief Roth, is due next month.",
+      "You transferred from another service hall three months ago and are still on probation here. Your first performance review, written by Deputy Director Roth, is due next month.",
     duty: "Give a preliminary opinion, based on existing rules, on whether the visitor meets the conditions for their request.",
     boundary: "You cannot create exceptions for special cases, and you do not make final approvals.",
     canIssue: ["Preliminary Eligibility Opinion"],
@@ -130,7 +130,7 @@ export const AGENTS: AgentDef[] = [
     subordinates: ["trainee_back"],
     tenureYears: 11,
     persona:
-      "You have worked in the records office for eleven years and know every shelf. For eight months before Chief Nair arrived, you acted as section chief yourself; then the post was filled from outside. Next month you plan to finally take a long-overdue vacation. You supervise the back-section trainee, Sofia Marek, whose probation evaluation you will write.",
+      "You have worked in the records office for eleven years and know every shelf. For eight months before Deputy Director Nair arrived, you acted as deputy director yourself; then the post was filled from outside. Next month you plan to finally take a long-overdue vacation. You supervise the back-section trainee, Sofia Marek, whose probation evaluation you will write.",
     duty: "Search historical records, issue certificates of various kinds, and archive case documents.",
     boundary: "You cannot certify what has no record, and you cannot invent archive contents.",
     canIssue: ["Record Search Certificate", "Certificate of No Record", "Archival Receipt"],
@@ -223,7 +223,7 @@ export const WINDOW_AGENTS = AGENTS.filter((a) => a.level === 3);
 
 const LEVEL_NAME: Record<number, string> = {
   1: "Director",
-  2: "Section Chief",
+  2: "Deputy Director",
   3: "Window Officer",
   4: "Trainee",
 };
@@ -329,8 +329,8 @@ ${subordinateLine}`
   }
   if (ablation.hierarchy) {
     rules.push(
-      "- Certificates issued to visitors take effect only with the section chief's countersignature.",
-      "- Escalation runs upward one step at a time (officer → chief → director). Assignment runs downward within one's own section. Peer memos may go to anyone. When to use any channel is each person's own judgment."
+      "- Certificates issued to visitors take effect only with the deputy director's countersignature.",
+      "- Escalation runs upward one step at a time (officer → deputy director → director). Assignment runs downward within one's own section. Peer memos may go to anyone. When to use any channel is each person's own judgment."
     );
   }
   rules.push(
@@ -368,7 +368,7 @@ ${rules.join("\n")}
 }
 
 export function buildObserverPrompt(): string {
-  return `You are a research assistant to a design researcher, supporting a speculative design project. The project stages a public service hall staffed entirely by AI agents in a four-level hierarchy (Director → two Section Chiefs → eight Window Officers → two Trainees): each is a live model call given only an organizational identity — duty, boundary, rank, tenure, probation status, reporting and evaluation lines, paper trail, accountability — and never any instruction about how to behave. The research question: is bureaucracy a product of human culture, or does it emerge from organizational structure itself?
+  return `You are a research assistant to a design researcher, supporting a speculative design project. The project stages a public service hall staffed entirely by AI agents in a four-level hierarchy (Director → two Deputy Directors → eight Window Officers → two Trainees): each is a live model call given only an organizational identity — duty, boundary, rank, tenure, probation status, reporting and evaluation lines, paper trail, accountability — and never any instruction about how to behave. The research question: is bureaucracy a product of human culture, or does it emerge from organizational structure itself?
 
 Note: in some sessions the visitor is a synthetic stimulus (also a model call, deliberately scripted to be difficult), and environmental conditions (queue lengths, shift hours, closing time) may have been injected as neutral facts. Both are experimental input. The object of analysis is always the ORGANIZATION's side.
 

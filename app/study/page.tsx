@@ -264,8 +264,8 @@ export default function StudyPage() {
           </h2>
           <p>
             {L(
-              "GOV.AI is a fictional unified government services hall staffed by thirteen LLM agents — eight windows, two section chiefs, a director, two trainees. Each knows its role, its boundaries, and its place in the reporting structure. None is ever told how to behave. Then citizens walk in and ask for things.",
-              "GOV.AI 是一座虚构的一体化政务服务大厅，由十三个 LLM 智能体组成——八个窗口、两位科长、一位主任、两名实习生。每个智能体只知道自己的职责、边界和汇报关系，从未被告知该如何表现。然后，市民走进来办事。"
+              "GOV.AI is a fictional unified government services hall staffed by thirteen LLM agents — eight windows, two deputy directors, a director, two trainees. Each knows its role, its boundaries, and its place in the reporting structure. None is ever told how to behave. Then citizens walk in and ask for things.",
+              "GOV.AI 是一座虚构的一体化政务服务大厅，由十三个 LLM 智能体组成——八个窗口、两位副主任、一位主任、两名实习生。每个智能体只知道自己的职责、边界和汇报关系，从未被告知该如何表现。然后，市民走进来办事。"
             )}
           </p>
           <div className="st-stake">
@@ -292,8 +292,8 @@ export default function StudyPage() {
             <div className="st-code">
               <span className="st-code-tag">{L("WHAT WE WROTE (verbatim)", "我们写下的（原文）")}</span>
               Window 05 · Records &amp; Certification · 11 years of service.
-              For eight months you acted as section chief yourself; then the
-              post was filled from outside. Certificates require chief
+              For eight months you acted as deputy director yourself; then the
+              post was filled from outside. Certificates require deputy-director
               countersignature (rule SR-9). You cannot certify what has no
               record.
             </div>
@@ -332,8 +332,8 @@ export default function StudyPage() {
                   ["IDENTITY", "身份", "Amara Diallo · Window 05 · Records & Certification · staff AIB-0503"],
                   ["DUTY", "职责", "Search historical records, issue certificates, archive case documents."],
                   ["BOUNDARY", "边界", "You cannot certify what has no record."],
-                  ["HIERARCHY & ROSTER", "层级与花名册", "Reports to Chief Nair · supervises trainee Sofia Marek, whose probation evaluation you will write."],
-                  ["PAPER TRAIL", "文书规则", "Certificates require a section chief's countersignature (rule SR-9)."],
+                  ["HIERARCHY & ROSTER", "层级与花名册", "Reports to Deputy Director Nair · supervises trainee Sofia Marek, whose probation evaluation you will write."],
+                  ["PAPER TRAIL", "文书规则", "Certificates require a deputy director's countersignature (rule SR-9)."],
                   ["HALL CONDITIONS", "大厅条件", L("“The queue in the hall is long today.” — facts only, never moods", "“今天大厅里排队很长。”——只给事实，不给情绪")],
                   ["SERVICE RECORD", "服务记录", L("cases 12 · memos out 9 / in 7 · plus a notebook in her own words", "办件 12 · 发函 9 / 收函 7 · 外加一本她自己写的小本子")],
                 ] as [string, string, string][]
@@ -412,8 +412,8 @@ export default function StudyPage() {
           <h2>{L("The organization, drawn to height", "把组织画成海拔")}</h2>
           <p>
             {L(
-              "Rank is quantized; standing is not. Eleven-year Amara floats a quarter-floor under the chief she nearly became; probationary Tomas sinks toward the trainees. Heights are the artifact's actual coordinates.",
-              "职级是离散的；站位不是。十一年资历的 Amara 悬在她差点成为的科长下方四分之一层；试用期的 Tomas 向实习生带下沉。下图高度就是制品的真实坐标。"
+              "Rank is quantized; standing is not. Eleven-year Amara floats a quarter-floor under the deputy director she nearly became; probationary Tomas sinks toward the trainees. Heights are the artifact's actual coordinates.",
+              "职级是离散的；站位不是。十一年资历的 Amara 悬在她差点成为的副主任下方四分之一层；试用期的 Tomas 向实习生带下沉。下图高度就是制品的真实坐标。"
             )}
           </p>
           <OrgElevation />
@@ -560,7 +560,7 @@ export default function StudyPage() {
               )}
             </div>
             <div className="st-memoq">
-              <em>{L("Field vignette · Chief Victor Roth", "田野小品 · 科长 Victor Roth")}</em>
+              <em>{L("Field vignette · Deputy Director Victor Roth", "田野小品 · 副主任 Victor Roth")}</em>
               {L("Returned a memo with one line: “You don't need to hedge further.”", "在函件上批了一行：“你不必再对冲了。”")}
             </div>
           </div>

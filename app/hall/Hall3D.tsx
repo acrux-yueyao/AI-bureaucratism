@@ -64,8 +64,8 @@ export const ROOMS: Record<AgentId, Room> = {
   quanxian: { x: 0.8, y: 6.15, z: -3.8, w: 2.1, h: 1.5, d: 2.9, c: 0x4d82d8, num: "06", papers: 2 },
   fengkong: { x: -1.8, y: 4.35, z: -2.0, w: 2.4, h: 1.6, d: 1.7, c: 0x6fbf5e, num: "07" },
   fuhe: { x: 2.4, y: 3.45, z: -3.2, w: 1.7, h: 1.5, d: 2.3, c: 0x8792a3, num: "08" },
-  chief_front: { x: -1.2, y: 8.55, z: 0.8, w: 2.9, h: 1.9, d: 2.1, c: 0xf5a43a, num: "CHIEF · FRONT", big: true, wood: true },
-  chief_back: { x: 4.6, y: 7.8, z: -1.2, w: 2.2, h: 1.8, d: 2.7, c: 0x7aade0, num: "CHIEF · BACK", big: true, wood: true },
+  chief_front: { x: -1.2, y: 8.55, z: 0.8, w: 2.9, h: 1.9, d: 2.1, c: 0xf5a43a, num: "DEPUTY DIR · FRONT", big: true, wood: true },
+  chief_back: { x: 4.6, y: 7.8, z: -1.2, w: 2.2, h: 1.8, d: 2.7, c: 0x7aade0, num: "DEPUTY DIR · BACK", big: true, wood: true },
   director: { x: 2.2, y: 12.6, z: -0.6, w: 3.8, h: 2.3, d: 2.6, c: 0xaebacd, num: "DIRECTOR", big: true, wood: true },
   trainee_front: { x: -6.8, y: 0.9, z: 1.8, w: 1.15, h: 1.05, d: 1.35, c: 0xf8cd90, num: "TRAINEE" },
   trainee_back: { x: 5.6, y: 1.5, z: -2.6, w: 1.5, h: 1.1, d: 1.2, c: 0xb9d4f0, num: "TRAINEE" },
@@ -363,7 +363,7 @@ export default function Hall3D(props: Props) {
       [
         [1.2, "TRAINEES"],
         [4.9, "WINDOWS"],
-        [8.2, "SECTION CHIEFS"],
+        [8.2, "DEPUTY DIRECTORS"],
         [12.6, "DIRECTOR"],
       ] as [number, string][]
     ).forEach(([y, txt]) => {
@@ -1396,7 +1396,7 @@ export default function Hall3D(props: Props) {
           a.level === 1
             ? "Director"
             : a.level === 2
-              ? "Section chief"
+              ? "Deputy Director"
               : a.level === 3
                 ? `Window ${a.windowNo} officer`
                 : "Trainee";

@@ -8,7 +8,7 @@
 
 > Do bureaucratic behaviors — escalation, paper demands, responsibility diffusion, precedent citation — emerge from organizational structure alone, absent any instruction to behave bureaucratically?
 
-Thirteen officers (eight windows, two section chiefs, a director, two trainees) are real model calls given **only** organizational conditions — identity, duty, boundaries, reporting lines, paper-trail rules, plus one non-work personal detail. **Nothing in any prompt tells them how to behave.** Difficult visitors are a separate, scripted *stimulus* layer, never confused with the uninstructed *subjects*.
+Thirteen officers (eight windows, two deputy directors, a director, two trainees) are real model calls given **only** organizational conditions — identity, duty, boundaries, reporting lines, paper-trail rules, plus one non-work personal detail. **Nothing in any prompt tells them how to behave.** Difficult visitors are a separate, scripted *stimulus* layer, never confused with the uninstructed *subjects*.
 
 ## The artifact
 

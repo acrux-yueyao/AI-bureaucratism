@@ -1622,10 +1622,33 @@ textarea {
   background: currentColor;
   opacity: 0.95;
 }
-.st-swlegend {
+.st-switches {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin: 4px 0 16px;
+}
+.st-switches > div {
+  border: 1px solid rgba(120, 140, 170, 0.28);
+  border-left: 3px solid #f0847e;
+  border-radius: 8px;
+  padding: 10px 13px;
+  background: rgba(13, 17, 24, 0.55);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #c3cbd8;
+}
+.st-switches b {
+  display: block;
   font-size: 11px;
-  opacity: 0.55;
-  margin-bottom: 8px;
+  letter-spacing: 1.5px;
+  color: #eef2f8;
+  margin-bottom: 4px;
+}
+.st-pick {
+  font-size: 14px !important;
+  font-weight: 500;
+  margin-bottom: 10px !important;
 }
 .st-chart {
   width: 100%;
@@ -1643,6 +1666,15 @@ textarea {
 .st-statrow strong {
   font-size: 17px;
   margin-left: 6px;
+}
+.st-readout {
+  margin-top: 14px !important;
+  padding: 12px 15px;
+  border-left: 3px solid #f0847e;
+  background: rgba(240, 132, 126, 0.08);
+  border-radius: 0 8px 8px 0;
+  font-size: 13.5px !important;
+  line-height: 1.7;
 }
 
 .st-dials {

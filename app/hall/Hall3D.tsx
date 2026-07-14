@@ -890,7 +890,11 @@ export default function Hall3D(props: Props) {
     el.addEventListener("pointerdown", onDown);
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
-    el.addEventListener("wheel", onWheel, { passive: false });
+    // In the study hero (ambient), the scene is decorative — never hijack the
+    // wheel, so the page scrolls normally. Zoom stays on the real hall page.
+    if (!propsRef.current.ambient) {
+      el.addEventListener("wheel", onWheel, { passive: false });
+    }
 
     const yAxis = new THREE.Vector3(0, 1, 0);
     const animate = () => {

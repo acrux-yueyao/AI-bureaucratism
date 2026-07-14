@@ -40,6 +40,14 @@ const COND: {
 
 const T2 = { bare: 1.93, flat: 1.9, full: 1.83, no_memory: 1.87, no_trail: 2.0 };
 
+const CONDLABEL: Record<CondId, { en: string; zh: string }> = {
+  full: { en: "Full", zh: "完整" },
+  flat: { en: "Flat", zh: "扁平" },
+  no_trail: { en: "No trail", zh: "无留痕" },
+  no_memory: { en: "No memory", zh: "无记忆" },
+  bare: { en: "Bare", zh: "裸机" },
+};
+
 const STAGES: { id: string; bg: string; dark: boolean }[] = [
   { id: "hero", bg: "#06070a", dark: true },
   { id: "bg-a", bg: "#ffffff", dark: false },
@@ -416,11 +424,40 @@ export default function StudyPage() {
       <section className="st-sec" data-idx={8} ref={sec(8)}>
         <div className="st-inner">
           <span className="st-act">{L("ACT II · THE STUDY", "第二幕 · 实验")}</span>
-          <h2>{L("Switch the organization off, piece by piece", "把组织一块块关掉")}</h2>
+          <h2>{L("Which part of an organization makes the red tape?", "组织的哪一部分，制造了繁文缛节？")}</h2>
           <p>
             {L(
-              "Preregistered (the git commit of the codebook is the registration record): five ablations × 15 trials = 75 cases, identical visitor pool. Pick a condition:",
-              "预注册（编码手册的 git 提交即注册记录）：五种消融 × 15 案 = 75 个案件，访客池完全相同。选择一个条件："
+              "To find out, take the organization apart one piece at a time — the way you'd pull ingredients from a recipe to see which one actually mattered — and re-run the same 75 cases each way. Three parts can be switched on or off:",
+              "要弄清楚，就把组织一块块拆开——像从菜谱里逐样拿掉配料，看到底哪样起了作用——再用同样的 75 个案件把每一种拆法各跑一遍。三个部件可以开、也可以关："
+            )}
+          </p>
+          <div className="st-switches">
+            <div>
+              <b>{L("HIERARCHY", "层级")}</b>
+              {L(
+                "ranks — officers can escalate upward and assign downward",
+                "有上下级——职员能向上升级、向下派工",
+              )}
+            </div>
+            <div>
+              <b>{L("PAPER TRAIL", "文书留痕")}</b>
+              {L(
+                "written records and countersignatures that make each step accountable",
+                "书面记录与会签——让每一步都可被追责",
+              )}
+            </div>
+            <div>
+              <b>{L("MEMORY", "记忆")}</b>
+              {L(
+                "the office remembers past cases, so precedent can form",
+                "科室记得以前办过的案子——先例得以形成",
+              )}
+            </div>
+          </div>
+          <p className="st-pick">
+            {L(
+              "Pick a version below (filled dot = part is on). Then watch one number — how often the hall demands more paperwork from the citizen:",
+              "在下面选一个版本（实心点 = 该部件开着）。然后只盯一个数字——大厅有多频繁地向市民索要更多材料：",
             )}
           </p>
           <div className="st-condrow">
@@ -435,12 +472,9 @@ export default function StudyPage() {
                   <i className={c.trail ? "on" : ""} title="paper trail" />
                   <i className={c.memory ? "on" : ""} title="memory" />
                 </span>
-                {c.id}
+                {L(CONDLABEL[c.id].en, CONDLABEL[c.id].zh)}
               </button>
             ))}
-          </div>
-          <div className="st-swlegend">
-            {L("switches: hierarchy · paper trail · memory", "开关含义：层级 · 文书痕迹 · 记忆")}
           </div>
           <MaterialsChart cond={cond} dark />
           <div className="st-statrow">
@@ -457,6 +491,12 @@ export default function StudyPage() {
               {L("officialese register", "官腔浓度")} <strong>{T2[sel.id].toFixed(2)}/2</strong>
             </span>
           </div>
+          <p className="st-readout">
+            {L(
+              "The full organization, nothing removed, sits low. Take away accountability (no trail) or memory and the paperwork demands roughly quintuple — 0.80 → 4.07 per case. Officers left with no way to protect themselves fall back on the one move always available: asking you for more documents. That jump is the finding.",
+              "什么都不拿掉的完整组织，落在低位。一旦抽走问责（无留痕）或记忆，索要材料几乎翻五倍——每案 0.80 → 4.07。无从自保的职员，只能退回到那个永远可用的动作：向你要更多材料。这一跳，就是发现本身。",
+            )}
+          </p>
         </div>
       </section>
 

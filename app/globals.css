@@ -3136,7 +3136,7 @@ textarea {
   text-align: right;
   pointer-events: none;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.95);
-  transform: translate(-100%, -50%);
+  transform: translate(calc(-100% - 12px), -50%); /* clear the anchor square */
 }
 
 /* top chrome */

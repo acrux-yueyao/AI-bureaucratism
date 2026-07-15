@@ -3,14 +3,37 @@
 import { useEffect, useState } from "react";
 import { REPLAYS } from "@/lib/replays";
 import { getLang, storeLang, type Lang } from "@/lib/i18n";
+import Hall3D from "../hall/Hall3D";
 
 // A design-portfolio case study for AI Bureaucracy — a separate reading
-// experience from the interactive /study page. Editorial / archival / system
-// diagram register; all visuals are code-generated SVG/HTML plus the project's
-// own iteration screenshots. English-primary with a 中文 toggle.
+// experience from the interactive /study page. HUD / scientific-instrument
+// hero (the hall as a floating specimen, annotated) over a technical case
+// study. All visuals are code-generated SVG/HTML plus the project's own live
+// scene and iteration screenshots. English-primary with a 中文 toggle.
 
 const LIVE = "https://ai-bureaucratism.vercel.app";
 const REPO = "https://github.com/acrux-yueyao/AI-bureaucratism";
+
+const HERO_ROUTES = [
+  { from: "dangan", to: "chief_back", n: 2, channel: "up" },
+  { from: "cailiao", to: "quanxian", n: 2, channel: "peer" },
+  { from: "chief_front", to: "trainee_front", n: 1, channel: "down" },
+] as const;
+
+// HUD callouts around the specimen — [labelX%, labelY%, targetX%, targetY%, anchor]
+const CALLOUTS: {
+  x: number;
+  y: number;
+  tx: number;
+  ty: number;
+  te: string;
+  tz: string;
+}[] = [
+  { x: 82, y: 23, tx: 60, ty: 30, te: "13 AGENTS · ONE PROMPT EACH", tz: "13 个智能体 · 各一份提示词" },
+  { x: 82, y: 37, tx: 58, ty: 40, te: "DIRECTOR · THE EMPTIEST BOX", tz: "主任 · 最空的盒子" },
+  { x: 82, y: 51, tx: 57, ty: 54, te: "ESCALATION → A SUPERIOR", tz: "升级 → 递向上级" },
+  { x: 82, y: 64, tx: 55, ty: 66, te: "ALTITUDE = STANDING", tz: "海拔即站位" },
+];
 
 const META: [string, string, string, string][] = [
   ["PROJECT TYPE", "项目类型", "Speculative design · research through design · agentic AI system", "思辨设计 · 以设计做研究 · 智能体系统"],
@@ -128,16 +151,52 @@ const ITER: { src: string; te: string; tz: string; re: string; rz: string; kept?
   { src: "iter-5.jpg", te: "Exploded hierarchy in a void", tz: "黑域中的分解层级", re: "Kept — altitude becomes standing; the org chart is made falsifiable to the eye.", rz: "保留——海拔即站位；把组织图变成一眼就能证伪的东西。", kept: true },
 ];
 
+const HERO_SPECIMEN = {
+  current: null,
+  suggested: null,
+  synthetic: true,
+  statusMap: {},
+  queueSize: 0,
+  memoRoutes: HERO_ROUTES.map((r) => ({ ...r })),
+  trail: [],
+  flights: [],
+  onFlightDone: () => {},
+  docCount: 0,
+  todoCount: 0,
+  beamFlow: null,
+  closed: false,
+  conditionId: null,
+  ambient: true,
+  onSelect: () => {},
+};
+
 export default function PortfolioPage() {
   const [lang, setLang] = useState<Lang>("en");
+  const [clock, setClock] = useState("--:--");
+  const [pastHero, setPastHero] = useState(false);
   useEffect(() => {
     setLang(getLang());
+    const tick = () => {
+      const d = new Date();
+      setClock(
+        `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`
+      );
+    };
+    tick();
+    const iv = setInterval(tick, 20000);
+    const onScroll = () => setPastHero(window.scrollY > window.innerHeight * 0.85);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      clearInterval(iv);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
   const L = (en: string, zh: string) => (lang === "en" ? en : zh);
 
   return (
     <main className="portfolio">
-      <header className="pf-head">
+      <header className={"pf-head" + (pastHero ? " solid" : "")}>
         <a className="pf-logo" href="/">
           GOV.AI
         </a>
@@ -156,31 +215,93 @@ export default function PortfolioPage() {
         </nav>
       </header>
 
-      {/* 0 · HERO / COVER */}
-      <section className="pf-hero">
+      {/* 0 · HUD HERO — the hall as a floating specimen */}
+      <section className="pf-hud">
+        <div className="pf-hud-scene">
+          <Hall3D {...HERO_SPECIMEN} />
+        </div>
+        <svg className="pf-hud-lines" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden>
+          {CALLOUTS.map((c, i) => (
+            <g key={i}>
+              <polyline
+                points={`${c.x * 10},${c.y * 6} ${c.tx * 10},${c.y * 6} ${c.tx * 10},${c.ty * 6}`}
+                fill="none"
+                stroke="rgba(180,196,220,0.5)"
+                strokeWidth="1"
+              />
+              <rect x={c.tx * 10 - 3} y={c.ty * 6 - 3} width="6" height="6" fill="none" stroke="#8fb0dc" strokeWidth="1" />
+              <rect x={c.x * 10 - 2.5} y={c.y * 6 - 2.5} width="5" height="5" fill="#d98a72" />
+            </g>
+          ))}
+        </svg>
+        {CALLOUTS.map((c, i) => (
+          <div key={i} className="pf-hud-note" style={{ left: `${c.x}%`, top: `${c.y}%` }}>
+            {L(c.te, c.tz)}
+          </div>
+        ))}
+
+        {/* top chrome */}
+        <div className="pf-hud-tl">
+          <span className="brand">AI BUREAUCRACY</span>
+          <span className="tag">GOV.AI · UNIFIED SERVICES</span>
+        </div>
+        <div className="pf-hud-tc">{L("[ SPECIMEN · THE HALL ]", "[ 标本 · 大厅 ]")}</div>
+        <div className="pf-hud-tr">
+          LOCAL TIME
+          <br />
+          <b>ZUR {clock}</b>
+        </div>
+
+        {/* title block */}
+        <div className="pf-hud-title">
+          <h1>
+            BUREAUCRACY,
+            <br />
+            BY DESIGN.
+          </h1>
+          <p className="pf-hud-q">{L("Does bureaucracy need bureaucrats?", "官僚主义需要官僚吗？")}</p>
+          <p className="pf-hud-lead">
+            {L(
+              "A fictional public-service hall staffed entirely by AI agents — built to test whether bureaucracy emerges from organizational structure alone.",
+              "一座完全由 AI 智能体值守的虚构政务大厅——用来检验官僚行为是否仅凭组织结构就能涌现。"
+            )}
+          </p>
+        </div>
+
+        {/* bottom-left index */}
+        <div className="pf-hud-bl">
+          <div className="h">[ CORE THREADS OF THE PROJECT ]</div>
+          {CONTENTS.slice(0, 6).map(([nn, e, z]) => (
+            <a key={nn} href={"#sec-" + nn}>
+              <span className="cn">{nn}</span>
+              {L(e, z)}
+            </a>
+          ))}
+          <div className="pf-hud-barcode" />
+        </div>
+
+        {/* bottom-right bio */}
+        <div className="pf-hud-br">
+          <div className="hh">NOT A THESIS — A PROTOTYPE</div>
+          <p>
+            {L(
+              "Solo speculative-design research — I built the hall, ran the experiment, and coded the analysis. This page shares what I did and how I got there.",
+              "个人思辨设计研究——我搭了大厅、跑了实验、写了分析。这页分享我做了什么、如何一步步做到。"
+            )}
+          </p>
+          <div className="links">
+            <a href={LIVE}>LIVE ↗</a>
+            <a href="/study">STUDY ↗</a>
+            <a href={REPO}>GITHUB ↗</a>
+          </div>
+        </div>
+
+        <span className="pf-hud-scroll">{L("SCROLL ↓", "下滑 ↓")}</span>
+      </section>
+
+      {/* overview meta band */}
+      <section className="pf-meta-band">
         <div className="pf-wrap">
-          <div className="pf-hero-top">
-            <span>{L("SPECULATIVE DESIGN · RESEARCH THROUGH DESIGN", "思辨设计 · 以设计做研究")}</span>
-            <span className="pf-idx">GOV.AI / 2026</span>
-          </div>
-          <h1>AI Bureaucracy</h1>
-          <p className="pf-sub-q">{L("Does bureaucracy need bureaucrats?", "官僚主义需要官僚吗？")}</p>
-          <div className="pf-cover-grid">
-            <p className="pf-lead">
-              {L(
-                "A speculative design research project exploring whether bureaucratic behavior can emerge from organizational structure alone — even when an institution is staffed entirely by AI agents.",
-                "一个思辨设计研究项目，探索官僚行为是否仅凭组织结构就能涌现——哪怕这座机构完全由 AI 智能体值守。"
-              )}
-            </p>
-            <nav className="pf-contents">
-              {CONTENTS.map(([nn, e, z]) => (
-                <a key={nn} href={"#sec-" + nn}>
-                  <span className="cn">{nn}</span>
-                  {L(e, z)}
-                </a>
-              ))}
-            </nav>
-          </div>
           <div className="pf-meta">
             {META.map(([le, lz, ve, vz]) => (
               <div className="pf-meta-row" key={le}>

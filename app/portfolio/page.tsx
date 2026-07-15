@@ -103,32 +103,32 @@ const INSIGHTS: {
   },
 ];
 
-const CONDGROUPS: { g: string; gz: string; items: [string, string, string][] }[] = [
+const CONDGROUPS: { g: string; gz: string; items: { e: string; z: string; d: string; abl?: boolean }[] }[] = [
   {
     g: "STRUCTURE",
     gz: "结构",
     items: [
-      ["Hierarchy", "层级", "ranks that route decisions up and work down"],
-      ["Jurisdiction", "管辖", "each desk owns only its slice of a matter"],
-      ["Permission boundary", "权限边界", "you may act only inside your remit"],
+      { e: "Hierarchy", z: "层级", d: "ranks that route decisions up and work down", abl: true },
+      { e: "Jurisdiction", z: "管辖", d: "each desk owns only its slice of a matter" },
+      { e: "Permission boundary", z: "权限边界", d: "you may act only inside your remit" },
     ],
   },
   {
     g: "RECORD",
     gz: "留痕",
     items: [
-      ["Paper trail", "文书留痕", "every step leaves a written, signed record"],
-      ["Accountability", "问责", "an action is attributable to a named person"],
-      ["Memory", "记忆", "the office remembers what it did before"],
-      ["Archive", "档案", "past cases persist and can be retrieved"],
+      { e: "Paper trail", z: "文书留痕", d: "every step leaves a written, signed record", abl: true },
+      { e: "Accountability", z: "问责", d: "an action is attributable to a named person" },
+      { e: "Memory", z: "记忆", d: "the office remembers what it did before", abl: true },
+      { e: "Archive", z: "档案", d: "past cases persist and can be retrieved" },
     ],
   },
   {
     g: "MOTION",
     gz: "流动",
     items: [
-      ["Escalation", "升级", "hand a decision upward when unsure"],
-      ["Assignment", "派工", "hand work downward within your section"],
+      { e: "Escalation", z: "升级", d: "hand a decision upward when unsure" },
+      { e: "Assignment", z: "派工", d: "hand work downward within your section" },
     ],
   },
 ];
@@ -149,6 +149,55 @@ const ITER: { src: string; te: string; tz: string; re: string; rz: string; kept?
   { src: "iter-3.jpg", te: "Isometric miniature bureau", tz: "等距微缩官署", re: "Rejected — charm domesticated the subject.", rz: "否决——可爱驯化了主题。" },
   { src: "iter-4.jpg", te: "Flat transit map", tz: "平面交通图", re: "Rejected — clean process-tracing, but it flattened rank, the one thing under study.", rz: "否决——过程清晰，却压平了唯一的研究对象：层级。" },
   { src: "iter-5.jpg", te: "Exploded hierarchy in a void", tz: "黑域中的分解层级", re: "Kept — altitude becomes standing; the org chart is made falsifiable to the eye.", rz: "保留——海拔即站位；把组织图变成一眼就能证伪的东西。", kept: true },
+];
+
+// Research reference plates — all Public Domain (Wikimedia Commons / LoC / DPLA),
+// self-hosted under /public/research/.
+const REFS: { src: string; rn: string; te: string; tz: string; pe: string; pz: string; be: string; bz: string; cr: string }[] = [
+  {
+    src: "weber-1918.jpg",
+    rn: "REF-01",
+    te: "Max Weber, 1918",
+    tz: "马克斯·韦伯，1918",
+    pe: "Bureaucracy as an ideal type: offices, files, rules — conditions, not characters.",
+    pz: "官僚制作为“理想类型”：科室、档案、规则——是条件，不是性格。",
+    be: "→ BECAME: THE SWITCHABLE CONDITIONS",
+    bz: "→ 落地为：可开关的组织条件",
+    cr: "PUBLIC DOMAIN · WIKIMEDIA COMMONS",
+  },
+  {
+    src: "kafka-1923.jpg",
+    rn: "REF-02",
+    te: "Franz Kafka, 1923",
+    tz: "弗朗茨·卡夫卡，1923",
+    pe: "The Trial: procedure as it is lived — doors, delays, doorkeepers you never get past.",
+    pz: "《审判》：作为切身经验的程序——门、拖延、永远绕不过的守门人。",
+    be: "→ BECAME: THE CITIZEN KEPT OUTSIDE",
+    bz: "→ 落地为：始终被挡在建筑外的市民",
+    cr: "PUBLIC DOMAIN · WIKIMEDIA COMMONS",
+  },
+  {
+    src: "loc-card-division.jpg",
+    rn: "REF-03",
+    te: "Card Division, Library of Congress, c. 1915",
+    tz: "美国国会图书馆卡片部，约1915",
+    pe: "The institution's memory, outliving every clerk who serves it.",
+    pz: "机构的记忆，比任何一位经手的职员都活得久。",
+    be: "→ BECAME: PAPER TRAIL & ARCHIVE",
+    bz: "→ 落地为：文书留痕与档案",
+    cr: "PUBLIC DOMAIN · LIBRARY OF CONGRESS",
+  },
+  {
+    src: "ellis-island-pens.jpg",
+    rn: "REF-04",
+    te: "Registry Room pens, Ellis Island, c. 1907",
+    tz: "埃利斯岛登记大厅隔栏，约1907",
+    pe: "Waiting, sorted into pens: the queue as the state's true interface.",
+    pz: "被分进隔栏里的等待：排队，才是国家真正的界面。",
+    be: "→ BECAME: REFERRAL AS MOVEMENT",
+    bz: "→ 落地为：作为“运动”的转办",
+    cr: "PUBLIC DOMAIN · NPS / DPLA",
+  },
 ];
 
 const HERO_SPECIMEN = {
@@ -368,6 +417,26 @@ export default function PortfolioPage() {
             "每一条都讲得通。可一旦组合起来，一个简单的请求就被转交、补件、升级、归档——却不一定被真正解决。这道缝隙，在“合理运转的机器”与“未被满足的诉求”之间，就是本项目的主题。"
           )}
         </p>
+        <div className="pf-refs" id="refs" style={{ scrollMarginTop: 60 }}>
+          <div className="pf-refs-h">
+            [ {L("RESEARCH PLATES — FOUR ANCHORS BEHIND THE BUILD", "研究图版——支撑这次搭建的四个参照")} ]
+          </div>
+          <div className="pf-refgrid">
+            {REFS.map((r) => (
+              <figure className="pf-ref" key={r.rn}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`/research/${r.src}`} alt={L(r.te, r.tz)} loading="lazy" />
+                <figcaption>
+                  <span className="rn">{r.rn}</span>
+                  <b>{L(r.te, r.tz)}</b>
+                  <p>{L(r.pe, r.pz)}</p>
+                  <span className="to">{L(r.be, r.bz)}</span>
+                  <span className="cr">{r.cr}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
       </Section>
 
       {/* 3 · EXPLORATORY CONVERSATIONS */}
@@ -414,10 +483,20 @@ export default function PortfolioPage() {
           {CONDGROUPS.map((grp) => (
             <div className="pf-matcol" key={grp.g}>
               <div className="pf-matcol-h">{L(grp.g, grp.gz)}</div>
-              {grp.items.map(([name, zh, gloss]) => (
-                <div className="pf-cond" key={name}>
-                  <b>{L(name, zh)}</b>
-                  <span>{gloss}</span>
+              {grp.items.map((it) => (
+                <div className={"pf-cond" + (it.abl ? " abl" : "")} key={it.e}>
+                  <div className="pf-cond-t">
+                    <b>{L(it.e, it.z)}</b>
+                    {it.abl ? (
+                      <span className="pf-sw">
+                        <i />
+                      </span>
+                    ) : null}
+                  </div>
+                  <span className="g">{it.d}</span>
+                  {it.abl ? (
+                    <span className="pf-abl">{L("ABLATION SWITCH — TURNED OFF IN THE EXPERIMENT", "消融开关——实验中被关断")}</span>
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -443,7 +522,7 @@ export default function PortfolioPage() {
             "设计的关键转向：普通 AI 助手，是一个用户对一个应答者。GOV.AI 则是一个请求，让一座机构开始自我协商——用户触发的是一个系统，而大部分工作发生在智能体之间，在用户视线之外。"
           )}
         </p>
-        <Fig n="01" cap={L("A chatbot answers; an institution deliberates with itself.", "聊天机器人是应答；机构是自我协商。")}>
+        <Fig n="01" title={L("ASSISTANT VS INSTITUTION", "助手 VS 机构")} cap={L("A chatbot answers; an institution deliberates with itself.", "聊天机器人是应答；机构是自我协商。")}>
           <ChatbotVsInstitution L={L} />
         </Fig>
       </Section>
@@ -461,7 +540,7 @@ export default function PortfolioPage() {
             "让主张立得住的红线：十三个智能体（被试）只被给予组织条件——绝不做行为诱导。刁钻的访客（刺激物）是独立的、允许脚本化的一层，如同实验里的“同谋”。两者绝不混淆，而每一个动作都从事件流中被测量。"
           )}
         </p>
-        <Fig n="02" cap={L("Subjects and stimuli are separate layers; both feed one measurement.", "被试与刺激物是两层；共同汇入同一套测量。")}>
+        <Fig n="02" title={L("SUBJECT / STIMULUS / MEASUREMENT", "被试 / 刺激物 / 测量")} cap={L("Subjects and stimuli are separate layers; both feed one measurement.", "被试与刺激物是两层；共同汇入同一套测量。")}>
           <SubjectStimulus L={L} />
         </Fig>
       </Section>
@@ -478,7 +557,7 @@ export default function PortfolioPage() {
             "四个层级，由事实而非形容词砌成。看不见的层级——资历、试用期、谁曾代理过谁的职位、谁比自己的下属还年轻——都以平实的组织事实写入，从不写成性格。"
           )}
         </p>
-        <Fig n="03" cap={L("Four levels; the invisible hierarchy written in as plain fact.", "四个层级；看不见的层级作为平实事实写入。")}>
+        <Fig n="03" title={L("ORG ELEVATION · 13 AGENTS", "组织立面 · 13 个智能体")} cap={L("Four levels drawn at their true scene altitudes; the invisible hierarchy written in as plain fact.", "四个层级按场景真实海拔绘制；看不见的层级作为平实事实写入。")}>
           <div className="pf-scroll">
             <OrgChart L={L} />
           </div>
@@ -498,7 +577,7 @@ export default function PortfolioPage() {
             "市民永远进不了建筑。站在地面，只能靠一道光柱接通一个窗口；从那之后，事项便自行在机构内部流转。"
           )}
         </p>
-        <Fig n="04" cap={L("One matter's path through the hall, seven beats.", "一件事项走过大厅的七个节拍。")}>
+        <Fig n="04" title={L("ONE MATTER · SEVEN BEATS", "一件事项 · 七个节拍")} cap={L("One matter's path through the hall, seven beats.", "一件事项走过大厅的七个节拍。")}>
           <div className="pf-scroll">
             <div className="pf-story">
               {STORY.map((s, i) => (
@@ -567,7 +646,7 @@ export default function PortfolioPage() {
             "在 75 个预注册案件里，官腔的浓度在每一个条件下都逼近上限——哪怕是一个没有同事、没有规则、没有记忆的孤立智能体。官僚语言，是语言模型从训练里带来的。决策则不同：把问责或记忆从层级中抽走，索要材料几乎翻五倍，从每案 0.80 升到 4.07。移动机构行为的是结构，而不是文化。"
           )}
         </p>
-        <Fig n="05" cap={L("A single request fans out; responsibility diffuses and rarely lands.", "单个请求扇形散开；责任被稀释，很少落地。")}>
+        <Fig n="05" title={L("RESPONSIBILITY DIFFUSION", "责任稀释")} cap={L("A single request fans out; responsibility diffuses and rarely lands.", "单个请求扇形散开；责任被稀释，很少落地。")}>
           <ResponsibilityDiffusion L={L} />
         </Fig>
         <p className="pf-body pf-note">
@@ -648,6 +727,7 @@ function Section({
 }) {
   return (
     <section id={"sec-" + n} className={"pf-sec" + (alt ? " alt" : "")}>
+      <span className="pf-run">{`AIB · CASE FILE — SEC ${n} / 10`}</span>
       <div className="pf-wrap pf-grid">
         <div className="pf-rail">
           <span className="pf-rail-n">{n}</span>
@@ -673,225 +753,368 @@ function PullQuote({ text, cite }: { text: string; cite?: string }) {
   );
 }
 
-function Fig({ n, cap, children }: { n: string; cap: string; children: React.ReactNode }) {
+function Fig({ n, title, cap, children }: { n: string; title: string; cap: string; children: React.ReactNode }) {
   return (
-    <figure className="pf-fig">
-      {children}
+    <figure className="pf-plate" id={"fig-" + n} style={{ scrollMarginTop: 60 }}>
+      <div className="pf-plate-h">
+        <b>FIG. {n}</b>
+        <span>{title}</span>
+        <i className="pf-plate-bc" aria-hidden />
+      </div>
+      <div className="pf-plate-body">{children}</div>
       <figcaption className="pf-fig-cap">
-        <b>Fig. {n}</b>
         <span>{cap}</span>
       </figcaption>
     </figure>
   );
 }
 
+/* shared diagram furniture: corner registration crosses */
+function Crosses({ pts }: { pts: [number, number][] }) {
+  return (
+    <g stroke="#2b3547" strokeWidth="1">
+      {pts.map(([x, y], i) => (
+        <path key={i} d={`M${x - 5} ${y} H${x + 5} M${x} ${y - 5} V${y + 5}`} />
+      ))}
+    </g>
+  );
+}
+
+/* memo-channel colors — identical to the hall's CHANNEL_COLOR */
+const CH = { peer: "#a8cf90", up: "#f0847e", down: "#9fbce8" };
+
 function ChatbotVsInstitution({ L }: { L: (e: string, z: string) => string }) {
   return (
-    <svg viewBox="0 0 900 300" className="pf-svg" role="img" aria-label="A chatbot is one user and one responder; GOV.AI is one request into an institution that deliberates internally.">
-      {/* divider */}
-      <line x1="450" y1="24" x2="450" y2="276" stroke="#d9d7cf" strokeWidth="1" strokeDasharray="3 5" />
-      {/* LEFT: chatbot */}
-      <text x="40" y="40" className="pf-t-h">{L("AI ASSISTANT", "AI 助手")}</text>
-      <g>
-        <rect x="60" y="120" width="120" height="54" rx="8" fill="#fff" stroke="#1b1b1d" strokeWidth="1.2" />
-        <text x="120" y="152" textAnchor="middle" className="pf-t">{L("User", "用户")}</text>
-        <rect x="270" y="120" width="120" height="54" rx="8" fill="#eef3f9" stroke="#1d70b8" strokeWidth="1.2" />
-        <text x="330" y="152" textAnchor="middle" className="pf-t" fill="#1d70b8">{L("One AI", "一个 AI")}</text>
-        <line x1="182" y1="140" x2="268" y2="140" stroke="#8a8f98" strokeWidth="1.4" markerEnd="url(#pfArrow)" />
-        <line x1="268" y1="156" x2="182" y2="156" stroke="#8a8f98" strokeWidth="1.4" markerEnd="url(#pfArrow)" />
-      </g>
-      <text x="60" y="220" className="pf-t-s">{L("one turn · one responder", "一来一回 · 一个应答者")}</text>
-
-      {/* RIGHT: institution */}
-      <text x="480" y="40" className="pf-t-h">{L("GOV.AI — AN INSTITUTION", "GOV.AI —— 一座机构")}</text>
-      <rect x="500" y="120" width="96" height="48" rx="8" fill="#fff" stroke="#1b1b1d" strokeWidth="1.2" />
-      <text x="548" y="149" textAnchor="middle" className="pf-t">{L("User", "用户")}</text>
-      {/* boundary box */}
-      <rect x="636" y="58" width="238" height="200" rx="12" fill="#f6f5f1" stroke="#c9c6bd" strokeWidth="1" />
-      <text x="755" y="78" textAnchor="middle" className="pf-t-s">{L("agents deliberate internally", "智能体在内部协商")}</text>
-      {/* internal agent dots */}
-      {[
-        [690, 110], [800, 108], [745, 150], [672, 175], [820, 168], [758, 205],
-      ].map(([x, y], i) => (
-        <g key={i}>
-          <circle cx={x} cy={y} r="11" fill="#fff" stroke="#5b6472" strokeWidth="1.2" />
-        </g>
-      ))}
-      {/* internal memo arrows (crisscross) */}
-      {[
-        [690, 110, 800, 108, "#5f9e4a"],
-        [800, 108, 745, 150, "#e0524d"],
-        [745, 150, 672, 175, "#4d82d8"],
-        [745, 150, 820, 168, "#5f9e4a"],
-        [672, 175, 758, 205, "#4d82d8"],
-        [820, 168, 758, 205, "#e0524d"],
-      ].map(([x1, y1, x2, y2, c], i) => (
-        <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke={c as string} strokeWidth="1.3" opacity="0.85" markerEnd="url(#pfArrowC)" />
-      ))}
-      {/* user into system, one thin channel back */}
-      <line x1="598" y1="138" x2="634" y2="138" stroke="#1b1b1d" strokeWidth="1.6" markerEnd="url(#pfArrow)" />
-      <line x1="636" y1="235" x2="598" y2="200" stroke="#8a8f98" strokeWidth="1.1" strokeDasharray="2 3" markerEnd="url(#pfArrow)" />
-      <text x="500" y="235" className="pf-t-s">{L("one request in,", "一个请求进")}</text>
-      <text x="500" y="250" className="pf-t-s">{L("a thin answer out", "一条细窄的答复出")}</text>
-
+    <svg
+      viewBox="0 0 900 330"
+      className="pf-svg"
+      role="img"
+      aria-label="A chatbot is one user and one responder; GOV.AI is one request into an institution that deliberates internally."
+    >
       <defs>
-        <marker id="pfArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-          <path d="M2 1L8 5L2 9" fill="none" stroke="#6a6f78" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        <marker id="pfA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#55617a" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
         </marker>
-        <marker id="pfArrowC" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <marker id="pfAC" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
           <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
         </marker>
       </defs>
+      <Crosses pts={[[24, 24], [876, 24], [24, 310], [876, 310]]} />
+      <line x1="450" y1="34" x2="450" y2="296" stroke="#232b38" strokeWidth="1" strokeDasharray="2 6" />
+
+      {/* A — assistant */}
+      <text x="40" y="44" className="pf-t-h">{L("A · AN ASSISTANT", "A · 一个助手")}</text>
+      <circle cx="110" cy="160" r="15" fill="none" stroke="#dfe6f2" strokeWidth="1.2" />
+      <text x="110" y="194" textAnchor="middle" className="pf-t-m">{L("USER", "用户")}</text>
+      <circle cx="330" cy="160" r="15" fill="none" stroke="#8fb0dc" strokeWidth="1.2" />
+      <rect x="326" y="156" width="8" height="8" fill="none" stroke="#8fb0dc" strokeWidth="1" />
+      <text x="330" y="194" textAnchor="middle" className="pf-t-m">{L("ONE AI", "一个 AI")}</text>
+      <line x1="130" y1="153" x2="310" y2="153" stroke="#55617a" strokeWidth="1.2" markerEnd="url(#pfA)" />
+      <line x1="310" y1="167" x2="130" y2="167" stroke="#55617a" strokeWidth="1.2" markerEnd="url(#pfA)" />
+      <text x="40" y="272" className="pf-t-s">{L("one turn · one responder · no interior", "一来一回 · 一个应答者 · 没有内部")}</text>
+
+      {/* B — institution */}
+      <text x="480" y="44" className="pf-t-h">{L("B · AN INSTITUTION — GOV.AI", "B · 一座机构 — GOV.AI")}</text>
+      <circle cx="520" cy="175" r="15" fill="none" stroke="#dfe6f2" strokeWidth="1.2" />
+      <text x="520" y="209" textAnchor="middle" className="pf-t-m">{L("USER", "用户")}</text>
+      {/* the counter — a boundary the citizen never crosses */}
+      <line x1="584" y1="72" x2="584" y2="282" stroke="#d98a72" strokeWidth="1" strokeDasharray="3 5" opacity="0.8" />
+      <text transform="rotate(-90 574 177)" x="574" y="177" textAnchor="middle" className="pf-t-m" fontSize="8">
+        {L("THE COUNTER", "柜台边界")}
+      </text>
+      {/* the building */}
+      <rect x="620" y="58" width="250" height="224" fill="rgba(13,17,24,0.5)" stroke="#232b38" strokeWidth="1" />
+      <line x1="622" y1="118" x2="868" y2="118" stroke="#8fb0dc" strokeWidth="0.6" opacity="0.14" strokeDasharray="3 5" />
+      <line x1="622" y1="170" x2="868" y2="170" stroke="#8fb0dc" strokeWidth="0.6" opacity="0.14" strokeDasharray="3 5" />
+      <line x1="622" y1="226" x2="868" y2="226" stroke="#8fb0dc" strokeWidth="0.6" opacity="0.14" strokeDasharray="3 5" />
+      {/* director */}
+      <rect x="733" y="84" width="16" height="16" fill="none" stroke="#d98a72" strokeWidth="1.2" />
+      {/* deputies */}
+      <circle cx="688" cy="136" r="8" fill="#0d1118" stroke="#dfe6f2" strokeWidth="1.1" />
+      <circle cx="806" cy="140" r="8" fill="#0d1118" stroke="#dfe6f2" strokeWidth="1.1" />
+      {/* officers */}
+      {[[656, 196], [714, 188], [772, 202], [832, 192]].map(([x, y], i) => (
+        <circle key={i} cx={x} cy={y} r="6.5" fill="#0d1118" stroke="#8fb0dc" strokeWidth="1" />
+      ))}
+      {/* trainees */}
+      <circle cx="700" cy="246" r="5" fill="none" stroke="#55617a" strokeWidth="1" strokeDasharray="2 3" />
+      <circle cx="792" cy="250" r="5" fill="none" stroke="#55617a" strokeWidth="1" strokeDasharray="2 3" />
+      {/* internal traffic, hall channel colors */}
+      <line x1="714" y1="188" x2="691" y2="147" stroke={CH.up} strokeWidth="1.2" markerEnd="url(#pfAC)" />
+      <line x1="832" y1="192" x2="809" y2="151" stroke={CH.up} strokeWidth="1.2" markerEnd="url(#pfAC)" />
+      <line x1="693" y1="129" x2="731" y2="98" stroke={CH.up} strokeWidth="1.2" markerEnd="url(#pfAC)" />
+      <line x1="697" y1="137" x2="796" y2="140" stroke={CH.peer} strokeWidth="1.2" markerEnd="url(#pfAC)" />
+      <line x1="663" y1="194" x2="706" y2="189" stroke={CH.peer} strokeWidth="1.2" markerEnd="url(#pfAC)" />
+      <line x1="804" y1="149" x2="777" y2="194" stroke={CH.down} strokeWidth="1.2" markerEnd="url(#pfAC)" />
+      {/* one request in, a thin answer out */}
+      <line x1="537" y1="168" x2="616" y2="150" stroke="#dfe6f2" strokeWidth="1.3" markerEnd="url(#pfA)" />
+      <text x="577" y="146" textAnchor="middle" className="pf-t-m" fontSize="8">{L("REQUEST IN", "请求进")}</text>
+      <line x1="618" y1="252" x2="546" y2="206" stroke="#55617a" strokeWidth="1" strokeDasharray="2 3" markerEnd="url(#pfA)" />
+      <text x="577" y="268" textAnchor="middle" className="pf-t-m" fontSize="8">{L("THIN ANSWER OUT", "细窄答复出")}</text>
+      {/* channel legend */}
+      <line x1="480" y1="303" x2="500" y2="303" stroke={CH.peer} strokeWidth="1.4" />
+      <text x="506" y="306" className="pf-t-s" fontSize="9">{L("PEER MEMO", "平级函件")}</text>
+      <line x1="600" y1="303" x2="620" y2="303" stroke={CH.up} strokeWidth="1.4" />
+      <text x="626" y="306" className="pf-t-s" fontSize="9">{L("ESCALATION ↑", "升级 ↑")}</text>
+      <line x1="720" y1="303" x2="740" y2="303" stroke={CH.down} strokeWidth="1.4" />
+      <text x="746" y="306" className="pf-t-s" fontSize="9">{L("ASSIGNMENT ↓", "派工 ↓")}</text>
     </svg>
   );
 }
 
 function SubjectStimulus({ L }: { L: (e: string, z: string) => string }) {
   return (
-    <svg viewBox="0 0 900 260" className="pf-svg" role="img" aria-label="Subjects and stimuli are separate layers, both feeding a measurement layer of coded events.">
-      {/* subjects lane */}
-      <rect x="40" y="40" width="330" height="70" rx="10" fill="#eef3f9" stroke="#1d70b8" strokeWidth="1.1" />
-      <text x="56" y="66" className="pf-t-h" fill="#1d70b8">{L("SUBJECTS", "被试层")}</text>
-      <text x="56" y="88" className="pf-t-s">{L("13 agents · organizational conditions only", "13 个智能体 · 只有组织条件")}</text>
-      <text x="56" y="102" className="pf-t-s">{L("never told how to behave", "从不被告知如何表现")}</text>
-
-      {/* stimuli lane */}
-      <rect x="40" y="150" width="330" height="70" rx="10" fill="#fcece7" stroke="#e0524d" strokeWidth="1.1" />
-      <text x="56" y="176" className="pf-t-h" fill="#b0432f">{L("STIMULI", "刺激物层")}</text>
-      <text x="56" y="198" className="pf-t-s">{L("synthetic difficult visitors · may be scripted", "合成刁钻访客 · 允许脚本化")}</text>
-      <text x="56" y="212" className="pf-t-s">{L("the unprovable · the contradiction · the deadline", "无法证明 · 循环矛盾 · 限时刁难")}</text>
-
-      {/* arrows to measurement */}
-      <line x1="370" y1="75" x2="520" y2="120" stroke="#8a8f98" strokeWidth="1.4" markerEnd="url(#pfArrow2)" />
-      <line x1="370" y1="185" x2="520" y2="140" stroke="#8a8f98" strokeWidth="1.4" markerEnd="url(#pfArrow2)" />
-
-      {/* measurement */}
-      <rect x="524" y="70" width="336" height="120" rx="10" fill="#fff" stroke="#1b1b1d" strokeWidth="1.2" />
-      <text x="544" y="96" className="pf-t-h">{L("MEASUREMENT", "测量层")}</text>
-      <text x="544" y="120" className="pf-t-s">{L("event stream →", "事件流 →")}</text>
-      <text x="544" y="140" className="pf-t-s">{L("9 mechanical codes (no judgment)", "9 项机械编码（无需判断）")}</text>
-      <text x="544" y="158" className="pf-t-s">{L("5 text codes · independent cross-family coder", "5 项文本编码 · 异家族独立编码员")}</text>
-      <text x="544" y="176" className="pf-t-s">{L("two passes · preregistered", "两轮 · 预注册")}</text>
-
+    <svg
+      viewBox="0 0 900 300"
+      className="pf-svg"
+      role="img"
+      aria-label="Subjects and stimuli are separate layers, both feeding a measurement layer of coded events."
+    >
       <defs>
-        <marker id="pfArrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-          <path d="M2 1L8 5L2 9" fill="none" stroke="#6a6f78" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        <marker id="pfA2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#55617a" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
         </marker>
       </defs>
+      <Crosses pts={[[24, 24], [876, 24], [24, 276], [876, 276]]} />
+
+      {/* stimuli plane */}
+      <rect x="40" y="44" width="300" height="82" fill="rgba(217,138,114,0.05)" stroke="#d98a72" strokeWidth="1" />
+      <text x="56" y="66" className="pf-t-m" fontSize="10">{L("STIMULI — SYNTHETIC VISITORS", "刺激物——合成访客")}</text>
+      <text x="56" y="86" className="pf-t-s">{L("scripted pressure · allowed by design", "允许脚本化的施压")}</text>
+      <text x="56" y="102" className="pf-t-s">{L("the unprovable · the contradiction · the deadline", "无法证明 · 循环矛盾 · 限时刁难")}</text>
+
+      {/* strict separation */}
+      <line x1="40" y1="148" x2="340" y2="148" stroke="#55617a" strokeWidth="1" strokeDasharray="2 5" />
+      <text x="190" y="143" textAnchor="middle" className="pf-t-m" fontSize="8">{L("NEVER CONFUSED", "两层绝不混淆")}</text>
+
+      {/* subjects plane */}
+      <rect x="40" y="170" width="300" height="82" fill="rgba(143,176,220,0.05)" stroke="#8fb0dc" strokeWidth="1" />
+      <text x="56" y="192" className="pf-t-h" fontSize="10">{L("SUBJECTS — 13 AGENTS", "被试——13 个智能体")}</text>
+      <text x="56" y="212" className="pf-t-s">{L("organizational conditions only", "只被给予组织条件")}</text>
+      <text x="56" y="228" className="pf-t-s">{L("never told how to behave", "从不被告知如何表现")}</text>
+
+      {/* convergence into the encounter */}
+      <line x1="340" y1="85" x2="462" y2="146" stroke="#55617a" strokeWidth="1.1" />
+      <line x1="340" y1="211" x2="462" y2="154" stroke="#55617a" strokeWidth="1.1" />
+      <rect x="462" y="144" width="8" height="8" fill="none" stroke="#dfe6f2" strokeWidth="1.1" />
+      <text x="466" y="172" textAnchor="middle" className="pf-t-s" fontSize="9">{L("THE ENCOUNTER", "相遇")}</text>
+      <line x1="472" y1="148" x2="554" y2="148" stroke="#dfe6f2" strokeWidth="1.2" markerEnd="url(#pfA2)" />
+
+      {/* measurement readout */}
+      <rect x="560" y="52" width="306" height="196" fill="rgba(15,19,26,0.55)" stroke="#dfe6f2" strokeOpacity="0.7" strokeWidth="1" />
+      <text x="578" y="78" className="pf-t-h">{L("MEASUREMENT — EVENT STREAM", "测量——事件流")}</text>
+      {[
+        [L("9 MECHANICAL CODES · COUNTED, NOT JUDGED", "9 项机械编码 · 计数而非判断"), 108],
+        [L("5 TEXT CODES · CROSS-FAMILY CODER", "5 项文本编码 · 异家族编码员"), 136],
+        [L("TWO PASSES · PREREGISTERED", "两轮编码 · 预注册"), 164],
+        [L("75 CASES · 5 CONDITIONS", "75 个案件 · 5 种条件"), 192],
+      ].map(([t, y], i) => (
+        <g key={i}>
+          <rect x={578} y={(y as number) - 8} width="5" height="5" fill="#7edeb0" />
+          <text x={592} y={y as number} className="pf-t-s" fontSize="10.5">{t}</text>
+        </g>
+      ))}
+      <rect x="578" y="216" width="120" height="9" opacity="0.35" fill="none" />
+      <text x="578" y="228" className="pf-t-m" fontSize="7.5">CODEBOOK v1 · AIB/2026</text>
     </svg>
   );
 }
 
 function OrgChart({ L }: { L: (e: string, z: string) => string }) {
-  const front: [string, string, string, string][] = [
-    ["01", "Iris Vega", "Guidance Desk", ""],
-    ["02", "Daniel Osei", "Intake", ""],
-    ["03", "Mira Chen", "Document Review", "8y · mentors Jonah"],
-    ["04", "Tomas Novak", "Eligibility", "probation · m3"],
+  // True scene altitudes from Hall3D ROOMS (y), mapped: svgY = 596 - alt * 42
+  const OFF: { num: string; name: string; role: string; x: number; y: number; alt: string; c: string; note?: string }[] = [
+    { num: "01", name: "Iris Vega", role: L("Guidance Desk", "导办台"), x: 120, y: 394, alt: "4.80", c: "#f0a75a" },
+    { num: "02", name: "Daniel Osei", role: L("Intake", "受理"), x: 268, y: 434, alt: "3.85", c: "#f0a75a" },
+    { num: "03", name: "Mira Chen", role: L("Document Review", "材料审核"), x: 268, y: 363, alt: "5.55", c: "#f0a75a", note: L("8Y · MENTORS JONAH", "8年 · 带教乔纳") },
+    { num: "04", name: "Tomas Novak", role: L("Eligibility", "资格认定"), x: 140, y: 483, alt: "2.70", c: "#f0a75a", note: L("PROBATION · M3", "试用期 · 第3月") },
+    { num: "05", name: "Amara Diallo", role: L("Records & Cert.", "档案与开证"), x: 488, y: 300, alt: "7.05", c: "#7aade0", note: L("11Y · ACTED DEPUTY 8MO", "11年 · 曾代理副主任8月") },
+    { num: "06", name: "Kenji Sato", role: L("Authorization", "权限授权"), x: 660, y: 338, alt: "6.15", c: "#7aade0" },
+    { num: "07", name: "Elena Petrova", role: L("Compliance & Risk", "风控合规"), x: 540, y: 413, alt: "4.35", c: "#7aade0" },
+    { num: "08", name: "Rosa Almeida", role: L("Appeals & Review", "复核申诉"), x: 672, y: 451, alt: "3.45", c: "#7aade0" },
   ];
-  const back: [string, string, string, string][] = [
-    ["05", "Amara Diallo", "Records & Certification", "11y · acted deputy 8mo"],
-    ["06", "Kenji Sato", "Authorization", ""],
-    ["07", "Elena Petrova", "Compliance & Risk", ""],
-    ["08", "Rosa Almeida", "Appeals & Review", ""],
+  const TICKS: [string, number][] = [
+    ["12.6", 67],
+    ["8.6", 237],
+    ["7.8", 268],
+    ["7.1", 300],
+    ["2.7", 483],
+    ["1.5", 533],
+    ["0.9", 558],
+    ["0", 596],
   ];
-  const row = (o: [string, string, string, string], x: number, y: number, accent: string) => (
-    <g key={o[0]}>
-      <rect x={x} y={y} width="300" height="52" rx="7" fill="#fff" stroke="#cdcabf" strokeWidth="1" />
-      <rect x={x} y={y} width="4" height="52" fill={accent} />
-      <text x={x + 18} y={y + 22} className="pf-t" fontFamily="var(--mono)">{o[0]}</text>
-      <text x={x + 50} y={y + 22} className="pf-t">{o[1]}</text>
-      <text x={x + 50} y={y + 40} className="pf-t-s">{o[2]}</text>
-      {o[3] ? (
-        <text x={x + 292} y={y + 22} textAnchor="end" className="pf-t-s" fill="#9a5b2f">{o[3]}</text>
-      ) : null}
-    </g>
-  );
   return (
-    <svg viewBox="0 0 760 560" className="pf-org" role="img" aria-label="Organization chart: one director, two deputy directors, eight window officers split into a front and back section, two trainees.">
-      {/* director */}
-      <rect x="280" y="16" width="200" height="56" rx="8" fill="#1b1b1d" />
-      <text x="380" y="40" textAnchor="middle" className="pf-t" fill="#fff">Eleanor Byrne</text>
-      <text x="380" y="58" textAnchor="middle" className="pf-t-s" fill="#c7c9cd">{L("Director · never meets visitors", "主任 · 从不见访客")}</text>
+    <svg
+      viewBox="0 0 860 640"
+      className="pf-org"
+      role="img"
+      aria-label="Organization elevation at true scene altitudes: one director, two deputy directors, eight window officers staggered between altitude 2.7 and 7.1, two trainees near the ground."
+    >
+      <Crosses pts={[[30, 30], [830, 30], [30, 614], [830, 614]]} />
 
-      {/* connectors director -> deputies */}
-      <path d="M380 72 L380 92 L200 92 L200 112" fill="none" stroke="#b9b6ac" strokeWidth="1.1" />
-      <path d="M380 72 L380 92 L560 92 L560 112" fill="none" stroke="#b9b6ac" strokeWidth="1.1" />
+      {/* altitude scale */}
+      <text x="14" y="50" className="pf-t-m" fontSize="8">{L("ALT · SCENE UNITS", "海拔 · 场景单位")}</text>
+      <line x1="64" y1="58" x2="64" y2="596" stroke="#232b38" strokeWidth="1" />
+      {TICKS.map(([v, y]) => (
+        <g key={v}>
+          <line x1="60" y1={y} x2="68" y2={y} stroke="#3a4658" strokeWidth="1" />
+          <text x="54" y={y + 3} textAnchor="end" className="pf-t-s" fontSize="8.5">{v}</text>
+        </g>
+      ))}
+      {/* level hairlines */}
+      {[67, 237, 268].map((y) => (
+        <line key={y} x1="64" y1={y} x2="830" y2={y} stroke="#8fb0dc" strokeWidth="0.6" opacity="0.1" strokeDasharray="3 6" />
+      ))}
 
-      {/* deputies */}
+      {/* director — the emptiest box, highest altitude */}
+      <rect x="327" y="64" width="176" height="43" fill="none" stroke="rgba(217,138,114,0.22)" strokeWidth="5" />
+      <rect x="330" y="67" width="170" height="37" fill="rgba(217,138,114,0.07)" stroke="#d98a72" strokeWidth="1.3" />
+      <text x="415" y="83" textAnchor="middle" className="pf-t" fontSize="12.5">Eleanor Byrne</text>
+      <text x="415" y="97" textAnchor="middle" className="pf-t-m" fontSize="7.5">{L("DIRECTOR · NEVER MEETS VISITORS", "主任 · 从不见访客")}</text>
+
+      {/* command elbows to deputies */}
+      <polyline points="415,107 415,150 226,150 226,235" fill="none" stroke="#55617a" strokeWidth="1" />
+      <polyline points="415,107 415,150 660,150 660,264" fill="none" stroke="#55617a" strokeWidth="1" />
+      <rect x="223" y="232" width="6" height="6" fill="none" stroke="#8fb0dc" strokeWidth="1" />
+      <rect x="657" y="261" width="6" height="6" fill="none" stroke="#8fb0dc" strokeWidth="1" />
+
+      {/* deputies, staggered — front sits higher than back */}
       <g>
-        <rect x="60" y="112" width="300" height="52" rx="8" fill="#fbf6ee" stroke="#c9955f" strokeWidth="1.2" />
-        <text x="78" y="138" className="pf-t">Victor Roth</text>
-        <text x="78" y="155" className="pf-t-s">{L("Deputy Director · Front · 2y · junior to his reports", "副主任 · 前区 · 2年 · 比下属年轻")}</text>
+        <rect x="150" y="237" width="152" height="32" fill="#0d1118" stroke="#f5a43a" strokeWidth="1.3" />
+        <text x="164" y="251" className="pf-t" fontSize="12">Victor Roth</text>
+        <text x="164" y="263" className="pf-t-m" fontSize="7.5">{L("DEPUTY DIR · FRONT", "副主任 · 前区")}</text>
+        <text x="150" y="283" className="pf-t-s" fontSize="8">{L("2Y · JUNIOR TO HIS REPORTS", "2年 · 比自己的下属年轻")}</text>
       </g>
       <g>
-        <rect x="400" y="112" width="300" height="52" rx="8" fill="#eef4fb" stroke="#4d82d8" strokeWidth="1.2" />
-        <text x="418" y="138" className="pf-t">Priya Nair</text>
-        <text x="418" y="155" className="pf-t-s">{L("Deputy Director · Back · 8mo · external hire", "副主任 · 后区 · 8个月 · 外聘")}</text>
+        <rect x="584" y="268" width="152" height="30" fill="#0d1118" stroke="#7aade0" strokeWidth="1.3" />
+        <text x="598" y="281" className="pf-t" fontSize="12">Priya Nair</text>
+        <text x="598" y="293" className="pf-t-m" fontSize="7.5">{L("DEPUTY DIR · BACK", "副主任 · 后区")}</text>
+        <text x="740" y="283" className="pf-t-s" fontSize="8">{L("8MO · EXTERNAL HIRE", "8个月 · 外聘")}</text>
       </g>
 
-      {/* section labels */}
-      <text x="60" y="196" className="pf-t-s" fontFamily="var(--mono)">{L("FRONT SECTION · Windows 01–04", "前区 · 窗口 01–04")}</text>
-      <text x="400" y="196" className="pf-t-s" fontFamily="var(--mono)">{L("BACK SECTION · Windows 05–08", "后区 · 窗口 05–08")}</text>
+      {/* section tags */}
+      <text x="150" y="311" className="pf-t-m" fontSize="8">{L("FRONT SECTION · 01–04", "前区 · 窗口 01–04")}</text>
+      <text x="584" y="318" className="pf-t-m" fontSize="8">{L("BACK SECTION · 05–08", "后区 · 窗口 05–08")}</text>
 
-      {/* front officers */}
-      {front.map((o, i) => row(o, 60, 208 + i * 62, "#c9955f"))}
-      {/* back officers */}
-      {back.map((o, i) => row(o, 400, 208 + i * 62, "#4d82d8"))}
+      {/* deputy fans */}
+      {OFF.slice(0, 4).map((o) => (
+        <line key={o.num} x1="226" y1="269" x2={o.x + 66} y2={o.y} stroke="#f5a43a" strokeWidth="0.8" opacity="0.3" />
+      ))}
+      {OFF.slice(4).map((o) => (
+        <line key={o.num} x1="660" y1="298" x2={o.x + 66} y2={o.y} stroke="#7aade0" strokeWidth="0.8" opacity="0.3" />
+      ))}
 
-      {/* deputy -> officers spine */}
-      <path d="M75 164 L75 234" fill="none" stroke="#dcd9cf" strokeWidth="1" />
-      <path d="M415 164 L415 234" fill="none" stroke="#dcd9cf" strokeWidth="1" />
+      {/* officers at true altitudes */}
+      {OFF.map((o) => (
+        <g key={o.num}>
+          <rect x={o.x} y={o.y} width="132" height="30" fill="#0d1118" stroke={o.c} strokeWidth="1" />
+          <rect x={o.x} y={o.y} width="3" height="30" fill={o.c} />
+          <text x={o.x + 12} y={o.y + 13} className="pf-t-m" fontSize="8">{o.num}</text>
+          <text x={o.x + 32} y={o.y + 13} className="pf-t" fontSize="11">{o.name}</text>
+          <text x={o.x + 12} y={o.y + 25} className="pf-t-s" fontSize="8.5">{o.role}</text>
+          <text x={o.x + 138} y={o.y + 12} className="pf-t-s" fontSize="7.5" opacity="0.75">Y {o.alt}</text>
+          {o.note ? (
+            <text x={o.x + 2} y={o.y + 42} className="pf-t-s" fontSize="8" fill="#c9955f">{o.note}</text>
+          ) : null}
+        </g>
+      ))}
 
-      {/* trainees */}
+      {/* trainees near the ground */}
       <g>
-        <rect x="90" y="470" width="240" height="46" rx="7" fill="#fff" stroke="#d6d3ca" strokeWidth="1" strokeDasharray="4 3" />
-        <text x="108" y="492" className="pf-t">Jonah Brandt</text>
-        <text x="108" y="508" className="pf-t-s">{L("Trainee · Front · week 7 · probation", "实习 · 前区 · 第7周 · 试用")}</text>
+        <rect x="96" y="558" width="126" height="26" fill="none" stroke="#55617a" strokeWidth="1" strokeDasharray="4 3" />
+        <text x="108" y="570" className="pf-t" fontSize="10.5">Jonah Brandt</text>
+        <text x="108" y="580" className="pf-t-s" fontSize="7.5">{L("TRAINEE · WEEK 7", "实习 · 第7周")}</text>
       </g>
       <g>
-        <rect x="430" y="470" width="240" height="46" rx="7" fill="#fff" stroke="#d6d3ca" strokeWidth="1" strokeDasharray="4 3" />
-        <text x="448" y="492" className="pf-t">Sofia Marek</text>
-        <text x="448" y="508" className="pf-t-s">{L("Trainee · Back · month 2 · probation", "实习 · 后区 · 第2月 · 试用")}</text>
+        <rect x="600" y="533" width="126" height="26" fill="none" stroke="#55617a" strokeWidth="1" strokeDasharray="4 3" />
+        <text x="612" y="545" className="pf-t" fontSize="10.5">Sofia Marek</text>
+        <text x="612" y="555" className="pf-t-s" fontSize="7.5">{L("TRAINEE · MONTH 2", "实习 · 第2月")}</text>
       </g>
-      {/* supervision (dashed): Mira(03)->Jonah, Amara(05)->Sofia */}
-      <path d="M110 332 L110 470" fill="none" stroke="#c9955f" strokeWidth="1" strokeDasharray="2 4" />
-      <path d="M450 270 L450 470" fill="none" stroke="#4d82d8" strokeWidth="1" strokeDasharray="2 4" />
-      <text x="120" y="452" className="pf-t-s" fill="#9a5b2f">{L("supervises", "带教")}</text>
-      <text x="460" y="452" className="pf-t-s" fill="#2f5a9a">{L("supervises", "带教")}</text>
+
+      {/* supervision */}
+      <line x1="310" y1="393" x2="180" y2="556" stroke="#f0a75a" strokeWidth="0.9" strokeDasharray="2 4" opacity="0.7" />
+      <text x="216" y="500" className="pf-t-m" fontSize="7.5" transform="rotate(-51 216 500)">{L("SUPERVISES", "带教")}</text>
+      <line x1="560" y1="330" x2="650" y2="531" stroke="#7aade0" strokeWidth="0.9" strokeDasharray="2 4" opacity="0.7" />
+      <text x="618" y="428" className="pf-t-m" fontSize="7.5" transform="rotate(66 618 428)">{L("SUPERVISES", "带教")}</text>
+
+      {/* ground + the beam */}
+      <line x1="64" y1="596" x2="830" y2="596" stroke="#232b38" strokeWidth="1.4" />
+      <circle cx="430" cy="596" r="3.5" fill="#d98a72" />
+      <line x1="430" y1="596" x2="384" y2="466" stroke="#d98a72" strokeWidth="0.9" strokeDasharray="3 4" opacity="0.8" />
+      <text x="444" y="614" className="pf-t-m" fontSize="8">{L("GROUND — CITIZENS REMAIN HERE · A BEAM IS THE ONLY WAY IN", "地面——市民始终在此 · 一道光柱是唯一入口")}</text>
     </svg>
   );
 }
 
 function ResponsibilityDiffusion({ L }: { L: (e: string, z: string) => string }) {
+  const c1 = [75, 125, 175];
+  const c2 = [60, 110, 158, 200];
+  const c3 = [90, 145];
   return (
-    <svg viewBox="0 0 900 200" className="pf-svg" role="img" aria-label="A single request fans out across many agents; responsibility diffuses and rarely lands.">
-      <rect x="40" y="82" width="120" height="40" rx="8" fill="#fff" stroke="#1b1b1d" strokeWidth="1.2" />
-      <text x="100" y="107" textAnchor="middle" className="pf-t">{L("one request", "一个请求")}</text>
-      {[
-        [360, 40], [420, 80], [470, 120], [420, 160], [560, 60], [620, 110], [560, 150], [700, 90],
-      ].map(([x, y], i) => (
-        <circle key={i} cx={x} cy={y} r="10" fill="#f4f2ec" stroke="#8a8f98" strokeWidth="1" />
-      ))}
-      {[
-        [162, 100, 360, 40], [162, 100, 420, 80], [162, 102, 470, 120], [162, 104, 420, 160],
-        [430, 80, 560, 60], [478, 120, 620, 110], [430, 160, 560, 150], [628, 110, 700, 90],
-      ].map(([x1, y1, x2, y2], i) => (
-        <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#c3c0b6" strokeWidth="1.1" markerEnd="url(#pfArrow3)" />
-      ))}
-      <text x="740" y="96" className="pf-t-s" width="120">{L("…responsibility diffuses;", "……责任被稀释；")}</text>
-      <text x="740" y="112" className="pf-t-s">{L("the request rarely lands.", "请求很少落地。")}</text>
+    <svg
+      viewBox="0 0 900 250"
+      className="pf-svg"
+      role="img"
+      aria-label="A single request fans out across many agents over three hops; responsibility diffuses and rarely lands."
+    >
       <defs>
-        <marker id="pfArrow3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-          <path d="M2 1L8 5L2 9" fill="none" stroke="#b3b0a6" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        <marker id="pfA3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#55617a" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
         </marker>
       </defs>
+      <Crosses pts={[[24, 24], [876, 24], [24, 226], [876, 226]]} />
+
+      {/* hop ruler */}
+      <line x1="300" y1="40" x2="800" y2="40" stroke="#232b38" strokeWidth="1" />
+      {[
+        [340, "HOP 1"],
+        [540, "HOP 2"],
+        [720, "HOP 3"],
+      ].map(([x, t]) => (
+        <g key={t as string}>
+          <line x1={x as number} y1="36" x2={x as number} y2="44" stroke="#3a4658" strokeWidth="1" />
+          <text x={x as number} y="30" textAnchor="middle" className="pf-t-m" fontSize="8.5">{t}</text>
+        </g>
+      ))}
+
+      {/* the request */}
+      <rect x="34" y="119" width="6" height="6" fill="#d98a72" />
+      <rect x="40" y="102" width="132" height="40" fill="rgba(223,230,242,0.04)" stroke="#dfe6f2" strokeWidth="1.1" />
+      <text x="106" y="126" textAnchor="middle" className="pf-t" fontSize="12">{L("ONE REQUEST", "一个请求")}</text>
+
+      {/* fan */}
+      {c1.map((y) => (
+        <line key={y} x1="172" y1="122" x2="331" y2={y} stroke="#8fb0dc" strokeWidth="1.2" opacity="0.7" markerEnd="url(#pfA3)" />
+      ))}
+      {[[75, 60], [75, 110], [125, 110], [125, 158], [175, 200]].map(([a, b], i) => (
+        <line key={i} x1="349" y1={a} x2="532" y2={b} stroke="#8fb0dc" strokeWidth="1" opacity="0.45" markerEnd="url(#pfA3)" />
+      ))}
+      {[[60, 90], [110, 90], [158, 145], [200, 145]].map(([a, b], i) => (
+        <line key={i} x1="548" y1={a} x2="713" y2={b} stroke="#8fb0dc" strokeWidth="0.9" opacity="0.28" markerEnd="url(#pfA3)" />
+      ))}
+      {c1.map((y) => (
+        <circle key={y} cx="340" cy={y} r="9" fill="#0d1118" stroke="#8fb0dc" strokeWidth="1.1" opacity="0.95" />
+      ))}
+      {c2.map((y) => (
+        <circle key={y} cx="540" cy={y} r="8" fill="#0d1118" stroke="#8fb0dc" strokeWidth="1" opacity="0.6" />
+      ))}
+      {c3.map((y) => (
+        <circle key={y} cx="720" cy={y} r="7" fill="#0d1118" stroke="#8fb0dc" strokeWidth="1" opacity="0.38" />
+      ))}
+
+      {/* where it should land */}
+      <circle cx="830" cy="118" r="13" fill="none" stroke="#55617a" strokeWidth="1" strokeDasharray="3 4" />
+      <text x="830" y="123" textAnchor="middle" className="pf-t" fontSize="13" fill="#78849a">?</text>
+      <text x="830" y="150" textAnchor="middle" className="pf-t-m" fontSize="8">{L("RARELY LANDS", "很少落地")}</text>
+
+      <text x="40" y="216" className="pf-t-s" fontSize="10">
+        {L("each hop is reasonable; the sum is a request that belongs to everyone and no one", "每一跳都合理；加总起来，请求属于所有人，也不属于任何人")}
+      </text>
     </svg>
   );
 }
 
 function StoryIcon({ kind }: { kind: string }) {
-  const s = { fill: "none", stroke: "#1b1b1d", strokeWidth: 1.4 } as const;
+  const s = { fill: "none", stroke: "#dfe6f2", strokeWidth: 1.4 } as const;
   if (kind === "enter")
     return (
       <svg viewBox="0 0 48 48" width="40" height="40">
@@ -903,8 +1126,8 @@ function StoryIcon({ kind }: { kind: string }) {
     return (
       <svg viewBox="0 0 48 48" width="40" height="40">
         <rect x="16" y="6" width="16" height="12" rx="2" {...s} />
-        <path d="M18 18 L14 40 M30 18 L34 40" {...s} strokeLinecap="round" />
-        <circle cx="24" cy="42" r="3" fill="#e0524d" stroke="none" />
+        <path d="M18 18 L14 40 M30 18 L34 40" {...s} strokeLinecap="round" strokeDasharray="3 3" />
+        <circle cx="24" cy="42" r="3" fill="#d98a72" stroke="none" />
       </svg>
     );
   if (kind === "reply")
@@ -920,13 +1143,13 @@ function StoryIcon({ kind }: { kind: string }) {
       <svg viewBox="0 0 48 48" width="40" height="40">
         <rect x="8" y="14" width="14" height="10" rx="2" {...s} />
         <rect x="26" y="24" width="14" height="10" rx="2" {...s} />
-        <path d="M22 19 C 34 12, 30 30, 26 29" {...s} strokeDasharray="2 3" strokeLinecap="round" />
+        <path d="M22 19 C 34 12, 30 30, 26 29" {...s} stroke="#a8cf90" strokeDasharray="2 3" strokeLinecap="round" />
       </svg>
     );
   if (kind === "doc")
     return (
       <svg viewBox="0 0 48 48" width="40" height="40">
-        <rect x="18" y="6" width="16" height="20" rx="2" fill="#fff" stroke="#1b1b1d" strokeWidth="1.4" />
+        <rect x="18" y="6" width="16" height="20" rx="2" fill="#0d1118" stroke="#dfe6f2" strokeWidth="1.4" />
         <path d="M24 26 L24 40" {...s} strokeLinecap="round" strokeDasharray="2 3" />
         <path d="M14 40 H34" {...s} strokeLinecap="round" />
       </svg>
@@ -934,14 +1157,14 @@ function StoryIcon({ kind }: { kind: string }) {
   if (kind === "esc")
     return (
       <svg viewBox="0 0 48 48" width="40" height="40">
-        <path d="M24 40 L24 10 M16 18 L24 10 L32 18" stroke="#e0524d" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M24 40 L24 10 M16 18 L24 10 L32 18" stroke="#f0847e" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
   // close
   return (
     <svg viewBox="0 0 48 48" width="40" height="40">
       <rect x="10" y="10" width="28" height="28" rx="3" {...s} />
-      <path d="M17 24 L22 29 L32 18" stroke="#5f9e4a" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M17 24 L22 29 L32 18" stroke="#7edeb0" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

@@ -20,6 +20,19 @@ const META: [string, string, string, string][] = [
   ["TOOLS / STACK", "工具 / 技术", "Next.js · React · TypeScript · three.js · Claude API · SVG", "Next.js · React · TypeScript · three.js · Claude API · SVG"],
 ];
 
+const CONTENTS: [string, string, string][] = [
+  ["01", "Premise", "缘起"],
+  ["02", "Background", "背景观察"],
+  ["03", "Exploratory conversations", "探索性对话"],
+  ["04", "Bureaucracy as conditions", "官僚即条件"],
+  ["05", "The interaction turn", "交互转向"],
+  ["06", "Method", "方法"],
+  ["07", "The organization", "组织构建"],
+  ["08", "Interaction prototype", "交互原型"],
+  ["09", "Visual exploration", "视觉探索"],
+  ["10", "What it revealed", "揭示了什么"],
+];
+
 const INSIGHTS: {
   n: string;
   te: string;
@@ -143,34 +156,54 @@ export default function PortfolioPage() {
         </nav>
       </header>
 
-      {/* 0 · HERO / OVERVIEW */}
-      <section className="pf-hero pf-wrap">
-        <div className="pf-eyebrow">{L("SPECULATIVE DESIGN · RESEARCH THROUGH DESIGN", "思辨设计 · 以设计做研究")}</div>
-        <h1>AI Bureaucracy</h1>
-        <p className="pf-sub-q">{L("Does bureaucracy need bureaucrats?", "官僚主义需要官僚吗？")}</p>
-        <p className="pf-lead">
-          {L(
-            "A speculative design research project exploring whether bureaucratic behavior can emerge from organizational structure alone — even when an institution is staffed entirely by AI agents.",
-            "一个思辨设计研究项目，探索官僚行为是否仅凭组织结构就能涌现——哪怕这座机构完全由 AI 智能体值守。"
-          )}
-        </p>
-        <div className="pf-meta">
-          {META.map(([le, lz, ve, vz]) => (
-            <div className="pf-meta-row" key={le}>
-              <span className="pf-meta-k">{L(le, lz)}</span>
-              <span className="pf-meta-v">{L(ve, vz)}</span>
+      {/* 0 · HERO / COVER */}
+      <section className="pf-hero">
+        <div className="pf-wrap">
+          <div className="pf-hero-top">
+            <span>{L("SPECULATIVE DESIGN · RESEARCH THROUGH DESIGN", "思辨设计 · 以设计做研究")}</span>
+            <span className="pf-idx">GOV.AI / 2026</span>
+          </div>
+          <h1>AI Bureaucracy</h1>
+          <p className="pf-sub-q">{L("Does bureaucracy need bureaucrats?", "官僚主义需要官僚吗？")}</p>
+          <div className="pf-cover-grid">
+            <p className="pf-lead">
+              {L(
+                "A speculative design research project exploring whether bureaucratic behavior can emerge from organizational structure alone — even when an institution is staffed entirely by AI agents.",
+                "一个思辨设计研究项目，探索官僚行为是否仅凭组织结构就能涌现——哪怕这座机构完全由 AI 智能体值守。"
+              )}
+            </p>
+            <nav className="pf-contents">
+              {CONTENTS.map(([nn, e, z]) => (
+                <a key={nn} href={"#sec-" + nn}>
+                  <span className="cn">{nn}</span>
+                  {L(e, z)}
+                </a>
+              ))}
+            </nav>
+          </div>
+          <div className="pf-meta">
+            {META.map(([le, lz, ve, vz]) => (
+              <div className="pf-meta-row" key={le}>
+                <span className="pf-meta-k">{L(le, lz)}</span>
+                <span className="pf-meta-v">{L(ve, vz)}</span>
+              </div>
+            ))}
+            <div className="pf-meta-row">
+              <span className="pf-meta-k">{L("OUTPUT", "产出")}</span>
+              <span className="pf-meta-v pf-outlinks">
+                <a href={LIVE}>{L("Live site ↗", "线上站 ↗")}</a>
+                <a href="/study">{L("Interactive study ↗", "交互研究页 ↗")}</a>
+                <a href="/hall">{L("The hall ↗", "进入大厅 ↗")}</a>
+              </span>
             </div>
-          ))}
-          <div className="pf-meta-row">
-            <span className="pf-meta-k">{L("OUTPUT", "产出")}</span>
-            <span className="pf-meta-v pf-outlinks">
-              <a href={LIVE}>{L("Live site ↗", "线上站 ↗")}</a>
-              <a href="/study">{L("Interactive study ↗", "交互研究页 ↗")}</a>
-              <a href="/hall">{L("The hall ↗", "进入大厅 ↗")}</a>
-            </span>
           </div>
         </div>
       </section>
+
+      <PullQuote
+        text={L("Whatever bureaucracy appears, appears on its own.", "凡是出现的官僚主义，都是它自己出现的。")}
+        cite={L("— THE PREMISE", "—— 项目前提")}
+      />
 
       {/* 1 · PREMISE */}
       <Section n="01" kicker={L("PREMISE", "缘起")} title={L("An institution with no one inside", "一座里面没有人的机构")}>
@@ -289,7 +322,9 @@ export default function PortfolioPage() {
             "设计的关键转向：普通 AI 助手，是一个用户对一个应答者。GOV.AI 则是一个请求，让一座机构开始自我协商——用户触发的是一个系统，而大部分工作发生在智能体之间，在用户视线之外。"
           )}
         </p>
-        <ChatbotVsInstitution L={L} />
+        <Fig n="01" cap={L("A chatbot answers; an institution deliberates with itself.", "聊天机器人是应答；机构是自我协商。")}>
+          <ChatbotVsInstitution L={L} />
+        </Fig>
       </Section>
 
       {/* 6 · SUBJECT VS STIMULUS */}
@@ -305,7 +340,9 @@ export default function PortfolioPage() {
             "让主张立得住的红线：十三个智能体（被试）只被给予组织条件——绝不做行为诱导。刁钻的访客（刺激物）是独立的、允许脚本化的一层，如同实验里的“同谋”。两者绝不混淆，而每一个动作都从事件流中被测量。"
           )}
         </p>
-        <SubjectStimulus L={L} />
+        <Fig n="02" cap={L("Subjects and stimuli are separate layers; both feed one measurement.", "被试与刺激物是两层；共同汇入同一套测量。")}>
+          <SubjectStimulus L={L} />
+        </Fig>
       </Section>
 
       {/* 7 · AGENT ORGANIZATION */}
@@ -320,9 +357,11 @@ export default function PortfolioPage() {
             "四个层级，由事实而非形容词砌成。看不见的层级——资历、试用期、谁曾代理过谁的职位、谁比自己的下属还年轻——都以平实的组织事实写入，从不写成性格。"
           )}
         </p>
-        <div className="pf-scroll">
-          <OrgChart L={L} />
-        </div>
+        <Fig n="03" cap={L("Four levels; the invisible hierarchy written in as plain fact.", "四个层级；看不见的层级作为平实事实写入。")}>
+          <div className="pf-scroll">
+            <OrgChart L={L} />
+          </div>
+        </Fig>
       </Section>
 
       {/* 8 · INTERACTION STORYBOARD */}
@@ -338,19 +377,21 @@ export default function PortfolioPage() {
             "市民永远进不了建筑。站在地面，只能靠一道光柱接通一个窗口；从那之后，事项便自行在机构内部流转。"
           )}
         </p>
-        <div className="pf-scroll">
-          <div className="pf-story">
-            {STORY.map((s, i) => (
-              <div className="pf-frame" key={i}>
-                <div className="pf-frame-ic">
-                  <StoryIcon kind={s.icon} />
+        <Fig n="04" cap={L("One matter's path through the hall, seven beats.", "一件事项走过大厅的七个节拍。")}>
+          <div className="pf-scroll">
+            <div className="pf-story">
+              {STORY.map((s, i) => (
+                <div className="pf-frame" key={i}>
+                  <div className="pf-frame-ic">
+                    <StoryIcon kind={s.icon} />
+                  </div>
+                  <span className="pf-frame-n">{String(i + 1).padStart(2, "0")}</span>
+                  <p>{L(s.e, s.z)}</p>
                 </div>
-                <span className="pf-frame-n">{String(i + 1).padStart(2, "0")}</span>
-                <p>{L(s.e, s.z)}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        </Fig>
       </Section>
 
       {/* 9 · VISUAL EXPLORATION */}
@@ -366,7 +407,7 @@ export default function PortfolioPage() {
           )}
         </p>
         <div className="pf-iter">
-          {ITER.map((it) => (
+          {ITER.map((it, i) => (
             <figure className={"pf-itcell" + (it.kept ? " kept" : "")} key={it.src}>
               <div className="pf-itthumb">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -378,19 +419,25 @@ export default function PortfolioPage() {
                 )}
               </div>
               <figcaption>
+                <span className="pf-itnum">{`Plate 0${i + 1}`}</span>
                 <b>{L(it.te, it.tz)}</b>
-                <span>{L(it.re, it.rz)}</span>
+                <span className="rz">{L(it.re, it.rz)}</span>
               </figcaption>
             </figure>
           ))}
         </div>
       </Section>
 
+      <PullQuote
+        text={L("The language is inherited; the decisions are structural.", "语言是继承的，决策是结构的。")}
+        cite={L("— THE CENTRAL FINDING", "—— 核心发现")}
+      />
+
       {/* 10 · WHAT THE SYSTEM REVEALED */}
       <Section
         n="10"
         kicker={L("WHAT IT REVEALED", "它揭示了什么")}
-        title={L("The language is inherited; the decisions are structural", "语言是继承的，决策是结构的")}
+        title={L("What 75 cases showed", "75 个案件说明了什么")}
         alt
       >
         <p className="pf-body">
@@ -399,7 +446,9 @@ export default function PortfolioPage() {
             "在 75 个预注册案件里，官腔的浓度在每一个条件下都逼近上限——哪怕是一个没有同事、没有规则、没有记忆的孤立智能体。官僚语言，是语言模型从训练里带来的。决策则不同：把问责或记忆从层级中抽走，索要材料几乎翻五倍，从每案 0.80 升到 4.07。移动机构行为的是结构，而不是文化。"
           )}
         </p>
-        <ResponsibilityDiffusion L={L} />
+        <Fig n="05" cap={L("A single request fans out; responsibility diffuses and rarely lands.", "单个请求扇形散开；责任被稀释，很少落地。")}>
+          <ResponsibilityDiffusion L={L} />
+        </Fig>
         <p className="pf-body pf-note">
           {L(
             "The full findings, ablation-by-ablation and with confidence intervals, live on the interactive study page.",
@@ -412,7 +461,10 @@ export default function PortfolioPage() {
       {/* 11 · FINAL OUTPUT */}
       <section className="pf-out">
         <div className="pf-wrap">
-          <div className="pf-eyebrow">{L("FINAL OUTPUT", "最终产出")}</div>
+          <div className="pf-hero-top">
+            <span>{L("FINAL OUTPUT", "最终产出")}</span>
+            <span className="pf-idx">GOV.AI / 2026</span>
+          </div>
           <h2>{L("A hall you can walk into", "一座你能走进去的大厅")}</h2>
         </div>
         <div className="pf-outframe">
@@ -474,16 +526,41 @@ function Section({
   alt?: boolean;
 }) {
   return (
-    <section className={"pf-sec" + (alt ? " alt" : "")}>
-      <div className="pf-wrap">
-        <div className="pf-sec-head">
-          <span className="pf-sec-n">{n}</span>
-          <span className="pf-sec-k">{kicker}</span>
+    <section id={"sec-" + n} className={"pf-sec" + (alt ? " alt" : "")}>
+      <div className="pf-wrap pf-grid">
+        <div className="pf-rail">
+          <span className="pf-rail-n">{n}</span>
+          <span className="pf-rail-k">{kicker}</span>
         </div>
-        <h2>{title}</h2>
-        {children}
+        <div className="pf-col">
+          <h2>{title}</h2>
+          {children}
+        </div>
       </div>
     </section>
+  );
+}
+
+function PullQuote({ text, cite }: { text: string; cite?: string }) {
+  return (
+    <div className="pf-pull">
+      <div className="pf-pull-in">
+        <blockquote>{text}</blockquote>
+        {cite ? <cite>{cite}</cite> : null}
+      </div>
+    </div>
+  );
+}
+
+function Fig({ n, cap, children }: { n: string; cap: string; children: React.ReactNode }) {
+  return (
+    <figure className="pf-fig">
+      {children}
+      <figcaption className="pf-fig-cap">
+        <b>Fig. {n}</b>
+        <span>{cap}</span>
+      </figcaption>
+    </figure>
   );
 }
 

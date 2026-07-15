@@ -83,7 +83,7 @@ const HALLS = [
   { c: "#efe6d2", en: "Field-notes map", zh: "田野笔记地图", ren: "hand-drawn charm implied a human observer's editorial voice", rzh: "手绘趣味暗示了人类观察者的主观旁白" },
   { c: "#e8e2d4", en: "Isometric miniature", zh: "等距微缩模型", ren: "charm domesticated the subject", rzh: "可爱驯化了主题" },
   { c: "#f6f3ee", en: "Flat transit map", zh: "平面交通图", ren: "clean process-tracing, but it flattened rank — the one thing under study", rzh: "过程清晰，却压平了唯一的研究对象：层级" },
-  { c: "#06070a", en: "Exploded hierarchy in a void", zh: "黑域中的分解层级", ren: "KEPT — the org chart made falsifiable to the eye", rzh: "保留——让肉眼可以证伪的组织图", kept: true },
+  { c: "#06070a", en: "Exploded hierarchy in a void", zh: "黑域中的分解层级", ren: "KEPT — the org chart made falsifiable to the eye", rzh: "保留——把组织图变成一眼就能证伪的东西", kept: true },
 ];
 
 export default function StudyPage() {
@@ -191,7 +191,7 @@ export default function StudyPage() {
           <p>
             {L(
               "For a century, every account of bureaucracy has had someone to blame. Weber warned of the iron cage but staffed it with officials. Kafka's procedure had clerks behind every door. Lipsky showed that policy is whatever the person at the counter decides it is. Graeber noticed we secretly prefer the forms. In every version, the machine is made of people.",
-              "一个世纪以来，每一种关于官僚主义的叙述都有可以责怪的人。韦伯警告过铁笼，但笼子里坐着官员；卡夫卡的程序每扇门后都有办事员；Lipsky 证明政策就是柜台上那个人的临场决定；Graeber 发现我们暗中偏爱表格。在每一个版本里，机器都由人构成。"
+              "一个世纪以来，关于官僚主义的每一种讲述，背后都有一个可以责怪的人。韦伯警告过铁笼，但笼子里坐着官员；卡夫卡的程序每扇门后都有办事员；Lipsky 证明政策就是柜台上那个人的临场决定；Graeber 发现我们暗中偏爱表格。在每一个版本里，机器都由人构成。"
             )}
           </p>
           <div className="st-timeline">
@@ -208,7 +208,7 @@ export default function StudyPage() {
           <p className="st-kicker">
             {L(
               "In 2026, for the first time, the complaint can be tested with nobody inside.",
-              "2026年，这个抱怨第一次可以在“里面没有人”的条件下被检验。"
+              "2026年，这桩百年抱怨第一次能在“里面没有人”的条件下真正接受检验。"
             )}
           </p>
         </div>
@@ -222,7 +222,7 @@ export default function StudyPage() {
           <p>
             {L(
               "Multi-agent LLM research is booming, but it splits along two lines. Systems like ChatDev and MetaGPT arrange agents into org charts to optimize task output; Generative Agents observe emergent social life without intervening. What is missing is the crossing: causal, preregistered tests of how organizational structure changes what agent organizations do.",
-              "多智能体 LLM 研究正在爆发，但沿两条线分裂：ChatDev、MetaGPT 把 agent 排成组织架构以优化任务产出；Generative Agents 观察涌现的社会生活而不干预。缺的是交叉点：用因果的、预注册的方法检验组织结构如何改变 agent 组织的行为。"
+              "多智能体 LLM 研究正在爆发，却分成了两路：ChatDev、MetaGPT 把 agent 排成组织架构以优化任务产出；Generative Agents 观察涌现的社会生活而不干预。缺的是交叉点：用因果的、预注册的方法检验组织结构如何改变 agent 组织的行为。"
             )}
           </p>
           <div className="st-quad">
@@ -322,7 +322,7 @@ export default function StudyPage() {
           <p>
             {L(
               "Every officer is assembled from the same seven organizational layers — and from nothing else. Below: Window 05, laid out flat, with her tool belt and the loop that makes repetition matter.",
-              "每位职员都由同样的七层组织条件组装而成——除此之外别无他物。下图把 05 号窗口平摊开：七层条件、工具腰带，以及让重复劳作留下痕迹的回路。"
+              "每位职员都由同样的七层组织条件组装而成——除此之外别无他物。下图把 05 号窗口平摊开：七层条件、工具腰带，以及那个让重复劳作真正开始累积的回路。"
             )}
           </p>
           <div className="st-clerk">
@@ -413,7 +413,7 @@ export default function StudyPage() {
           <p>
             {L(
               "Rank is quantized; standing is not. Eleven-year Amara floats a quarter-floor under the deputy director she nearly became; probationary Tomas sinks toward the trainees. Heights are the artifact's actual coordinates.",
-              "职级是离散的；站位不是。十一年资历的 Amara 悬在她差点成为的副主任下方四分之一层；试用期的 Tomas 向实习生带下沉。下图高度就是制品的真实坐标。"
+              "职级是离散的；站位不是。十一年资历的 Amara 悬在她差点成为的副主任下方四分之一层；试用期的 Tomas 向实习生带下沉。下图里的高度，就是作品中的真实坐标。"
             )}
           </p>
           <OrgElevation />
@@ -540,7 +540,7 @@ export default function StudyPage() {
               <strong>{L("Hierarchy also closes cases.", "层级也办结案子。")}</strong>{" "}
               {L(
                 "Closure was highest under full structure (0.33) and no-trail (0.40) versus 0.13 elsewhere. The same machine that generates red tape generates the authority to finish. Weber's ambivalence, in silico.",
-                "办结率在完整结构（0.33）与无痕迹（0.40）下最高，其余仅 0.13。制造繁文缛节的机器同时制造了办结的权威——韦伯的双义性，在硅基中重演。"
+                "办结率在完整结构（0.33）与无痕迹（0.40）下最高，其余仅 0.13。制造繁文缛节的机器同时制造了办结的权威——韦伯式的两面性，在硅基中重演。"
               )}
             </li>
             <li>
@@ -561,7 +561,7 @@ export default function StudyPage() {
             </div>
             <div className="st-memoq">
               <em>{L("Field vignette · Deputy Director Victor Roth", "田野小品 · 副主任 Victor Roth")}</em>
-              {L("Returned a memo with one line: “You don't need to hedge further.”", "在函件上批了一行：“你不必再对冲了。”")}
+              {L("Returned a memo with one line: “You don't need to hedge further.”", "在函件上批了一行：“你不必再兜圈子了。”")}
             </div>
           </div>
         </div>
@@ -575,7 +575,7 @@ export default function StudyPage() {
           <p>
             {L(
               "Hierarchy, paper trail, memory — three organizational switches span a 2³ design space. The preregistered study sampled five corners; three remain unrun. The deeper contribution is the instrument, not any single experiment: any org chart you can wire, the hall can crash-test.",
-              "层级、文书、记忆——三个组织开关张成一个 2³ 的设计空间。预注册实验采样了其中五个角，还有三个角未曾运行。更深一层的贡献是仪器而非某一次实验：任何你能接线的组织结构，这座大厅都能先撞一遍。"
+              "层级、文书、记忆——三个组织开关张成一个 2³ 的设计空间。预注册实验采样了其中五个角，还有三个角未曾运行。更深一层的贡献是仪器而非某一次实验：任何你搭得出来的组织结构，这座大厅都能先替你撞一遍。"
             )}
           </p>
           <CubeSpace lang={lang} />
@@ -637,7 +637,7 @@ export default function StudyPage() {
             <strong>{L("WORKED EXAMPLE", "演算一例")}</strong>
             {L(
               "Question: should the support team share memory? Wire full vs. no_memory, run 15 synthetic days each, read the tape: materials demanded 2.67 vs 4.07 per case; precedent citations 0.90 vs 0.20. The decision is informed before a single real user meets it.",
-              "问题：要不要给客服团队共享记忆？接线 full 与 no_memory 各跑 15 个合成工作日，读数：索要材料每案 2.67 对 4.07；先例引用 0.90 对 0.20。在第一个真实用户遇到它之前，这个决策已经有据可依。"
+              "问题：要不要给客服团队共享记忆？分别配出 full 与 no_memory 两版，各跑 15 个合成工作日，读数：索要材料每案 2.67 对 4.07；先例引用 0.90 对 0.20。在第一个真实用户遇到它之前，这个决策已经有据可依。"
             )}
           </div>
         </div>
@@ -688,7 +688,7 @@ export default function StudyPage() {
               <strong>{L("Altitude is earned", "海拔是挣来的")}</strong>
               {L(
                 "y = frozen design coordinate + f(accumulated cases, memos, documents). The invisible hierarchy is not authored; it accrues at runtime from the live experience store.",
-                "y = 冻结设计坐标 + f(累计办件、函件、文书)。隐形层级不是作者摆的，而是运行时从真实经验库里累积出来的。"
+                "y = 冻结设计坐标 + f(累计办件、函件、文书)。隐形层级不是预先编排好的，而是运行时从真实经验库里一点点累积出来的。"
               )}
             </div>
             <div>
@@ -724,7 +724,7 @@ export default function StudyPage() {
           <p>
             {L(
               "The hall ships with its own laboratory: a budget-guarded batch runner, a preregistered codebook, and a two-pass independent coder that refuses to share a model family with its subjects.",
-              "大厅自带一间实验室：带预算护栏的批量跑批器、预注册编码手册、以及一位拒绝与被试同一模型家族的两轮独立编码员。"
+              "大厅自带一间实验室：一支带预算护栏的批量实验脚本、一份预注册编码手册，以及一位独立编码员——与被试分属不同模型家族，逐案编两轮。"
             )}
           </p>
           <div className="st-instr">
@@ -750,7 +750,7 @@ export default function StudyPage() {
                 <i>→</i>
                 <span>{L("blinded transcripts", "匿名案卷")}</span>
                 <i>→</i>
-                <span>{L("coder: GPT (family guard)", "编码员：GPT（家族守卫）")}</span>
+                <span>{L("coder: GPT (cross-family)", "编码员：GPT（异家族）")}</span>
                 <i>×2</i>
                 <span>{L("κ per code", "逐项 κ 一致性")}</span>
                 <i>→</i>
@@ -778,7 +778,7 @@ export default function StudyPage() {
               <li>
                 {L(
                   "LLM coder assistance: agreement reported per code (presence κ 0.67–1.00; counts of invented rules are noisy); human blind sheets pending.",
-                  "编码使用 LLM 辅助：逐项报告一致性（存在性 κ 0.67–1.00；编造规则的计数偏噪）；人工盲编码待做。"
+                  "编码使用 LLM 辅助：逐项报告一致性（存在性 κ 0.67–1.00；编造规则的计数不太稳定）；人工盲编码待做。"
                 )}
               </li>
               <li>
@@ -860,7 +860,7 @@ export default function StudyPage() {
           <p>
             {L(
               "Three recorded cases from the preregistered runs replay in the hall with zero API calls.",
-              "预注册批次中的三个案件可在大厅中零 API 调用地回放。"
+              "从预注册批次里挑出的三个案件，可在大厅中重放——全程零 API 调用。"
             )}
           </p>
           <div className="st-exit">

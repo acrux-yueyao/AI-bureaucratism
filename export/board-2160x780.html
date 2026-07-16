@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AI Bureaucracy — Research + Portfolio Board 2160×780</title>
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&display=swap");
+
+@page { size: 2160px 780px; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+:root {
+  --bg: #07090d;
+  --panel: #090c11;
+  --line: #161c26;
+  --line2: #232b38;
+  --ink: #e8eef8;
+  --txt: #b9c2d2;
+  --dim: #78849a;
+  --mut: #55617a;
+  --acc: #d98a72;
+  --blu: #8fb0dc;
+  --grn: #7edeb0;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --disp: "Archivo", -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+html, body { width: 2160px; height: 780px; overflow: hidden; }
+body {
+  position: relative;
+  background:
+    linear-gradient(rgba(130,150,180,0.04) 1px, transparent 1px) 0 0 / 40px 40px,
+    linear-gradient(90deg, rgba(130,150,180,0.04) 1px, transparent 1px) 0 0 / 40px 40px,
+    var(--bg);
+  color: var(--txt);
+  font-family: var(--sans);
+}
+
+/* corner registration crosses */
+.cross { position: absolute; width: 11px; height: 11px; z-index: 40; }
+.cross::before, .cross::after { content: ""; position: absolute; background: #2b3547; }
+.cross::before { left: 0; right: 0; top: 5px; height: 1px; }
+.cross::after { top: 0; bottom: 0; left: 5px; width: 1px; }
+
+/* ── top / bottom strips ── */
+.strip {
+  position: absolute; left: 0; right: 0; z-index: 30;
+  display: flex; align-items: center; gap: 30px;
+  font-family: var(--mono); letter-spacing: 2px; color: var(--dim);
+  padding: 0 30px;
+}
+.strip.top { top: 0; height: 36px; font-size: 9.5px; border-bottom: 1px solid var(--line2); background: rgba(9,12,17,0.7); }
+.strip.bot { bottom: 0; height: 32px; font-size: 8.5px; border-top: 1px solid var(--line2); background: rgba(9,12,17,0.7); letter-spacing: 1.4px; }
+.strip b { font-weight: 500; color: var(--ink); letter-spacing: 2px; }
+.strip .acc { color: var(--acc); }
+.strip .sp { flex: 1; }
+.pill { border: 1px solid var(--line2); border-radius: 999px; padding: 4px 14px; color: var(--dim); }
+.bc {
+  width: 90px; height: 12px; opacity: 0.5;
+  background: repeating-linear-gradient(90deg, #6b7686 0 1px, transparent 1px 3px, #6b7686 3px 5px, transparent 5px 6px, #6b7686 6px 9px, transparent 9px 12px);
+}
+
+/* ── main band: five panels ── */
+.band { position: absolute; top: 36px; bottom: 32px; left: 0; right: 0; display: flex; }
+.p { position: relative; height: 100%; padding: 30px 28px 26px; }
+.p + .p { border-left: 1px solid var(--line2); }
+
+.kick { font-family: var(--mono); font-size: 9.5px; letter-spacing: 2px; color: var(--acc); margin-bottom: 12px; }
+.kick i { font-style: normal; color: var(--mut); }
+h3 { font-family: var(--disp); font-weight: 700; font-size: 21px; letter-spacing: -0.3px; color: var(--ink); line-height: 1.1; margin-bottom: 14px; }
+
+/* panel 1 — masthead */
+.p1 { width: 400px; display: flex; flex-direction: column; }
+.p1 .q { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; color: var(--acc); margin: 20px 0 12px; }
+.p1 h1 { font-family: var(--disp); font-weight: 800; font-size: 44px; line-height: 0.97; letter-spacing: -1.6px; color: #fff; margin: 6px 0 18px; }
+.p1 .lead { font-size: 14.5px; line-height: 1.65; color: var(--txt); max-width: 320px; }
+.p1 .idx { margin-top: auto; border-top: 1px solid var(--line2); padding-top: 14px; }
+.p1 .idx-h { font-family: var(--mono); font-size: 8.5px; letter-spacing: 2px; color: var(--dim); margin-bottom: 9px; }
+.p1 .idx-row { display: flex; gap: 12px; padding: 5px 0; border-bottom: 1px solid var(--line); font-size: 11.5px; color: var(--txt); }
+.p1 .idx-row b { font-family: var(--mono); font-size: 9px; color: var(--acc); font-weight: 500; padding-top: 2px; }
+.p1 .proto { margin-top: 14px; font-family: var(--mono); font-size: 8.5px; letter-spacing: 1.5px; color: var(--mut); }
+
+/* panel 2 — specimen */
+.p2 { width: 590px; padding: 0; overflow: hidden; }
+.p2 img.hall { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 42% 50%; }
+.p2 svg.lines { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5; }
+.p2 .note {
+  position: absolute; z-index: 6; font-family: var(--mono); font-size: 9px; letter-spacing: 1.2px;
+  color: #dfe6f2; text-align: right; transform: translate(-100%, -50%); text-shadow: 0 1px 6px rgba(0,0,0,0.95); white-space: nowrap;
+}
+.p2 .cap {
+  position: absolute; left: 18px; bottom: 16px; z-index: 6;
+  font-family: var(--mono); font-size: 8.5px; letter-spacing: 1.4px; color: var(--dim);
+  background: rgba(9,12,17,0.75); border: 1px solid var(--line2); padding: 7px 12px;
+}
+.p2 .cap b { color: var(--acc); font-weight: 500; }
+.p2 .tag {
+  position: absolute; right: 16px; top: 14px; z-index: 6;
+  font-family: var(--mono); font-size: 8.5px; letter-spacing: 2px; color: var(--dim);
+  border: 1px solid var(--line2); border-radius: 999px; padding: 5px 13px; background: rgba(9,12,17,0.75);
+}
+
+/* panel 3 — research plates */
+.p3 { width: 420px; }
+.refgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ref { border: 1px solid var(--line2); background: var(--panel); }
+.ref img { width: 100%; height: 96px; object-fit: cover; display: block; filter: grayscale(1) contrast(1.05) brightness(0.92); border-bottom: 1px solid var(--line2); }
+.ref figcaption { padding: 8px 10px 9px; }
+.ref .rn { font-family: var(--mono); font-size: 7.5px; letter-spacing: 1.5px; color: var(--acc); }
+.ref b { display: block; font-family: var(--disp); font-weight: 600; font-size: 11px; color: var(--ink); margin: 3px 0 4px; line-height: 1.2; }
+.ref p { font-size: 9.5px; line-height: 1.45; color: var(--dim); margin-bottom: 6px; }
+.ref .to { display: block; font-family: var(--mono); font-size: 6.8px; letter-spacing: 0.8px; color: var(--grn); }
+.p3 .thesis { margin-top: 14px; border-top: 1px solid var(--line2); padding-top: 12px; font-size: 12.5px; line-height: 1.55; color: var(--txt); }
+.p3 .thesis b { color: var(--ink); font-weight: 600; }
+
+/* panel 4 — method */
+.p4 { width: 350px; }
+.grp { font-family: var(--mono); font-size: 8.5px; letter-spacing: 2px; color: var(--blu); margin: 10px 0 2px; }
+.grp:first-of-type { margin-top: 0; }
+.cond { display: flex; align-items: center; gap: 10px; padding: 5.5px 0; border-bottom: 1px solid var(--line); }
+.cond b { font-family: var(--disp); font-weight: 600; font-size: 12.5px; color: var(--ink); letter-spacing: 0.2px; }
+.cond .sp { flex: 1; }
+.sw { width: 22px; height: 12px; border: 1px solid #3a4658; border-radius: 999px; position: relative; }
+.sw i { position: absolute; top: 2px; right: 2px; width: 6px; height: 6px; border-radius: 50%; background: var(--grn); }
+.abl { font-family: var(--mono); font-size: 6.8px; letter-spacing: 1px; color: var(--acc); }
+.meas { margin-top: 16px; border: 1px solid var(--line2); background: var(--panel); padding: 13px 14px 11px; }
+.meas .mh { font-family: var(--mono); font-size: 8.5px; letter-spacing: 2px; color: var(--blu); margin-bottom: 8px; }
+.meas .row { display: flex; align-items: baseline; gap: 8px; font-family: var(--mono); font-size: 8.6px; letter-spacing: 0.8px; color: var(--dim); padding: 3.5px 0; }
+.meas .row i { width: 4px; height: 4px; background: var(--grn); flex: none; align-self: center; }
+
+/* panel 5 — finding + output */
+.p5 { width: 400px; display: flex; flex-direction: column; }
+.p5 .qsq { width: 8px; height: 8px; border: 1px solid var(--blu); margin-bottom: 12px; }
+.p5 blockquote { font-family: var(--disp); font-weight: 700; font-size: 24px; line-height: 1.05; letter-spacing: -0.5px; text-transform: uppercase; color: var(--ink); margin-bottom: 16px; }
+.find { display: flex; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); font-size: 11.5px; line-height: 1.5; color: var(--txt); }
+.find b { font-family: var(--mono); font-size: 8.5px; color: var(--acc); font-weight: 500; padding-top: 3px; }
+.out { margin-top: auto; border-top: 1px solid var(--line2); padding-top: 12px; }
+.out .oh { font-family: var(--mono); font-size: 8.5px; letter-spacing: 2px; color: var(--acc); margin-bottom: 8px; }
+.out p { font-size: 11.5px; line-height: 1.5; color: var(--txt); margin-bottom: 10px; }
+.links { display: flex; gap: 8px; margin-bottom: 12px; }
+.btn { font-family: var(--mono); font-size: 8px; letter-spacing: 1.2px; padding: 6px 9px; border: 1px solid var(--line2); color: var(--ink); white-space: nowrap; }
+.btn.pri { background: var(--acc); border-color: var(--acc); color: #090c11; }
+.iters { display: flex; gap: 6px; }
+.it { position: relative; flex: 1; }
+.it img { width: 100%; height: 42px; object-fit: cover; display: block; border: 1px solid var(--line2); filter: saturate(0.85); }
+.it.kept img { border-color: var(--grn); }
+.it span { position: absolute; top: 0; left: 0; font-family: var(--mono); font-size: 5.5px; letter-spacing: 0.8px; padding: 2px 4px; color: #090c11; background: var(--acc); }
+.it.kept span { background: var(--grn); }
+.iters-cap { font-family: var(--mono); font-size: 7.5px; letter-spacing: 1.2px; color: var(--mut); margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<div class="cross" style="top:8px;left:8px"></div>
+<div class="cross" style="top:8px;right:8px"></div>
+<div class="cross" style="bottom:8px;left:8px"></div>
+<div class="cross" style="bottom:8px;right:8px"></div>
+
+<div class="strip top">
+  <b>AI BUREAUCRACY</b>
+  <span>GOV.AI · UNIFIED SERVICES</span>
+  <span class="sp"></span>
+  <span class="pill">[ RESEARCH + PORTFOLIO · PRINTED SPECIMEN ]</span>
+  <span class="sp"></span>
+  <span>REF <span class="acc">AIB/2026 · EN</span></span>
+</div>
+
+<div class="band">
+
+  <!-- 1 · masthead -->
+  <section class="p p1">
+    <div class="kick"><i>[</i> SPECIMEN · THE HALL <i>]</i></div>
+    <h1>BUREAUCRACY,<br/>BY DESIGN.</h1>
+    <div class="q">Does bureaucracy need bureaucrats?</div>
+    <p class="lead">A fictional public-service hall staffed entirely by AI agents — built to test whether bureaucracy emerges from organizational structure alone.</p>
+    <div class="idx">
+      <div class="idx-h">[ CORE THREADS OF THE PROJECT ]</div>
+      <div class="idx-row"><b>01</b>Premise — conditions, not characters</div>
+      <div class="idx-row"><b>02</b>Research — Weber, Kafka, the files, the queue</div>
+      <div class="idx-row"><b>03</b>Method — an ablation experiment on structure</div>
+      <div class="idx-row"><b>04</b>Finding — the theater rises with the switches</div>
+      <div class="idx-row"><b>05</b>Output — a hall you can walk into</div>
+    </div>
+    <div class="proto">NOT A THESIS — A PROTOTYPE</div>
+  </section>
+
+  <!-- 2 · the specimen -->
+  <section class="p p2">
+    <img class="hall" src="hall-specimen.png" alt="The hall — thirteen glass offices staggered in a dark void" />
+    <svg class="lines" viewBox="0 0 590 712" preserveAspectRatio="none">
+      <polyline points="558,120 470,120 470,158 400,170" fill="none" stroke="rgba(190,205,228,0.55)" stroke-width="1"/>
+      <rect x="396" y="166" width="7" height="7" fill="none" stroke="#8fb0dc" stroke-width="1"/>
+      <rect x="562" y="116" width="5" height="5" fill="#d98a72"/>
+      <polyline points="558,330 480,330 480,352 368,362" fill="none" stroke="rgba(190,205,228,0.55)" stroke-width="1"/>
+      <rect x="364" y="358" width="7" height="7" fill="none" stroke="#8fb0dc" stroke-width="1"/>
+      <rect x="562" y="326" width="5" height="5" fill="#d98a72"/>
+      <polyline points="558,540 500,540 500,508 330,498" fill="none" stroke="rgba(190,205,228,0.55)" stroke-width="1"/>
+      <rect x="326" y="494" width="7" height="7" fill="none" stroke="#8fb0dc" stroke-width="1"/>
+      <rect x="562" y="536" width="5" height="5" fill="#d98a72"/>
+    </svg>
+    <div class="note" style="right:calc(100% - 546px); top:120px">13 AGENTS · ONE PROMPT EACH</div>
+    <div class="note" style="right:calc(100% - 546px); top:330px">ESCALATION → A SUPERIOR</div>
+    <div class="note" style="right:calc(100% - 546px); top:540px">ALTITUDE = STANDING</div>
+    <div class="tag">[ FIG. 00 ]</div>
+    <div class="cap"><b>THE HALL</b> — LIVE REPLAY · NO SCRIPTED BEHAVIOR · THREE.JS</div>
+  </section>
+
+  <!-- 3 · research plates -->
+  <section class="p p3">
+    <div class="kick"><i>[</i> 01–02 · RESEARCH PLATES <i>]</i></div>
+    <h3>What the project leans on</h3>
+    <div class="refgrid">
+      <figure class="ref">
+        <img src="../public/research/weber-1918.jpg" alt="Max Weber, 1918" style="object-position: center 22%" />
+        <figcaption>
+          <span class="rn">REF-01</span><b>Max Weber, 1918</b>
+          <p>Bureaucracy as an ideal type: offices, files, rules — conditions, not characters.</p>
+          <span class="to">→ BECAME: THE SWITCHABLE CONDITIONS</span>
+        </figcaption>
+      </figure>
+      <figure class="ref">
+        <img src="../public/research/kafka-1923.jpg" alt="Franz Kafka, 1923" />
+        <figcaption>
+          <span class="rn">REF-02</span><b>Franz Kafka, 1923</b>
+          <p>The Trial: doors, delays, doorkeepers you never get past.</p>
+          <span class="to">→ BECAME: THE CITIZEN KEPT OUTSIDE</span>
+        </figcaption>
+      </figure>
+      <figure class="ref">
+        <img src="../public/research/loc-card-division.jpg" alt="Card Division, Library of Congress" />
+        <figcaption>
+          <span class="rn">REF-03</span><b>Card Division, LoC, c. 1915</b>
+          <p>The institution's memory, outliving every clerk who serves it.</p>
+          <span class="to">→ BECAME: PAPER TRAIL &amp; ARCHIVE</span>
+        </figcaption>
+      </figure>
+      <figure class="ref">
+        <img src="../public/research/ellis-island-pens.jpg" alt="Registry Room pens, Ellis Island" />
+        <figcaption>
+          <span class="rn">REF-04</span><b>Ellis Island pens, c. 1907</b>
+          <p>Waiting, sorted into pens: the queue as the state's true interface.</p>
+          <span class="to">→ BECAME: REFERRAL AS MOVEMENT</span>
+        </figcaption>
+      </figure>
+    </div>
+    <p class="thesis"><b>Red tape is not malice — it is mechanism.</b> Divided permission, mandatory records, bounded remits: each rule is sensible alone; combined, they turn a simple request into something referred, supplemented, escalated, archived — not necessarily resolved.</p>
+  </section>
+
+  <!-- 4 · method -->
+  <section class="p p4">
+    <div class="kick"><i>[</i> 03 · METHOD <i>]</i></div>
+    <h3>Bureaucracy, decomposed into conditions</h3>
+    <div class="grp">STRUCTURE</div>
+    <div class="cond"><b>Hierarchy</b><span class="sp"></span><span class="abl">ABLATED</span><span class="sw"><i></i></span></div>
+    <div class="cond"><b>Jurisdiction</b><span class="sp"></span></div>
+    <div class="cond"><b>Permission boundary</b><span class="sp"></span></div>
+    <div class="grp">RECORD</div>
+    <div class="cond"><b>Paper trail</b><span class="sp"></span><span class="abl">ABLATED</span><span class="sw"><i></i></span></div>
+    <div class="cond"><b>Accountability</b><span class="sp"></span></div>
+    <div class="cond"><b>Memory</b><span class="sp"></span><span class="abl">ABLATED</span><span class="sw"><i></i></span></div>
+    <div class="cond"><b>Archive</b><span class="sp"></span></div>
+    <div class="grp">MOTION</div>
+    <div class="cond"><b>Escalation</b><span class="sp"></span></div>
+    <div class="cond"><b>Assignment</b><span class="sp"></span></div>
+    <div class="meas">
+      <div class="mh">MEASUREMENT — EVENT STREAM</div>
+      <div class="row"><i></i>13 AGENTS — SUBJECTS · CONDITIONS ONLY</div>
+      <div class="row"><i></i>SYNTHETIC VISITORS — STIMULI · KEPT APART</div>
+      <div class="row"><i></i>75 CASES · 5 ORGANIZATIONAL CONDITIONS</div>
+      <div class="row"><i></i>9 MECHANICAL + 5 TEXT CODES · TWO PASSES</div>
+      <div class="row"><i></i>PREREGISTERED · CROSS-FAMILY CODER</div>
+    </div>
+  </section>
+
+  <!-- 5 · finding + output -->
+  <section class="p p5">
+    <div class="kick"><i>[</i> 04 · FINDING <i>]</i></div>
+    <div class="qsq"></div>
+    <blockquote>Whatever bureaucracy appears, appears on its own.</blockquote>
+    <div class="find"><b>F1</b><span>With every condition on, a simple request gathers referrals, memos and supplementary demands — nobody was told to do any of this.</span></div>
+    <div class="find"><b>F2</b><span>Switch hierarchy, paper trail or memory off one at a time, and the matching behaviors thin out with them.</span></div>
+    <div class="find"><b>F3</b><span>A lone agent, handed the same matter, simply answers it.</span></div>
+    <div class="out">
+      <div class="oh">[ 05 · OUTPUT — A HALL YOU CAN WALK INTO ]</div>
+      <p>Submit a matter, then watch it be referred, escalated and archived between desks — the way it feels to wait at any counter.</p>
+      <div class="links">
+        <span class="btn pri">LIVE ↗ ai-bureaucratism.vercel.app</span>
+        <span class="btn">/PORTFOLIO</span>
+        <span class="btn">/STUDY</span>
+      </div>
+      <div class="iters">
+        <div class="it"><img src="../public/study/iter-1.jpg" alt="" /><span>REJ</span></div>
+        <div class="it"><img src="../public/study/iter-2.jpg" alt="" /><span>REJ</span></div>
+        <div class="it"><img src="../public/study/iter-3.jpg" alt="" /><span>REJ</span></div>
+        <div class="it"><img src="../public/study/iter-4.jpg" alt="" /><span>REJ</span></div>
+        <div class="it kept"><img src="../public/study/iter-5.jpg" alt="" /><span>KEPT</span></div>
+      </div>
+      <div class="iters-cap">FIVE HALLS, FOUR REJECTED — FORM HAD TO MAKE RANK</div>
+    </div>
+  </section>
+
+</div>
+
+<div class="strip bot">
+  <span class="bc"></span>
+  <b>ai-bureaucratism.vercel.app/portfolio</b>
+  <span class="sp"></span>
+  <span>RESEARCH IMAGERY: PUBLIC DOMAIN — WIKIMEDIA COMMONS · LIBRARY OF CONGRESS · NPS/DPLA</span>
+  <span class="sp"></span>
+  <span>SPECULATIVE DESIGN RESEARCH · EVERY OFFICER IS AN AI AGENT — GIVEN A ROLE, NEVER A SCRIPT</span>
+</div>
+
+</body>
+</html>

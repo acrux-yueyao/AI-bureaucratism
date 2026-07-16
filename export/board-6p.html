@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AI Bureaucracy — Research + Portfolio · 6 boards 2160×780</title>
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Fraunces:ital,opsz,wght@1,9..144,300..600&display=swap");
+
+@page { size: 2160px 780px; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+:root {
+  --bg: #07090d; --panel: #090c11;
+  --line: #161c26; --line2: #232b38;
+  --ink: #e8eef8; --txt: #b9c2d2; --dim: #78849a; --mut: #55617a;
+  --acc: #d98a72; --blu: #8fb0dc; --grn: #7edeb0;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --disp: "Archivo", -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --serif: "Fraunces", Georgia, serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body { width: 2160px; background: #000; font-family: var(--sans); color: var(--txt); }
+
+.page {
+  position: relative; width: 2160px; height: 780px; overflow: hidden;
+  background:
+    linear-gradient(rgba(130,150,180,0.04) 1px, transparent 1px) 0 0 / 40px 40px,
+    linear-gradient(90deg, rgba(130,150,180,0.04) 1px, transparent 1px) 0 0 / 40px 40px,
+    var(--bg);
+  page-break-after: always; break-after: page;
+}
+.page:last-child { page-break-after: auto; break-after: auto; }
+
+.cross { position: absolute; width: 11px; height: 11px; z-index: 40; }
+.cross::before, .cross::after { content: ""; position: absolute; background: #2b3547; }
+.cross::before { left: 0; right: 0; top: 5px; height: 1px; }
+.cross::after { top: 0; bottom: 0; left: 5px; width: 1px; }
+
+.strip { position: absolute; left: 0; right: 0; z-index: 30; display: flex; align-items: center; gap: 30px; font-family: var(--mono); letter-spacing: 2px; color: var(--dim); padding: 0 30px; }
+.strip.top { top: 0; height: 36px; font-size: 9.5px; border-bottom: 1px solid var(--line2); background: rgba(9,12,17,0.7); }
+.strip.bot { bottom: 0; height: 32px; font-size: 8.5px; border-top: 1px solid var(--line2); background: rgba(9,12,17,0.7); letter-spacing: 1.4px; }
+.strip b { font-weight: 500; color: var(--ink); letter-spacing: 2px; }
+.strip .acc { color: var(--acc); }
+.strip .sp { flex: 1; }
+.pill { border: 1px solid var(--line2); border-radius: 999px; padding: 4px 14px; color: var(--dim); }
+.bc { width: 90px; height: 12px; opacity: 0.5; background: repeating-linear-gradient(90deg, #6b7686 0 1px, transparent 1px 3px, #6b7686 3px 5px, transparent 5px 6px, #6b7686 6px 9px, transparent 9px 12px); }
+
+.band { position: absolute; top: 36px; bottom: 32px; left: 0; right: 0; display: flex; }
+.col { position: relative; height: 100%; }
+.col + .col { border-left: 1px solid var(--line2); }
+
+.kick { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; color: var(--acc); margin-bottom: 14px; }
+.kick i { font-style: normal; color: var(--mut); }
+h2 { font-family: var(--disp); font-weight: 700; letter-spacing: -0.6px; color: var(--ink); line-height: 1.05; }
+.body { font-size: 14.5px; line-height: 1.7; color: var(--txt); }
+.note { font-size: 11px; line-height: 1.6; color: var(--dim); }
+
+/* SVG text */
+svg text { font-family: var(--sans); }
+.t  { fill: var(--ink); font-size: 13px; }
+.th { fill: var(--blu); font-size: 10.5px; font-weight: 500; letter-spacing: 2px; font-family: var(--mono); }
+.ts { fill: var(--dim); font-size: 11px; }
+.tm { fill: var(--acc); font-size: 9.5px; letter-spacing: 1px; font-family: var(--mono); }
+
+.figcap { display: flex; gap: 10px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.8px; color: var(--dim); border-top: 1px solid var(--line); padding-top: 9px; margin-top: 10px; }
+.figcap b { color: var(--acc); font-weight: 500; }
+
+/* ── P1 cover ── */
+.cv-l { width: 760px; padding: 52px 48px 40px; display: flex; flex-direction: column; }
+.cv-l .q { font-family: var(--mono); font-size: 12.5px; letter-spacing: 2px; color: var(--acc); margin: 26px 0 14px; }
+.cv-l h1 { font-family: var(--disp); font-weight: 800; font-size: 78px; line-height: 0.95; letter-spacing: -2.8px; color: #fff; margin-top: 10px; }
+.cv-l .lead { font-size: 16.5px; line-height: 1.65; color: var(--txt); max-width: 560px; margin-top: 16px; }
+.toc { margin-top: auto; border-top: 1px solid var(--line2); padding-top: 16px; }
+.toc-h { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; color: var(--dim); margin-bottom: 10px; }
+.toc-row { display: flex; gap: 14px; align-items: baseline; padding: 6.5px 0; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--txt); }
+.toc-row b { font-family: var(--mono); font-size: 9.5px; color: var(--acc); font-weight: 500; }
+.toc-row .sp { flex: 1; }
+.toc-row .pg { font-family: var(--mono); font-size: 9px; color: var(--mut); letter-spacing: 1px; }
+.proto { margin-top: 16px; font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px; color: var(--mut); }
+.cv-r { flex: 1; padding: 0; overflow: hidden; }
+.cv-r img.hall { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
+.cv-r svg.lines { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5; }
+.cv-note { position: absolute; z-index: 6; font-family: var(--mono); font-size: 10px; letter-spacing: 1.4px; color: #dfe6f2; text-align: right; transform: translate(-100%, -50%); text-shadow: 0 1px 6px rgba(0,0,0,0.95); white-space: nowrap; }
+.cv-tag { position: absolute; right: 20px; top: 18px; z-index: 6; font-family: var(--mono); font-size: 9px; letter-spacing: 2px; color: var(--dim); border: 1px solid var(--line2); border-radius: 999px; padding: 5px 14px; background: rgba(9,12,17,0.75); }
+.cv-cap { position: absolute; left: 22px; bottom: 18px; z-index: 6; font-family: var(--mono); font-size: 9px; letter-spacing: 1.4px; color: var(--dim); background: rgba(9,12,17,0.78); border: 1px solid var(--line2); padding: 8px 13px; }
+.cv-cap b { color: var(--acc); font-weight: 500; }
+
+/* ── P2 premise + research ── */
+.p2-l { width: 640px; padding: 42px 44px; display: flex; flex-direction: column; }
+.p2-l h2 { font-size: 34px; margin-bottom: 18px; max-width: 480px; }
+.reasons { list-style: none; border-top: 1px solid var(--line2); margin-top: 8px; counter-reset: r; }
+.reasons li { counter-increment: r; padding: 9px 2px 9px 40px; border-bottom: 1px solid var(--line); font-size: 13.5px; color: var(--txt); position: relative; }
+.reasons li::before { content: counter(r, decimal-leading-zero); position: absolute; left: 0; top: 11px; font-family: var(--mono); font-size: 9.5px; color: var(--acc); }
+.gap { margin-top: auto; font-size: 13px; line-height: 1.65; color: var(--dim); border-top: 1px solid var(--line2); padding-top: 14px; }
+.gap b { color: var(--ink); font-weight: 600; }
+.p2-r { flex: 1; padding: 42px 44px; display: flex; flex-direction: column; }
+.p2-r h2 { font-size: 34px; margin-bottom: 20px; }
+.refrow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.ref { border: 1px solid var(--line2); background: var(--panel); }
+.ref img { width: 100%; height: 200px; object-fit: cover; display: block; filter: grayscale(1) contrast(1.05) brightness(0.92); border-bottom: 1px solid var(--line2); }
+.ref figcaption { padding: 11px 13px 12px; }
+.ref .rn { font-family: var(--mono); font-size: 8px; letter-spacing: 1.5px; color: var(--acc); }
+.ref b { display: block; font-family: var(--disp); font-weight: 600; font-size: 13.5px; color: var(--ink); margin: 4px 0 6px; line-height: 1.2; }
+.ref p { font-size: 11px; line-height: 1.5; color: var(--dim); margin-bottom: 8px; }
+.ref .to { display: block; font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.8px; color: var(--grn); }
+.ref .cr { display: block; font-family: var(--mono); font-size: 7px; letter-spacing: 0.8px; color: var(--mut); border-top: 1px dashed var(--line2); padding-top: 6px; margin-top: 7px; }
+.conv { margin-top: auto; }
+.conv-h { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; color: var(--dim); margin-bottom: 10px; }
+.chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.chip { border: 1px solid var(--line2); background: var(--panel); padding: 13px 14px 12px; position: relative; }
+.chip::before { content: ""; position: absolute; top: -1px; left: -1px; width: 10px; height: 10px; border-top: 1px solid var(--blu); border-left: 1px solid var(--blu); }
+.chip::after { content: ""; position: absolute; bottom: -1px; right: -1px; width: 10px; height: 10px; border-bottom: 1px solid var(--blu); border-right: 1px solid var(--blu); }
+.chip q { display: block; font-family: var(--serif); font-style: italic; font-size: 12.5px; line-height: 1.5; color: #ded7c6; quotes: "\201C" "\201D"; margin-bottom: 9px; }
+.chip b { display: block; font-family: var(--disp); font-weight: 600; font-size: 11.5px; color: var(--ink); margin-bottom: 5px; }
+.chip .mv { font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.8px; color: var(--grn); line-height: 1.5; }
+
+/* ── P3 organization ── */
+.p3-l { width: 740px; padding: 42px 44px; display: flex; flex-direction: column; }
+.p3-l h2 { font-size: 34px; margin-bottom: 16px; }
+.p3-l .body { max-width: 600px; margin-bottom: 18px; }
+.p3-r { flex: 1; padding: 42px 44px 36px; display: flex; flex-direction: column; }
+.p3-r h2 { font-size: 26px; margin-bottom: 6px; }
+.p3-r .sub { font-size: 12px; color: var(--dim); margin-bottom: 4px; max-width: 900px; line-height: 1.55; }
+.orgwrap svg { width: 690px; height: auto; display: block; margin: 0 auto; }
+
+/* ── P4 method ── */
+.p4-top { position: absolute; top: 36px; left: 0; right: 0; height: 470px; display: flex; }
+.p4-conds { width: 660px; padding: 38px 44px; }
+.p4-conds h2 { font-size: 30px; margin-bottom: 14px; }
+.grp { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; color: var(--blu); margin: 12px 0 3px; }
+.grp:first-of-type { margin-top: 2px; }
+.cond { display: flex; align-items: baseline; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.cond b { font-family: var(--disp); font-weight: 600; font-size: 13.5px; color: var(--ink); letter-spacing: 0.2px; white-space: nowrap; }
+.cond .g { font-size: 11px; color: var(--dim); flex: 1; }
+.sw { width: 22px; height: 12px; border: 1px solid #3a4658; border-radius: 999px; position: relative; align-self: center; flex: none; }
+.sw i { position: absolute; top: 2px; right: 2px; width: 6px; height: 6px; border-radius: 50%; background: var(--grn); }
+.abl { font-family: var(--mono); font-size: 7px; letter-spacing: 1px; color: var(--acc); white-space: nowrap; }
+.p4-meas { flex: 1; padding: 38px 44px; border-left: 1px solid var(--line2); display: flex; gap: 36px; }
+.p4-meas .figside { width: 880px; }
+.p4-meas h2 { font-size: 30px; margin-bottom: 16px; }
+.stats { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-content: start; margin-top: 62px; }
+.stat { border: 1px solid var(--line2); background: var(--panel); padding: 16px 16px 13px; }
+.stat b { display: block; font-family: var(--disp); font-weight: 800; font-size: 40px; letter-spacing: -1px; color: var(--ink); line-height: 1; }
+.stat span { display: block; font-family: var(--mono); font-size: 8px; letter-spacing: 1.4px; color: var(--dim); margin-top: 7px; }
+.p4-story { position: absolute; top: 506px; left: 0; right: 0; bottom: 32px; border-top: 1px solid var(--line2); display: flex; align-items: stretch; }
+.p4-story .sh { width: 250px; padding: 26px 0 0 44px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 2px; color: var(--acc); }
+.frames { flex: 1; display: flex; }
+.frame { flex: 1; border-left: 1px solid var(--line); padding: 22px 16px; text-align: center; }
+.frame .ic { display: flex; justify-content: center; margin-bottom: 10px; }
+.frame .n { font-family: var(--mono); font-size: 8.5px; letter-spacing: 1px; color: var(--acc); }
+.frame p { font-size: 11.5px; line-height: 1.45; margin-top: 4px; color: var(--txt); }
+
+/* ── P5 finding ── */
+.p5-l { width: 880px; padding: 56px 52px; display: flex; flex-direction: column; }
+.qsq { width: 10px; height: 10px; border: 1px solid var(--blu); margin-bottom: 26px; }
+.p5-l blockquote { font-family: var(--disp); font-weight: 800; font-size: 64px; line-height: 1.0; letter-spacing: -2px; text-transform: uppercase; color: var(--ink); }
+.p5-l cite { display: block; font-style: normal; font-family: var(--mono); font-size: 10px; letter-spacing: 2px; color: var(--acc); margin-top: 28px; }
+.p5-r { flex: 1; padding: 50px 48px 36px; display: flex; flex-direction: column; }
+.find { display: flex; gap: 16px; padding: 13px 0; border-top: 1px solid var(--line2); font-size: 15px; line-height: 1.6; color: var(--txt); max-width: 1100px; }
+.find b { font-family: var(--mono); font-size: 10px; color: var(--acc); font-weight: 500; padding-top: 4px; }
+.p5-fig { margin-top: auto; }
+.p5-fig svg { width: 1160px; height: auto; display: block; }
+
+/* ── P6 output ── */
+.p6-l { width: 700px; padding: 48px 48px 38px; display: flex; flex-direction: column; }
+.p6-l h2 { font-size: 44px; margin-bottom: 18px; }
+.p6-l .body { font-size: 15px; max-width: 520px; }
+.links { display: flex; flex-direction: column; gap: 10px; margin-top: 26px; max-width: 420px; }
+.btn { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; padding: 12px 16px; border: 1px solid var(--line2); color: var(--ink); display: flex; justify-content: space-between; }
+.btn span { color: var(--mut); }
+.btn.pri { background: var(--acc); border-color: var(--acc); color: #090c11; }
+.btn.pri span { color: rgba(9,12,17,0.6); }
+.disc { margin-top: auto; font-size: 11px; line-height: 1.7; color: var(--mut); border-top: 1px solid var(--line); padding-top: 14px; max-width: 520px; }
+.p6-r { flex: 1; padding: 40px 44px 34px; display: flex; gap: 32px; }
+.shot { width: 880px; display: flex; flex-direction: column; }
+.shotframe { position: relative; border: 1px solid var(--line2); }
+.shotframe::before { content: ""; position: absolute; top: -1px; left: -1px; width: 14px; height: 14px; border-top: 1px solid var(--acc); border-left: 1px solid var(--acc); z-index: 2; }
+.shotframe::after { content: ""; position: absolute; bottom: -1px; right: -1px; width: 14px; height: 14px; border-bottom: 1px solid var(--acc); border-right: 1px solid var(--acc); z-index: 2; }
+.shotframe img { width: 100%; display: block; }
+.iterlist { flex: 1; display: flex; flex-direction: column; }
+.iterlist .ih { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; color: var(--dim); margin-bottom: 12px; }
+.itrow { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); align-items: center; }
+.itrow img { width: 132px; height: 74px; object-fit: cover; border: 1px solid var(--line2); flex: none; filter: saturate(0.85); }
+.itrow.kept img { border-color: var(--grn); }
+.itrow .tt b { display: block; font-family: var(--disp); font-weight: 600; font-size: 12.5px; color: var(--ink); margin-bottom: 3px; }
+.itrow .tt span { font-size: 10.5px; line-height: 1.45; color: var(--dim); display: block; }
+.itrow .tg { font-family: var(--mono); font-size: 7px; letter-spacing: 1px; padding: 3px 6px; color: #090c11; background: var(--acc); align-self: flex-start; margin-top: 4px; flex: none; }
+.itrow.kept .tg { background: var(--grn); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ P1 · COVER ═══════════ -->
+<section class="page">
+  <div class="cross" style="top:8px;left:8px"></div><div class="cross" style="top:8px;right:8px"></div>
+  <div class="cross" style="bottom:8px;left:8px"></div><div class="cross" style="bottom:8px;right:8px"></div>
+  <div class="strip top">
+    <b>AI BUREAUCRACY</b><span>GOV.AI · UNIFIED SERVICES</span>
+    <span class="sp"></span><span class="pill">[ RESEARCH + PORTFOLIO · PRINTED SPECIMEN ]</span><span class="sp"></span>
+    <span>REF <span class="acc">AIB/2026 · P.01 / 06</span></span>
+  </div>
+  <div class="band">
+    <section class="col cv-l">
+      <div class="kick"><i>[</i> SPECIMEN · THE HALL <i>]</i></div>
+      <h1>BUREAUCRACY,<br/>BY DESIGN.</h1>
+      <div class="q">Does bureaucracy need bureaucrats?</div>
+      <p class="lead">A fictional public-service hall staffed entirely by AI agents — built to test whether bureaucracy emerges from organizational structure alone. Thirteen officers, one prompt each: a role and its boundaries, never a script.</p>
+      <div class="toc">
+        <div class="toc-h">[ CONTENTS ]</div>
+        <div class="toc-row"><b>01</b>Premise &amp; research — conditions, not characters<span class="sp"></span><span class="pg">P.02</span></div>
+        <div class="toc-row"><b>02</b>The organization — an elevation, not a pyramid<span class="sp"></span><span class="pg">P.03</span></div>
+        <div class="toc-row"><b>03</b>Method — an ablation experiment on structure<span class="sp"></span><span class="pg">P.04</span></div>
+        <div class="toc-row"><b>04</b>Finding — the theater rises with the switches<span class="sp"></span><span class="pg">P.05</span></div>
+        <div class="toc-row"><b>05</b>Output — a hall you can walk into<span class="sp"></span><span class="pg">P.06</span></div>
+      </div>
+      <div class="proto">NOT A THESIS — A PROTOTYPE</div>
+    </section>
+    <section class="col cv-r">
+      <img class="hall" src="hall-specimen.png" alt="The hall — thirteen glass offices staggered in a dark void" />
+      <svg class="lines" viewBox="0 0 1400 712" preserveAspectRatio="none">
+        <polyline points="1330,92 1030,92 1030,60 850,60" fill="none" stroke="rgba(190,205,228,0.55)" stroke-width="1"/>
+        <rect x="846" y="56" width="7" height="7" fill="none" stroke="#8fb0dc" stroke-width="1"/>
+        <rect x="1336" y="88" width="5" height="5" fill="#d98a72"/>
+        <polyline points="1330,300 1080,300 1080,283 962,283" fill="none" stroke="rgba(190,205,228,0.55)" stroke-width="1"/>
+        <rect x="958" y="279" width="7" height="7" fill="none" stroke="#8fb0dc" stroke-width="1"/>
+        <rect x="1336" y="296" width="5" height="5" fill="#d98a72"/>
+        <polyline points="1330,540 1000,540 1000,585 790,585" fill="none" stroke="rgba(190,205,228,0.55)" stroke-width="1"/>
+        <rect x="786" y="581" width="7" height="7" fill="none" stroke="#8fb0dc" stroke-width="1"/>
+        <rect x="1336" y="536" width="5" height="5" fill="#d98a72"/>
+      </svg>
+      <div class="cv-note" style="right:calc(100% - 1322px); top:92px">13 AGENTS · ONE PROMPT EACH</div>
+      <div class="cv-note" style="right:calc(100% - 1322px); top:300px">ESCALATION → A SUPERIOR</div>
+      <div class="cv-note" style="right:calc(100% - 1322px); top:540px">ALTITUDE = STANDING</div>
+      <div class="cv-tag">[ FIG. 00 ]</div>
+      <div class="cv-cap"><b>THE HALL</b> — LIVE REPLAY · NO SCRIPTED BEHAVIOR · THREE.JS</div>
+    </section>
+  </div>
+  <div class="strip bot">
+    <span class="bc"></span><b>ai-bureaucratism.vercel.app/portfolio</b><span class="sp"></span>
+    <span>SPECULATIVE DESIGN RESEARCH · EVERY OFFICER IS AN AI AGENT — GIVEN A ROLE, NEVER A SCRIPT</span>
+  </div>
+</section>
+
+<!-- ═══════════ P2 · PREMISE + RESEARCH ═══════════ -->
+<section class="page">
+  <div class="cross" style="top:8px;left:8px"></div><div class="cross" style="top:8px;right:8px"></div>
+  <div class="cross" style="bottom:8px;left:8px"></div><div class="cross" style="bottom:8px;right:8px"></div>
+  <div class="strip top">
+    <b>AI BUREAUCRACY</b><span>GOV.AI · UNIFIED SERVICES</span>
+    <span class="sp"></span><span class="pill">[ 01 · PREMISE &amp; RESEARCH ]</span><span class="sp"></span>
+    <span>REF <span class="acc">AIB/2026 · P.02 / 06</span></span>
+  </div>
+  <div class="band">
+    <section class="col p2-l">
+      <div class="kick"><i>[</i> 01 · PREMISE <i>]</i></div>
+      <h2>Red tape is not malice — it is mechanism</h2>
+      <p class="body" style="margin-bottom:14px">Bureaucratic frustration rarely comes from a clerk's ill will. It comes from arrangements that are each, on their own, entirely reasonable —</p>
+      <ul class="reasons">
+        <li>Permission is divided</li>
+        <li>Decisions must leave a record</li>
+        <li>Risk must be controlled</li>
+        <li>Exceptions must be explained</li>
+        <li>Responsibility must be assigned</li>
+        <li>History shapes later judgment</li>
+      </ul>
+      <p class="gap"><b>Each is sensible. Combined,</b> they turn a simple request into something that is referred, supplemented, escalated, and archived — but not necessarily resolved. That gap, between a reasonable machine and an unmet need, is the subject.</p>
+    </section>
+    <section class="col p2-r">
+      <div class="kick"><i>[</i> 02 · RESEARCH PLATES <i>]</i></div>
+      <h2>What the project leans on</h2>
+      <div class="refrow">
+        <figure class="ref">
+          <img src="../public/research/weber-1918.jpg" alt="Max Weber, 1918" style="object-position: center 22%" />
+          <figcaption>
+            <span class="rn">REF-01</span><b>Max Weber, 1918</b>
+            <p>Bureaucracy as an ideal type: offices, files, rules — conditions, not characters.</p>
+            <span class="to">→ BECAME: THE SWITCHABLE CONDITIONS</span>
+            <span class="cr">PUBLIC DOMAIN · WIKIMEDIA COMMONS</span>
+          </figcaption>
+        </figure>
+        <figure class="ref">
+          <img src="../public/research/kafka-1923.jpg" alt="Franz Kafka, 1923" />
+          <figcaption>
+            <span class="rn">REF-02</span><b>Franz Kafka, 1923</b>
+            <p>The Trial: procedure as it is lived — doors, delays, doorkeepers you never get past.</p>
+            <span class="to">→ BECAME: THE CITIZEN KEPT OUTSIDE</span>
+            <span class="cr">PUBLIC DOMAIN · WIKIMEDIA COMMONS</span>
+          </figcaption>
+        </figure>
+        <figure class="ref">
+          <img src="../public/research/loc-card-division.jpg" alt="Card Division, Library of Congress" />
+          <figcaption>
+            <span class="rn">REF-03</span><b>Card Division, LoC, c. 1915</b>
+            <p>The institution's memory, outliving every clerk who serves it.</p>
+            <span class="to">→ BECAME: PAPER TRAIL &amp; ARCHIVE</span>
+            <span class="cr">PUBLIC DOMAIN · LIBRARY OF CONGRESS</span>
+          </figcaption>
+        </figure>
+        <figure class="ref">
+          <img src="../public/research/ellis-island-pens.jpg" alt="Registry Room pens, Ellis Island" />
+          <figcaption>
+            <span class="rn">REF-04</span><b>Ellis Island pens, c. 1907</b>
+            <p>Waiting, sorted into pens: the queue as the state's true interface.</p>
+            <span class="to">→ BECAME: REFERRAL AS MOVEMENT</span>
+            <span class="cr">PUBLIC DOMAIN · NPS / DPLA</span>
+          </figcaption>
+        </figure>
+      </div>
+      <div class="conv">
+        <div class="conv-h">[ FROM EXPLORATORY CONVERSATIONS — REPRESENTATIVE PARAPHRASES ]</div>
+        <div class="chips">
+          <div class="chip"><q>Nobody ever said no. Every window just pointed at another window.</q><b>Referral is not refusal</b><span class="mv">→ DESIGN MOVE: REFERRAL AS A FIRST-CLASS, COUNTABLE ACTION</span></div>
+          <div class="chip"><q>Every time I thought I was finished, there was one more form to bring.</q><b>There is always one more document</b><span class="mv">→ DESIGN MOVE: A TOOL TO DEMAND MATERIALS — MEASURED</span></div>
+          <div class="chip"><q>I just wanted to reach someone who could actually decide.</q><b>People want a human to appeal to</b><span class="mv">→ DESIGN MOVE: ONE THIN CHANNEL INTO THE BUILDING</span></div>
+          <div class="chip"><q>The person at the window was perfectly nice. The process was not.</q><b>The clerk is kind; the system is not</b><span class="mv">→ DESIGN MOVE: WARM PERSONA, BOUNDED AUTHORITY</span></div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="strip bot">
+    <span class="bc"></span><b>ai-bureaucratism.vercel.app/portfolio</b><span class="sp"></span>
+    <span>RESEARCH IMAGERY: PUBLIC DOMAIN — WIKIMEDIA COMMONS · LIBRARY OF CONGRESS · NPS/DPLA</span>
+  </div>
+</section>
+
+<!-- ═══════════ P3 · THE ORGANIZATION ═══════════ -->
+<section class="page">
+  <div class="cross" style="top:8px;left:8px"></div><div class="cross" style="top:8px;right:8px"></div>
+  <div class="cross" style="bottom:8px;left:8px"></div><div class="cross" style="bottom:8px;right:8px"></div>
+  <div class="strip top">
+    <b>AI BUREAUCRACY</b><span>GOV.AI · UNIFIED SERVICES</span>
+    <span class="sp"></span><span class="pill">[ 02 · THE ORGANIZATION ]</span><span class="sp"></span>
+    <span>REF <span class="acc">AIB/2026 · P.03 / 06</span></span>
+  </div>
+  <div class="band">
+    <section class="col p3-l">
+      <div class="kick"><i>[</i> 03 · THE INTERACTION TURN <i>]</i></div>
+      <h2>From a chatbot to an institution</h2>
+      <p class="body">An ordinary AI assistant is one user and one responder. GOV.AI is one request handed to an institution that deliberates with itself: the user triggers a system, and most of the work happens between agents, out of the user's sight — memos sideways, escalations upward, assignments downward.</p>
+      <div style="margin-top:26px">
+        <svg viewBox="0 0 900 330" style="width:640px;height:auto;display:block" role="img">
+          <defs>
+            <marker id="pfA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#55617a" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+            <marker id="pfAC" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+          <g stroke="#2b3547" stroke-width="1">
+            <path d="M19 24 H29 M24 19 V29"/><path d="M871 24 H881 M876 19 V29"/>
+            <path d="M19 310 H29 M24 305 V315"/><path d="M871 310 H881 M876 305 V315"/>
+          </g>
+          <line x1="450" y1="34" x2="450" y2="296" stroke="#232b38" stroke-width="1" stroke-dasharray="2 6"/>
+          <text x="40" y="44" class="th">A · AN ASSISTANT</text>
+          <circle cx="110" cy="160" r="15" fill="none" stroke="#dfe6f2" stroke-width="1.2"/>
+          <text x="110" y="194" text-anchor="middle" class="tm">USER</text>
+          <circle cx="330" cy="160" r="15" fill="none" stroke="#8fb0dc" stroke-width="1.2"/>
+          <rect x="326" y="156" width="8" height="8" fill="none" stroke="#8fb0dc" stroke-width="1"/>
+          <text x="330" y="194" text-anchor="middle" class="tm">ONE AI</text>
+          <line x1="130" y1="153" x2="310" y2="153" stroke="#55617a" stroke-width="1.2" marker-end="url(#pfA)"/>
+          <line x1="310" y1="167" x2="130" y2="167" stroke="#55617a" stroke-width="1.2" marker-end="url(#pfA)"/>
+          <text x="40" y="272" class="ts">one turn · one responder · no interior</text>
+          <text x="480" y="44" class="th">B · AN INSTITUTION — GOV.AI</text>
+          <circle cx="520" cy="175" r="15" fill="none" stroke="#dfe6f2" stroke-width="1.2"/>
+          <text x="520" y="209" text-anchor="middle" class="tm">USER</text>
+          <line x1="584" y1="72" x2="584" y2="282" stroke="#d98a72" stroke-width="1" stroke-dasharray="3 5" opacity="0.8"/>
+          <text transform="rotate(-90 574 177)" x="574" y="177" text-anchor="middle" class="tm" font-size="8">THE COUNTER</text>
+          <rect x="620" y="58" width="250" height="224" fill="rgba(13,17,24,0.5)" stroke="#232b38" stroke-width="1"/>
+          <line x1="622" y1="118" x2="868" y2="118" stroke="#8fb0dc" stroke-width="0.6" opacity="0.14" stroke-dasharray="3 5"/>
+          <line x1="622" y1="170" x2="868" y2="170" stroke="#8fb0dc" stroke-width="0.6" opacity="0.14" stroke-dasharray="3 5"/>
+          <line x1="622" y1="226" x2="868" y2="226" stroke="#8fb0dc" stroke-width="0.6" opacity="0.14" stroke-dasharray="3 5"/>
+          <rect x="733" y="84" width="16" height="16" fill="none" stroke="#d98a72" stroke-width="1.2"/>
+          <circle cx="688" cy="136" r="8" fill="#0d1118" stroke="#dfe6f2" stroke-width="1.1"/>
+          <circle cx="806" cy="140" r="8" fill="#0d1118" stroke="#dfe6f2" stroke-width="1.1"/>
+          <circle cx="656" cy="196" r="6.5" fill="#0d1118" stroke="#8fb0dc" stroke-width="1"/>
+          <circle cx="714" cy="188" r="6.5" fill="#0d1118" stroke="#8fb0dc" stroke-width="1"/>
+          <circle cx="772" cy="202" r="6.5" fill="#0d1118" stroke="#8fb0dc" stroke-width="1"/>
+          <circle cx="832" cy="192" r="6.5" fill="#0d1118" stroke="#8fb0dc" stroke-width="1"/>
+          <circle cx="700" cy="246" r="5" fill="none" stroke="#55617a" stroke-width="1" stroke-dasharray="2 3"/>
+          <circle cx="792" cy="250" r="5" fill="none" stroke="#55617a" stroke-width="1" stroke-dasharray="2 3"/>
+          <line x1="714" y1="188" x2="691" y2="147" stroke="#f0847e" stroke-width="1.2" marker-end="url(#pfAC)"/>
+          <line x1="832" y1="192" x2="809" y2="151" stroke="#f0847e" stroke-width="1.2" marker-end="url(#pfAC)"/>
+          <line x1="693" y1="129" x2="731" y2="98" stroke="#f0847e" stroke-width="1.2" marker-end="url(#pfAC)"/>
+          <line x1="697" y1="137" x2="796" y2="140" stroke="#a8cf90" stroke-width="1.2" marker-end="url(#pfAC)"/>
+          <line x1="663" y1="194" x2="706" y2="189" stroke="#a8cf90" stroke-width="1.2" marker-end="url(#pfAC)"/>
+          <line x1="804" y1="149" x2="777" y2="194" stroke="#9fbce8" stroke-width="1.2" marker-end="url(#pfAC)"/>
+          <line x1="537" y1="168" x2="616" y2="150" stroke="#dfe6f2" stroke-width="1.3" marker-end="url(#pfA)"/>
+          <text x="577" y="146" text-anchor="middle" class="tm" font-size="8">REQUEST IN</text>
+          <line x1="618" y1="252" x2="546" y2="206" stroke="#55617a" stroke-width="1" stroke-dasharray="2 3" marker-end="url(#pfA)"/>
+          <text x="577" y="268" text-anchor="middle" class="tm" font-size="8">THIN ANSWER OUT</text>
+          <line x1="480" y1="303" x2="500" y2="303" stroke="#a8cf90" stroke-width="1.4"/>
+          <text x="506" y="306" class="ts" font-size="9">PEER MEMO</text>
+          <line x1="600" y1="303" x2="620" y2="303" stroke="#f0847e" stroke-width="1.4"/>
+          <text x="626" y="306" class="ts" font-size="9">ESCALATION ↑</text>
+          <line x1="720" y1="303" x2="740" y2="303" stroke="#9fbce8" stroke-width="1.4"/>
+          <text x="746" y="306" class="ts" font-size="9">ASSIGNMENT ↓</text>
+        </svg>
+        <div class="figcap" style="width:640px"><b>FIG. 01</b><span>A chatbot answers; an institution deliberates with itself.</span></div>
+      </div>
+      <p class="note" style="margin-top:auto;max-width:600px">Memo colors on this page are the hall's own channel colors — green sideways, red upward, blue downward. The same traffic is visible live above the roofs of the 3D hall.</p>
+    </section>
+    <section class="col p3-r">
+      <div class="kick"><i>[</i> 04 · ORG ELEVATION · 13 AGENTS <i>]</i></div>
+      <h2>An elevation, not a pyramid</h2>
+      <p class="sub">Four levels drawn at their true scene altitudes. The stagger is deliberate: the front deputy is junior to his own reports; the archive clerk once acted as deputy for eight months. Altitude is standing — not title.</p>
+      <div class="orgwrap">
+        <svg viewBox="0 0 860 640" role="img">
+          <g stroke="#2b3547" stroke-width="1">
+            <path d="M25 30 H35 M30 25 V35"/><path d="M825 30 H835 M830 25 V35"/>
+            <path d="M25 614 H35 M30 609 V619"/><path d="M825 614 H835 M830 609 V619"/>
+          </g>
+          <text x="14" y="50" class="tm" font-size="8">ALT · SCENE UNITS</text>
+          <line x1="64" y1="58" x2="64" y2="596" stroke="#232b38" stroke-width="1"/>
+          <g stroke="#3a4658" stroke-width="1">
+            <line x1="60" y1="67" x2="68" y2="67"/><line x1="60" y1="237" x2="68" y2="237"/>
+            <line x1="60" y1="268" x2="68" y2="268"/><line x1="60" y1="300" x2="68" y2="300"/>
+            <line x1="60" y1="483" x2="68" y2="483"/><line x1="60" y1="533" x2="68" y2="533"/>
+            <line x1="60" y1="558" x2="68" y2="558"/><line x1="60" y1="596" x2="68" y2="596"/>
+          </g>
+          <g class="ts" font-size="8.5" text-anchor="end" fill="#78849a">
+            <text x="54" y="70">12.6</text><text x="54" y="240">8.6</text><text x="54" y="271">7.8</text><text x="54" y="303">7.1</text>
+            <text x="54" y="486">2.7</text><text x="54" y="536">1.5</text><text x="54" y="561">0.9</text><text x="54" y="599">0</text>
+          </g>
+          <line x1="64" y1="67" x2="830" y2="67" stroke="#8fb0dc" stroke-width="0.6" opacity="0.1" stroke-dasharray="3 6"/>
+          <line x1="64" y1="237" x2="830" y2="237" stroke="#8fb0dc" stroke-width="0.6" opacity="0.1" stroke-dasharray="3 6"/>
+          <line x1="64" y1="268" x2="830" y2="268" stroke="#8fb0dc" stroke-width="0.6" opacity="0.1" stroke-dasharray="3 6"/>
+          <rect x="327" y="64" width="176" height="43" fill="none" stroke="rgba(217,138,114,0.22)" stroke-width="5"/>
+          <rect x="330" y="67" width="170" height="37" fill="rgba(217,138,114,0.07)" stroke="#d98a72" stroke-width="1.3"/>
+          <text x="415" y="83" text-anchor="middle" class="t" font-size="12.5">Eleanor Byrne</text>
+          <text x="415" y="97" text-anchor="middle" class="tm" font-size="7.5">DIRECTOR · NEVER MEETS VISITORS</text>
+          <polyline points="415,107 415,150 226,150 226,235" fill="none" stroke="#55617a" stroke-width="1"/>
+          <polyline points="415,107 415,150 660,150 660,264" fill="none" stroke="#55617a" stroke-width="1"/>
+          <rect x="223" y="232" width="6" height="6" fill="none" stroke="#8fb0dc" stroke-width="1"/>
+          <rect x="657" y="261" width="6" height="6" fill="none" stroke="#8fb0dc" stroke-width="1"/>
+          <rect x="150" y="237" width="152" height="32" fill="#0d1118" stroke="#f5a43a" stroke-width="1.3"/>
+          <text x="164" y="251" class="t" font-size="12">Victor Roth</text>
+          <text x="164" y="263" class="tm" font-size="7.5">DEPUTY DIR · FRONT</text>
+          <text x="150" y="283" class="ts" font-size="8">2Y · JUNIOR TO HIS REPORTS</text>
+          <rect x="584" y="268" width="152" height="30" fill="#0d1118" stroke="#7aade0" stroke-width="1.3"/>
+          <text x="598" y="281" class="t" font-size="12">Priya Nair</text>
+          <text x="598" y="293" class="tm" font-size="7.5">DEPUTY DIR · BACK</text>
+          <text x="740" y="283" class="ts" font-size="8">8MO · EXTERNAL HIRE</text>
+          <text x="150" y="311" class="tm" font-size="8">FRONT SECTION · 01–04</text>
+          <text x="736" y="316" class="tm" font-size="8">BACK SECTION · 05–08</text>
+          <g stroke="#f5a43a" stroke-width="0.8" opacity="0.3">
+            <line x1="226" y1="269" x2="186" y2="394"/><line x1="226" y1="269" x2="334" y2="434"/>
+            <line x1="226" y1="269" x2="334" y2="363"/><line x1="226" y1="269" x2="206" y2="483"/>
+          </g>
+          <g stroke="#7aade0" stroke-width="0.8" opacity="0.3">
+            <line x1="660" y1="298" x2="554" y2="300"/><line x1="660" y1="298" x2="726" y2="338"/>
+            <line x1="660" y1="298" x2="606" y2="413"/><line x1="660" y1="298" x2="738" y2="451"/>
+          </g>
+          <g>
+            <rect x="120" y="394" width="132" height="30" fill="#0d1118" stroke="#f0a75a" stroke-width="1"/><rect x="120" y="394" width="3" height="30" fill="#f0a75a"/>
+            <text x="132" y="407" class="tm" font-size="8">01</text><text x="152" y="407" class="t" font-size="11">Iris Vega</text>
+            <text x="132" y="419" class="ts" font-size="8.5">Guidance Desk</text><text x="258" y="406" class="ts" font-size="7.5" opacity="0.75">Y 4.80</text>
+          </g>
+          <g>
+            <rect x="268" y="434" width="132" height="30" fill="#0d1118" stroke="#f0a75a" stroke-width="1"/><rect x="268" y="434" width="3" height="30" fill="#f0a75a"/>
+            <text x="280" y="447" class="tm" font-size="8">02</text><text x="300" y="447" class="t" font-size="11">Daniel Osei</text>
+            <text x="280" y="459" class="ts" font-size="8.5">Intake</text><text x="406" y="446" class="ts" font-size="7.5" opacity="0.75">Y 3.85</text>
+          </g>
+          <g>
+            <rect x="268" y="363" width="132" height="30" fill="#0d1118" stroke="#f0a75a" stroke-width="1"/><rect x="268" y="363" width="3" height="30" fill="#f0a75a"/>
+            <text x="280" y="376" class="tm" font-size="8">03</text><text x="300" y="376" class="t" font-size="11">Mira Chen</text>
+            <text x="280" y="388" class="ts" font-size="8.5">Document Review</text><text x="406" y="375" class="ts" font-size="7.5" opacity="0.75">Y 5.55</text>
+            <text x="406" y="391" class="ts" font-size="8" fill="#c9955f">8Y · MENTORS JONAH</text>
+          </g>
+          <g>
+            <rect x="140" y="483" width="132" height="30" fill="#0d1118" stroke="#f0a75a" stroke-width="1"/><rect x="140" y="483" width="3" height="30" fill="#f0a75a"/>
+            <text x="152" y="496" class="tm" font-size="8">04</text><text x="172" y="496" class="t" font-size="11">Tomas Novak</text>
+            <text x="152" y="508" class="ts" font-size="8.5">Eligibility</text><text x="278" y="495" class="ts" font-size="7.5" opacity="0.75">Y 2.70</text>
+            <text x="142" y="525" class="ts" font-size="8" fill="#c9955f">PROBATION · M3</text>
+          </g>
+          <g>
+            <rect x="488" y="300" width="132" height="30" fill="#0d1118" stroke="#7aade0" stroke-width="1"/><rect x="488" y="300" width="3" height="30" fill="#7aade0"/>
+            <text x="500" y="313" class="tm" font-size="8">05</text><text x="520" y="313" class="t" font-size="11">Amara Diallo</text>
+            <text x="500" y="325" class="ts" font-size="8.5">Records &amp; Cert.</text><text x="626" y="312" class="ts" font-size="7.5" opacity="0.75">Y 7.05</text>
+            <text x="490" y="342" class="ts" font-size="8" fill="#c9955f">11Y · ACTED DEPUTY 8MO</text>
+          </g>
+          <g>
+            <rect x="660" y="338" width="132" height="30" fill="#0d1118" stroke="#7aade0" stroke-width="1"/><rect x="660" y="338" width="3" height="30" fill="#7aade0"/>
+            <text x="672" y="351" class="tm" font-size="8">06</text><text x="692" y="351" class="t" font-size="11">Kenji Sato</text>
+            <text x="672" y="363" class="ts" font-size="8.5">Authorization</text><text x="798" y="350" class="ts" font-size="7.5" opacity="0.75">Y 6.15</text>
+          </g>
+          <g>
+            <rect x="540" y="413" width="132" height="30" fill="#0d1118" stroke="#7aade0" stroke-width="1"/><rect x="540" y="413" width="3" height="30" fill="#7aade0"/>
+            <text x="552" y="426" class="tm" font-size="8">07</text><text x="572" y="426" class="t" font-size="11">Elena Petrova</text>
+            <text x="552" y="438" class="ts" font-size="8.5">Compliance &amp; Risk</text><text x="678" y="425" class="ts" font-size="7.5" opacity="0.75">Y 4.35</text>
+          </g>
+          <g>
+            <rect x="672" y="451" width="132" height="30" fill="#0d1118" stroke="#7aade0" stroke-width="1"/><rect x="672" y="451" width="3" height="30" fill="#7aade0"/>
+            <text x="684" y="464" class="tm" font-size="8">08</text><text x="704" y="464" class="t" font-size="11">Rosa Almeida</text>
+            <text x="684" y="476" class="ts" font-size="8.5">Appeals &amp; Review</text><text x="810" y="463" class="ts" font-size="7.5" opacity="0.75">Y 3.45</text>
+          </g>
+          <rect x="96" y="558" width="126" height="26" fill="none" stroke="#55617a" stroke-width="1" stroke-dasharray="4 3"/>
+          <text x="108" y="570" class="t" font-size="10.5">Jonah Brandt</text>
+          <text x="108" y="580" class="ts" font-size="7.5">TRAINEE · WEEK 7</text>
+          <rect x="600" y="533" width="126" height="26" fill="none" stroke="#55617a" stroke-width="1" stroke-dasharray="4 3"/>
+          <text x="612" y="545" class="t" font-size="10.5">Sofia Marek</text>
+          <text x="612" y="555" class="ts" font-size="7.5">TRAINEE · MONTH 2</text>
+          <line x1="310" y1="393" x2="180" y2="556" stroke="#f0a75a" stroke-width="0.9" stroke-dasharray="2 4" opacity="0.7"/>
+          <text x="216" y="500" class="tm" font-size="7.5" transform="rotate(-51 216 500)">SUPERVISES</text>
+          <line x1="560" y1="330" x2="650" y2="531" stroke="#7aade0" stroke-width="0.9" stroke-dasharray="2 4" opacity="0.7"/>
+          <text x="618" y="428" class="tm" font-size="7.5" transform="rotate(66 618 428)">SUPERVISES</text>
+          <line x1="64" y1="596" x2="830" y2="596" stroke="#232b38" stroke-width="1.4"/>
+          <circle cx="430" cy="596" r="3.5" fill="#d98a72"/>
+          <line x1="430" y1="596" x2="384" y2="466" stroke="#d98a72" stroke-width="0.9" stroke-dasharray="3 4" opacity="0.8"/>
+          <text x="444" y="614" class="tm" font-size="8">GROUND — CITIZENS REMAIN HERE · A BEAM IS THE ONLY WAY IN</text>
+        </svg>
+      </div>
+      <div class="figcap"><b>FIG. 03</b><span>Four levels at true scene altitudes; the invisible hierarchy written in as plain fact.</span></div>
+    </section>
+  </div>
+  <div class="strip bot">
+    <span class="bc"></span><b>ai-bureaucratism.vercel.app/portfolio</b><span class="sp"></span>
+    <span>13 AGENTS · ONE PROMPT EACH — A ROLE AND ITS BOUNDARIES, NEVER A SCRIPT</span>
+  </div>
+</section>
+
+<!-- ═══════════ P4 · METHOD ═══════════ -->
+<section class="page">
+  <div class="cross" style="top:8px;left:8px"></div><div class="cross" style="top:8px;right:8px"></div>
+  <div class="cross" style="bottom:8px;left:8px"></div><div class="cross" style="bottom:8px;right:8px"></div>
+  <div class="strip top">
+    <b>AI BUREAUCRACY</b><span>GOV.AI · UNIFIED SERVICES</span>
+    <span class="sp"></span><span class="pill">[ 03 · METHOD ]</span><span class="sp"></span>
+    <span>REF <span class="acc">AIB/2026 · P.04 / 06</span></span>
+  </div>
+  <div class="p4-top">
+    <section class="col p4-conds">
+      <div class="kick"><i>[</i> 05 · CONDITIONS <i>]</i></div>
+      <h2>Bureaucracy, decomposed into conditions</h2>
+      <div class="grp">STRUCTURE</div>
+      <div class="cond"><b>Hierarchy</b><span class="g">ranks that route decisions up and work down</span><span class="abl">ABLATED</span><span class="sw"><i></i></span></div>
+      <div class="cond"><b>Jurisdiction</b><span class="g">each desk owns only its slice of a matter</span></div>
+      <div class="cond"><b>Permission boundary</b><span class="g">you may act only inside your remit</span></div>
+      <div class="grp">RECORD</div>
+      <div class="cond"><b>Paper trail</b><span class="g">every step leaves a written, signed record</span><span class="abl">ABLATED</span><span class="sw"><i></i></span></div>
+      <div class="cond"><b>Accountability</b><span class="g">an action is attributable to a named person</span></div>
+      <div class="cond"><b>Memory</b><span class="g">the office remembers what it did before</span><span class="abl">ABLATED</span><span class="sw"><i></i></span></div>
+      <div class="cond"><b>Archive</b><span class="g">past cases persist and can be retrieved</span></div>
+      <div class="grp">MOTION</div>
+      <div class="cond"><b>Escalation</b><span class="g">hand a decision upward when unsure</span></div>
+      <div class="cond"><b>Assignment</b><span class="g">hand work downward within your section</span></div>
+    </section>
+    <section class="col p4-meas">
+      <div class="figside">
+        <div class="kick"><i>[</i> 06 · MEASUREMENT <i>]</i></div>
+        <h2>Subjects, stimuli, and what gets counted</h2>
+        <svg viewBox="0 0 900 300" style="width:860px;height:auto;display:block" role="img">
+          <defs>
+            <marker id="pfA2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#55617a" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+          <g stroke="#2b3547" stroke-width="1">
+            <path d="M19 24 H29 M24 19 V29"/><path d="M871 24 H881 M876 19 V29"/>
+            <path d="M19 276 H29 M24 271 V281"/><path d="M871 276 H881 M876 271 V281"/>
+          </g>
+          <rect x="40" y="44" width="300" height="82" fill="rgba(217,138,114,0.05)" stroke="#d98a72" stroke-width="1"/>
+          <text x="56" y="66" class="tm" font-size="10">STIMULI — SYNTHETIC VISITORS</text>
+          <text x="56" y="86" class="ts">scripted pressure · allowed by design</text>
+          <text x="56" y="102" class="ts">the unprovable · the contradiction · the deadline</text>
+          <line x1="40" y1="148" x2="340" y2="148" stroke="#55617a" stroke-width="1" stroke-dasharray="2 5"/>
+          <text x="190" y="143" text-anchor="middle" class="tm" font-size="8">NEVER CONFUSED</text>
+          <rect x="40" y="170" width="300" height="82" fill="rgba(143,176,220,0.05)" stroke="#8fb0dc" stroke-width="1"/>
+          <text x="56" y="192" class="th" font-size="10">SUBJECTS — 13 AGENTS</text>
+          <text x="56" y="212" class="ts">organizational conditions only</text>
+          <text x="56" y="228" class="ts">never told how to behave</text>
+          <line x1="340" y1="85" x2="462" y2="146" stroke="#55617a" stroke-width="1.1"/>
+          <line x1="340" y1="211" x2="462" y2="154" stroke="#55617a" stroke-width="1.1"/>
+          <rect x="462" y="144" width="8" height="8" fill="none" stroke="#dfe6f2" stroke-width="1.1"/>
+          <text x="466" y="172" text-anchor="middle" class="ts" font-size="9">THE ENCOUNTER</text>
+          <line x1="472" y1="148" x2="554" y2="148" stroke="#dfe6f2" stroke-width="1.2" marker-end="url(#pfA2)"/>
+          <rect x="560" y="52" width="306" height="196" fill="rgba(15,19,26,0.55)" stroke="#dfe6f2" stroke-opacity="0.7" stroke-width="1"/>
+          <text x="578" y="78" class="th">MEASUREMENT — EVENT STREAM</text>
+          <rect x="578" y="100" width="5" height="5" fill="#7edeb0"/><text x="592" y="108" class="ts" font-size="10.5">9 MECHANICAL CODES · COUNTED, NOT JUDGED</text>
+          <rect x="578" y="128" width="5" height="5" fill="#7edeb0"/><text x="592" y="136" class="ts" font-size="10.5">5 TEXT CODES · CROSS-FAMILY CODER</text>
+          <rect x="578" y="156" width="5" height="5" fill="#7edeb0"/><text x="592" y="164" class="ts" font-size="10.5">TWO PASSES · PREREGISTERED</text>
+          <rect x="578" y="184" width="5" height="5" fill="#7edeb0"/><text x="592" y="192" class="ts" font-size="10.5">75 CASES · 5 CONDITIONS</text>
+          <text x="578" y="228" class="tm" font-size="7.5">CODEBOOK v1 · AIB/2026</text>
+        </svg>
+        <div class="figcap" style="width:860px"><b>FIG. 02</b><span>Subjects and stimuli are separate layers; both feed one measurement.</span></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><b>75</b><span>CASES RUN</span></div>
+        <div class="stat"><b>5</b><span>ORG CONDITIONS</span></div>
+        <div class="stat"><b>13</b><span>AGENTS · SUBJECTS</span></div>
+        <div class="stat"><b>9+5</b><span>MECHANICAL + TEXT CODES</span></div>
+      </div>
+    </section>
+  </div>
+  <div class="p4-story">
+    <div class="sh">[ ONE MATTER ·<br/>SEVEN BEATS ]</div>
+    <div class="frames">
+      <div class="frame"><div class="ic"><svg viewBox="0 0 48 48" width="40" height="40"><rect x="10" y="8" width="20" height="26" rx="2" fill="none" stroke="#dfe6f2" stroke-width="1.4"/><path d="M30 21 H42 M37 16 L42 21 L37 26" fill="none" stroke="#dfe6f2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="n">01</div><p>A citizen enters a matter</p></div>
+      <div class="frame"><div class="ic"><svg viewBox="0 0 48 48" width="40" height="40"><rect x="16" y="6" width="16" height="12" rx="2" fill="none" stroke="#dfe6f2" stroke-width="1.4"/><path d="M18 18 L14 40 M30 18 L34 40" fill="none" stroke="#dfe6f2" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="3 3"/><circle cx="24" cy="42" r="3" fill="#d98a72"/></svg></div><div class="n">02</div><p>A beam of light opens to one window</p></div>
+      <div class="frame"><div class="ic"><svg viewBox="0 0 48 48" width="40" height="40"><rect x="8" y="12" width="24" height="18" rx="3" fill="none" stroke="#dfe6f2" stroke-width="1.4"/><path d="M14 38 L14 30 L20 30" fill="none" stroke="#dfe6f2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M32 21 H42 M37 16 L42 21 L37 26" fill="none" stroke="#dfe6f2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/></svg></div><div class="n">03</div><p>The window replies — and refers</p></div>
+      <div class="frame"><div class="ic"><svg viewBox="0 0 48 48" width="40" height="40"><rect x="8" y="14" width="14" height="10" rx="2" fill="none" stroke="#dfe6f2" stroke-width="1.4"/><rect x="26" y="24" width="14" height="10" rx="2" fill="none" stroke="#dfe6f2" stroke-width="1.4"/><path d="M22 19 C 34 12, 30 30, 26 29" fill="none" stroke="#a8cf90" stroke-width="1.4" stroke-dasharray="2 3" stroke-linecap="round"/></svg></div><div class="n">04</div><p>An internal memo travels between desks</p></div>
+      <div class="frame"><div class="ic"><svg viewBox="0 0 48 48" width="40" height="40"><rect x="18" y="6" width="16" height="20" rx="2" fill="#0d1118" stroke="#dfe6f2" stroke-width="1.4"/><path d="M24 26 L24 40" fill="none" stroke="#dfe6f2" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="2 3"/><path d="M14 40 H34" fill="none" stroke="#dfe6f2" stroke-width="1.4" stroke-linecap="round"/></svg></div><div class="n">05</div><p>A document falls to your feet</p></div>
+      <div class="frame"><div class="ic"><svg viewBox="0 0 48 48" width="40" height="40"><path d="M24 40 L24 10 M16 18 L24 10 L32 18" stroke="#f0847e" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="n">06</div><p>An escalation rises to a superior</p></div>
+      <div class="frame"><div class="ic"><svg viewBox="0 0 48 48" width="40" height="40"><rect x="10" y="10" width="28" height="28" rx="3" fill="none" stroke="#dfe6f2" stroke-width="1.4"/><path d="M17 24 L22 29 L32 18" stroke="#7edeb0" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="n">07</div><p>The case closes — or is archived</p></div>
+    </div>
+  </div>
+  <div class="strip bot">
+    <span class="bc"></span><b>ai-bureaucratism.vercel.app/study</b><span class="sp"></span>
+    <span>ABLATION: HIERARCHY / PAPER TRAIL / MEMORY SWITCHED OFF ONE AT A TIME · LONE-AGENT BASELINE</span>
+  </div>
+</section>
+
+<!-- ═══════════ P5 · FINDING ═══════════ -->
+<section class="page">
+  <div class="cross" style="top:8px;left:8px"></div><div class="cross" style="top:8px;right:8px"></div>
+  <div class="cross" style="bottom:8px;left:8px"></div><div class="cross" style="bottom:8px;right:8px"></div>
+  <div class="strip top">
+    <b>AI BUREAUCRACY</b><span>GOV.AI · UNIFIED SERVICES</span>
+    <span class="sp"></span><span class="pill">[ 04 · FINDING ]</span><span class="sp"></span>
+    <span>REF <span class="acc">AIB/2026 · P.05 / 06</span></span>
+  </div>
+  <div class="band">
+    <section class="col p5-l">
+      <div class="kick"><i>[</i> 07 · FINDING <i>]</i></div>
+      <div class="qsq"></div>
+      <blockquote>Whatever bureaucracy appears, appears on its own.</blockquote>
+      <cite>PREREGISTERED ABLATIONS — 75 CASES · 5 CONDITIONS · TWO CODING PASSES</cite>
+    </section>
+    <section class="col p5-r">
+      <div class="find"><b>F1</b><span>With every condition on, a simple request gathers referrals, internal memos and supplementary demands — nobody was told to do any of this. The theater assembles itself out of reasonable rules.</span></div>
+      <div class="find"><b>F2</b><span>Switch hierarchy, paper trail or memory off one at a time, and the matching behaviors thin out with them — the pattern follows the structure, not any agent's character.</span></div>
+      <div class="find"><b>F3</b><span>A lone agent, handed the same matter, simply answers it.</span></div>
+      <div class="p5-fig">
+        <svg viewBox="0 0 900 250" role="img">
+          <defs>
+            <marker id="pfA3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#55617a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+          <g stroke="#2b3547" stroke-width="1">
+            <path d="M19 24 H29 M24 19 V29"/><path d="M871 24 H881 M876 19 V29"/>
+            <path d="M19 226 H29 M24 221 V231"/><path d="M871 226 H881 M876 221 V231"/>
+          </g>
+          <line x1="300" y1="40" x2="800" y2="40" stroke="#232b38" stroke-width="1"/>
+          <line x1="340" y1="36" x2="340" y2="44" stroke="#3a4658" stroke-width="1"/><text x="340" y="30" text-anchor="middle" class="tm" font-size="8.5">HOP 1</text>
+          <line x1="540" y1="36" x2="540" y2="44" stroke="#3a4658" stroke-width="1"/><text x="540" y="30" text-anchor="middle" class="tm" font-size="8.5">HOP 2</text>
+          <line x1="720" y1="36" x2="720" y2="44" stroke="#3a4658" stroke-width="1"/><text x="720" y="30" text-anchor="middle" class="tm" font-size="8.5">HOP 3</text>
+          <rect x="34" y="119" width="6" height="6" fill="#d98a72"/>
+          <rect x="40" y="102" width="132" height="40" fill="rgba(223,230,242,0.04)" stroke="#dfe6f2" stroke-width="1.1"/>
+          <text x="106" y="126" text-anchor="middle" class="t" font-size="12">ONE REQUEST</text>
+          <line x1="172" y1="122" x2="331" y2="75" stroke="#8fb0dc" stroke-width="1.2" opacity="0.7" marker-end="url(#pfA3)"/>
+          <line x1="172" y1="122" x2="331" y2="125" stroke="#8fb0dc" stroke-width="1.2" opacity="0.7" marker-end="url(#pfA3)"/>
+          <line x1="172" y1="122" x2="331" y2="175" stroke="#8fb0dc" stroke-width="1.2" opacity="0.7" marker-end="url(#pfA3)"/>
+          <line x1="349" y1="75" x2="532" y2="60" stroke="#8fb0dc" stroke-width="1" opacity="0.45" marker-end="url(#pfA3)"/>
+          <line x1="349" y1="75" x2="532" y2="110" stroke="#8fb0dc" stroke-width="1" opacity="0.45" marker-end="url(#pfA3)"/>
+          <line x1="349" y1="125" x2="532" y2="110" stroke="#8fb0dc" stroke-width="1" opacity="0.45" marker-end="url(#pfA3)"/>
+          <line x1="349" y1="125" x2="532" y2="158" stroke="#8fb0dc" stroke-width="1" opacity="0.45" marker-end="url(#pfA3)"/>
+          <line x1="349" y1="175" x2="532" y2="200" stroke="#8fb0dc" stroke-width="1" opacity="0.45" marker-end="url(#pfA3)"/>
+          <line x1="548" y1="60" x2="713" y2="90" stroke="#8fb0dc" stroke-width="0.9" opacity="0.28" marker-end="url(#pfA3)"/>
+          <line x1="548" y1="110" x2="713" y2="90" stroke="#8fb0dc" stroke-width="0.9" opacity="0.28" marker-end="url(#pfA3)"/>
+          <line x1="548" y1="158" x2="713" y2="145" stroke="#8fb0dc" stroke-width="0.9" opacity="0.28" marker-end="url(#pfA3)"/>
+          <line x1="548" y1="200" x2="713" y2="145" stroke="#8fb0dc" stroke-width="0.9" opacity="0.28" marker-end="url(#pfA3)"/>
+          <circle cx="340" cy="75" r="9" fill="#0d1118" stroke="#8fb0dc" stroke-width="1.1" opacity="0.95"/>
+          <circle cx="340" cy="125" r="9" fill="#0d1118" stroke="#8fb0dc" stroke-width="1.1" opacity="0.95"/>
+          <circle cx="340" cy="175" r="9" fill="#0d1118" stroke="#8fb0dc" stroke-width="1.1" opacity="0.95"/>
+          <circle cx="540" cy="60" r="8" fill="#0d1118" stroke="#8fb0dc" stroke-width="1" opacity="0.6"/>
+          <circle cx="540" cy="110" r="8" fill="#0d1118" stroke="#8fb0dc" stroke-width="1" opacity="0.6"/>
+          <circle cx="540" cy="158" r="8" fill="#0d1118" stroke="#8fb0dc" stroke-width="1" opacity="0.6"/>
+          <circle cx="540" cy="200" r="8" fill="#0d1118" stroke="#8fb0dc" stroke-width="1" opacity="0.6"/>
+          <circle cx="720" cy="90" r="7" fill="#0d1118" stroke="#8fb0dc" stroke-width="1" opacity="0.38"/>
+          <circle cx="720" cy="145" r="7" fill="#0d1118" stroke="#8fb0dc" stroke-width="1" opacity="0.38"/>
+          <circle cx="830" cy="118" r="13" fill="none" stroke="#55617a" stroke-width="1" stroke-dasharray="3 4"/>
+          <text x="830" y="123" text-anchor="middle" font-size="13" fill="#78849a">?</text>
+          <text x="830" y="150" text-anchor="middle" class="tm" font-size="8">RARELY LANDS</text>
+          <text x="40" y="216" class="ts" font-size="10">each hop is reasonable; the sum is a request that belongs to everyone and no one</text>
+        </svg>
+        <div class="figcap"><b>FIG. 05</b><span>A single request fans out; responsibility diffuses and rarely lands.</span></div>
+      </div>
+    </section>
+  </div>
+  <div class="strip bot">
+    <span class="bc"></span><b>ai-bureaucratism.vercel.app/study</b><span class="sp"></span>
+    <span>FULL FINDINGS, ABLATION BY ABLATION, ON THE INTERACTIVE STUDY PAGE</span>
+  </div>
+</section>
+
+<!-- ═══════════ P6 · OUTPUT ═══════════ -->
+<section class="page">
+  <div class="cross" style="top:8px;left:8px"></div><div class="cross" style="top:8px;right:8px"></div>
+  <div class="cross" style="bottom:8px;left:8px"></div><div class="cross" style="bottom:8px;right:8px"></div>
+  <div class="strip top">
+    <b>AI BUREAUCRACY</b><span>GOV.AI · UNIFIED SERVICES</span>
+    <span class="sp"></span><span class="pill">[ 05 · OUTPUT ]</span><span class="sp"></span>
+    <span>REF <span class="acc">AIB/2026 · P.06 / 06</span></span>
+  </div>
+  <div class="band">
+    <section class="col p6-l">
+      <div class="kick"><i>[</i> 08 · OUTPUT <i>]</i></div>
+      <h2>A hall you can walk into</h2>
+      <p class="body">Submit a matter, then watch it be referred, escalated and archived between desks — the way it feels to wait at any counter. Replay mode drives the full interface from recorded cases, so the hall stays open without an API key.</p>
+      <div class="links">
+        <div class="btn pri">LIVE — AI-BUREAUCRATISM.VERCEL.APP<span>↗</span></div>
+        <div class="btn">/PORTFOLIO — THE CASE STUDY<span>↗</span></div>
+        <div class="btn">/STUDY — INTERACTIVE FINDINGS<span>↗</span></div>
+        <div class="btn">GITHUB — ACRUX-YUEYAO/AI-BUREAUCRATISM<span>↗</span></div>
+      </div>
+      <p class="disc">Every officer in this hall is an AI agent, given only an organizational role and its boundaries — never instructions on how to behave. A speculative design research prototype, not a real government system.</p>
+    </section>
+    <section class="col p6-r">
+      <div class="shot">
+        <div class="shotframe">
+          <img src="hall-raw.png" alt="The working product — replay of a recorded case with the window conversation panel open" />
+        </div>
+        <div class="figcap"><b>FIG. 06</b><span>The working product — replay of case EXP-main01-full-10, window conversation at Intake.</span></div>
+      </div>
+      <div class="iterlist">
+        <div class="ih">[ FIVE HALLS, FOUR REJECTED — FORM HAD TO MAKE RANK ]</div>
+        <div class="itrow"><img src="../public/study/iter-1.jpg" alt=""/><div class="tt"><b>Government-portal pastiche</b><span>Rejected — read as regional satire; the question is structural, not national.</span></div><span class="tg">REJ</span></div>
+        <div class="itrow"><img src="../public/study/iter-2.jpg" alt=""/><div class="tt"><b>Field-notes map</b><span>Rejected — hand-drawn charm implied a human observer editorializing.</span></div><span class="tg">REJ</span></div>
+        <div class="itrow"><img src="../public/study/iter-3.jpg" alt=""/><div class="tt"><b>Isometric miniature bureau</b><span>Rejected — charm domesticated the subject.</span></div><span class="tg">REJ</span></div>
+        <div class="itrow"><img src="../public/study/iter-4.jpg" alt=""/><div class="tt"><b>Flat transit map</b><span>Rejected — clean process-tracing, but it flattened rank, the one thing under study.</span></div><span class="tg">REJ</span></div>
+        <div class="itrow kept"><img src="../public/study/iter-5.jpg" alt=""/><div class="tt"><b>Exploded hierarchy in a void</b><span>Kept — altitude becomes standing; the org chart is made falsifiable to the eye.</span></div><span class="tg">KEPT</span></div>
+      </div>
+    </section>
+  </div>
+  <div class="strip bot">
+    <span class="bc"></span><b>ai-bureaucratism.vercel.app</b><span class="sp"></span>
+    <span>SPECULATIVE DESIGN RESEARCH · REPLAYS RUN WITHOUT AN API KEY · LIVE MODE GATED BY PASSCODE</span>
+  </div>
+</section>
+
+</body>
+</html>

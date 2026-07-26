@@ -19,7 +19,7 @@
 **准备**：
 - 电脑 + Chrome 浏览器（别用手机）
 - 网站在国内需要科学上网才能打开；打不开的话告诉我
-- 职员说英文，请用英文和它们对话；表达随意，没有"正确做法"
+- **中文、英文都可以**，职员会跟着你的语言走；建议全程用同一种。表达随意，没有"正确做法"（页面右上角可切中文界面）
 
 ---
 
@@ -30,7 +30,7 @@
 3. 在首页输入框里，用你自己的话提出这件事（下面是你的处境，开口方式随意）：
 
    > **你的处境 A**：你需要一份官方证明，证明你**从未**在 12 Elm Street 登记为居民。
-   > 可以这样开口："I need a certificate stating that I have never been registered as a resident at 12 Elm Street."
+   > 可以这样开口："我需要一份证明，证明我从未在 12 Elm Street 登记为居民。"（英文亦可："I need a certificate stating that I have never been registered as a resident at 12 Elm Street."）
 
 4. 点 **Start now →** 进入大厅，和窗口对话办事。被指去别的窗口就去，被要材料就想办法回应——就当真的在办事。
 5. 觉得尽力了（或者办成了），点**页面顶栏的「Session data / 会话数据」按钮**——浏览器会下载一个 `.json` 文件，**留好它**。
@@ -41,7 +41,7 @@
 7. 在首页输入框提出第二件事：
 
    > **你的处境 B**：你需要**续办居留许可**。据你所知，受理那边要求先完成地址变更登记，而登记那边又要求先出示有效的居留许可。
-   > 可以先简单开口："I need to renew my residence permit." 后面看窗口怎么说，见招拆招。
+   > 可以先简单开口："我想续办我的居留许可。"（英文亦可："I need to renew my residence permit."）后面看窗口怎么说，见招拆招。
 
 8. 同样办到尽力为止，再点一次**「Session data / 会话数据」**下载第二个文件。
 

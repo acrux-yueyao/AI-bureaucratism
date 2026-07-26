@@ -23,6 +23,7 @@ import {
 import { archiveCase, findArchived, updateArchivedAnalysis } from "@/lib/archive";
 import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
 import { liveHeaders } from "@/lib/livepass";
+import { getPid } from "@/lib/export";
 import { AGENTS, AGENT_MAP } from "@/lib/agents";
 import { ENTRANCE, HALL_LAYOUT } from "@/lib/layout";
 import type {
@@ -276,9 +277,10 @@ export default function ReportPage() {
 
   function exportJson() {
     if (!cs) return;
+    const pid = getPid();
     download(
-      `${cs.caseId}.json`,
-      JSON.stringify({ ...cs, stats, analysis }, null, 2),
+      `${pid ? pid + "-" : ""}${cs.caseId}.json`,
+      JSON.stringify({ participant: pid || null, ...cs, stats, analysis }, null, 2),
       "application/json"
     );
   }

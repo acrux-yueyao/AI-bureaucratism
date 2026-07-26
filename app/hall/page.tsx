@@ -10,6 +10,7 @@ import { loadArchive, renderArchiveDigest } from "@/lib/archive";
 import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
 import { REPLAYS, type ReplayFile } from "@/lib/replays";
 import { liveHeaders, setLivePass } from "@/lib/livepass";
+import { downloadSessionExport, storePid } from "@/lib/export";
 import Hall3D, { type HallFlight } from "./Hall3D";
 import type {
   AgentId,
@@ -65,6 +66,8 @@ export default function HallPage() {
   useEffect(() => {
     setLang(getLang());
     const params = new URLSearchParams(window.location.search);
+    const pid = params.get("pid");
+    if (pid) storePid(pid);
     if (params.get("mode") === "replay") {
       const id = params.get("id") ?? "";
       const meta = REPLAYS.find((r) => r.id === id);
@@ -579,6 +582,9 @@ export default function HallPage() {
             </span>
           )}
           <span className="right">
+            {!replay && (
+              <button onClick={downloadSessionExport}>{t(lang, "dataExport")}</button>
+            )}
             <button onClick={() => setDrawerOpen(true)}>
               {t(lang, "internalLog")}
               {memoCount > 0 ? ` (${memoCount})` : ""}

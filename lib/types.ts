@@ -85,6 +85,7 @@ export type CaseState = {
   events: CaseEvent[];
   closed: boolean;
   conditionId?: string;
+  ablationId?: string;
   notesWritten?: boolean;
 };
 
@@ -95,6 +96,7 @@ export type WindowRequest = {
   userMessage: string;
   events: CaseEvent[];
   conditionId?: string;
+  ablationId?: string;
   experience?: Partial<Record<AgentId, string>>;
   archiveDigest?: string;
 };

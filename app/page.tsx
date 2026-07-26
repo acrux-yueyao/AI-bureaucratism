@@ -8,6 +8,8 @@ import { loadCase, saveCase, clearCase } from "@/lib/storage";
 import { archiveCase } from "@/lib/archive";
 import { SCENARIOS } from "@/lib/visitors";
 import { CONDITIONS } from "@/lib/conditions";
+import { getStudyAblation, storeStudyAblation } from "@/lib/ablation";
+import { storePid } from "@/lib/export";
 import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
 import { REPLAYS } from "@/lib/replays";
 
@@ -32,7 +34,15 @@ export default function PortalPage() {
   const [lang, setLang] = useState<Lang>("en");
   const [conditionId, setConditionId] = useState("calm");
 
-  useEffect(() => setLang(getLang()), []);
+  useEffect(() => {
+    setLang(getLang());
+    // Remote-pilot tagging: /?pid=P1&ab=flat sticks for the whole visit.
+    const params = new URLSearchParams(window.location.search);
+    const pid = params.get("pid");
+    if (pid) storePid(pid);
+    const ab = params.get("ab");
+    if (ab) storeStudyAblation(ab);
+  }, []);
 
   function toggleLang() {
     const next: Lang = lang === "en" ? "zh" : "en";
@@ -57,6 +67,7 @@ export default function PortalPage() {
       events: [],
       closed: false,
       conditionId,
+      ablationId: getStudyAblation() || undefined,
     });
     router.push("/hall");
   }
@@ -73,6 +84,7 @@ export default function PortalPage() {
       events: [],
       closed: false,
       conditionId,
+      ablationId: getStudyAblation() || undefined,
     });
     router.push(`/hall?mode=observer&scenario=${scenarioId}`);
   }

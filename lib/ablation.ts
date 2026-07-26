@@ -60,3 +60,25 @@ export const FULL_ABLATION: AblationConfig = ABLATION_MAP.full.config;
 export function parseAblation(id?: string): AblationConfig {
   return (id && ABLATION_MAP[id]?.config) || FULL_ABLATION;
 }
+
+// Study-mode override — remote pilot participants arrive with ?ab=flat on the
+// link; the id is stamped into new cases and rides every window call. Unknown
+// ids are ignored, absence means FULL. Conditions only, never behavior.
+const STUDY_KEY = "aib-ablation";
+
+export function storeStudyAblation(id: string) {
+  try {
+    if (ABLATION_MAP[id]) window.localStorage.setItem(STUDY_KEY, id);
+  } catch {
+    // private mode: the override just won't persist
+  }
+}
+
+export function getStudyAblation(): string {
+  if (typeof window === "undefined") return "";
+  try {
+    return window.localStorage.getItem(STUDY_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}

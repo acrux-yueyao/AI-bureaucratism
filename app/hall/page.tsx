@@ -11,6 +11,7 @@ import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
 import { REPLAYS, type ReplayFile } from "@/lib/replays";
 import { liveHeaders, setLivePass } from "@/lib/livepass";
 import { downloadSessionExport, storePid } from "@/lib/export";
+import { getStudyAblation, storeStudyAblation } from "@/lib/ablation";
 import Hall3D, { type HallFlight } from "./Hall3D";
 import type {
   AgentId,
@@ -68,6 +69,8 @@ export default function HallPage() {
     const params = new URLSearchParams(window.location.search);
     const pid = params.get("pid");
     if (pid) storePid(pid);
+    const ab = params.get("ab");
+    if (ab) storeStudyAblation(ab);
     if (params.get("mode") === "replay") {
       const id = params.get("id") ?? "";
       const meta = REPLAYS.find((r) => r.id === id);
@@ -298,6 +301,7 @@ export default function HallPage() {
             userMessage: text,
             events: base.events,
             conditionId: base.conditionId,
+            ablationId: base.ablationId ?? (getStudyAblation() || undefined),
             experience: digestsForAll(loadExperience()),
             archiveDigest: renderArchiveDigest(loadArchive()),
           }),

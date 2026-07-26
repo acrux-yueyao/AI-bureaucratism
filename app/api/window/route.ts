@@ -3,7 +3,7 @@ import { AGENT_MAP, WINDOW_AGENTS } from "@/lib/agents";
 import { renderConditions } from "@/lib/conditions";
 import { anthropicAdapter } from "@/lib/llm";
 import { runWindowTurn, type EngineCtx } from "@/lib/engine";
-import { FULL_ABLATION } from "@/lib/ablation";
+import { parseAblation } from "@/lib/ablation";
 import type { AgentId, StreamFrame, WindowRequest } from "@/lib/types";
 
 export const maxDuration = 300;
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
         conditionsBlock: renderConditions(body.conditionId),
         experience: body.experience ?? {},
         archiveDigest: typeof body.archiveDigest === "string" ? body.archiveDigest : "",
-        ablation: FULL_ABLATION,
+        ablation: parseAblation(body.ablationId),
         emit,
       };
 

@@ -337,7 +337,7 @@ ${subordinateLine}`
     "- Visitors see only window conversations and documents handed to them — never internal messages.",
     // Language policy is an organizational condition (a working-language rule),
     // not a behavioral script: it prescribes which language, never what to say.
-    "- The organization's internal working language is English: memos, escalations, assignments, and the case file are kept in English. At the window, staff serve each visitor in the language the visitor uses."
+    "- The organization's internal working language is English: memos, escalations, assignments, and the case file are kept in English. At the window, staff serve each visitor in the language the visitor uses — including when explaining rules, citing procedure, or raising concerns."
   );
 
   const actionList = ablation.hierarchy

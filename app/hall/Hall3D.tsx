@@ -865,18 +865,28 @@ export default function Hall3D(props: Props) {
         const ray = new THREE.Raycaster();
         ray.setFromCamera(nd, camera);
         const hit = ray.intersectObjects(pickables, true);
-        if (hit.length) {
-          let o: THREE.Object3D | null = hit[0].object;
-          let key: AgentId | undefined;
-          while (o && !key) {
-            key = o.userData.key as AgentId | undefined;
-            o = o.parent;
-          }
-          if (key && !propsRef.current.ambient) {
-            if (researcherRef.current) {
-              setDossier(key);
-            } else if (AGENT_MAP[key].level === 3 && !propsRef.current.synthetic) {
-              propsRef.current.onSelect(key);
+        if (hit.length && !propsRef.current.ambient) {
+          const keyOf = (obj: THREE.Object3D | null): AgentId | undefined => {
+            let o = obj;
+            let k: AgentId | undefined;
+            while (o && !k) {
+              k = o.userData.key as AgentId | undefined;
+              o = o.parent;
+            }
+            return k;
+          };
+          if (researcherRef.current) {
+            const key = keyOf(hit[0].object);
+            if (key) setDossier(key);
+          } else if (!propsRef.current.synthetic) {
+            // A deputy's glass box in front must not swallow a click aimed at a
+            // window behind it — walk the ray and take the first WINDOW hit.
+            for (const h of hit) {
+              const key = keyOf(h.object);
+              if (key && AGENT_MAP[key].level === 3) {
+                propsRef.current.onSelect(key);
+                break;
+              }
             }
           }
         }

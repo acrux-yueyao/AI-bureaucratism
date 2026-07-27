@@ -584,6 +584,13 @@ textarea {
   padding: 3px 14px;
   text-align: center;
 }
+.sys-note .sys-hint {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  font-style: normal;
+  opacity: 0.75;
+}
 .sys-note .btn-plain {
   margin-left: 8px;
   font-size: 13px;

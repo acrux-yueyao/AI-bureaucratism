@@ -752,6 +752,7 @@ export default function HallPage() {
                           {e.items
                             .map((it) => it.name + (it.source ? ` (${it.source})` : ""))
                             .join(", ")}
+                          <em className="sys-hint">{t(lang, "materialsHint")}</em>
                         </div>
                       );
                     if (e.type === "referral")
@@ -926,6 +927,7 @@ export default function HallPage() {
         {tab === "todos" && (
           <div className="dock-pane">
             {todos.length === 0 && <div className="empty">{t(lang, "noneYet")}</div>}
+            {todos.length > 0 && <div className="sys-note"><em className="sys-hint">{t(lang, "materialsHint")}</em></div>}
             {todos.map((it, i) => (
               <div key={i} className="todo-item">
                 {it.name}

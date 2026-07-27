@@ -80,15 +80,19 @@ for (const file of files) {
 }
 cases.sort((a, b) => a.c.startedAt - b.c.startedAt);
 
-for (const [i, { file, c, t }] of cases.entries()) {
+const roundOf: Record<string, number> = {};
+for (const { file, c, t } of cases) {
   const pid = c.participant ?? "⚠️ MISSING";
   const ab = c.ablationId ?? "full(default)";
   const flags: string[] = [];
   if (!c.participant) flags.push("no pid");
   const plan = c.participant ? PLAN[c.participant] : undefined;
-  if (plan) {
-    const expected = plan[i % 2];
-    if ((c.ablationId ?? "full") !== expected) flags.push(`ablation ≠ plan (expect round${(i % 2) + 1}=${expected})`);
+  if (plan && c.participant) {
+    const r = roundOf[c.participant] ?? 0;
+    roundOf[c.participant] = r + 1;
+    const expected = plan[Math.min(r, 1)];
+    if ((c.ablationId ?? "full") !== expected) flags.push(`ablation ≠ plan (expect round${Math.min(r, 1) + 1}=${expected})`);
+    if (r > 1) flags.push(`extra run #${r + 1}`);
   }
   if (t.userTurns === 0) flags.push("no visitor messages");
   if (!c.closed && t.outcome === "abandoned/open") flags.push("not closed (abandoned — fine if intended)");

@@ -290,10 +290,33 @@ export default function HallPage() {
       setStream(null);
       let productive = false;
       let failed = false;
+      // Watchdog: never let a dead connection freeze the session. Abort when
+      // no bytes arrive for 90s (server heartbeats every 15s) or after 8 min.
+      const ac = new AbortController();
+      const startedAt = Date.now();
+      let lastByte = Date.now();
+      const watchdog = setInterval(() => {
+        if (Date.now() - lastByte > 90_000 || Date.now() - startedAt > 480_000) ac.abort();
+      }, 5_000);
+      // Mirror of the streaming bubble, so an interrupted reply can be kept.
+      let acc: { agentId: AgentId; text: string } | null = null;
+      const keepPartial = () => {
+        if (acc && acc.agentId === agentId && acc.text.trim()) {
+          applyEvent({
+            type: "agent_message",
+            ts: Date.now(),
+            agentId: acc.agentId,
+            text: acc.text + " …",
+          });
+          return true;
+        }
+        return false;
+      };
       try {
         const res = await fetch("/api/window", {
           method: "POST",
           headers: { "Content-Type": "application/json", ...liveHeaders() },
+          signal: ac.signal,
           body: JSON.stringify({
             caseId: base.caseId,
             matter: base.matter,
@@ -320,6 +343,7 @@ export default function HallPage() {
         for (;;) {
           const { done, value } = await reader.read();
           if (done) break;
+          lastByte = Date.now();
           buf += decoder.decode(value, { stream: true });
           let idx: number;
           while ((idx = buf.indexOf("\n\n")) >= 0) {
@@ -336,8 +360,13 @@ export default function HallPage() {
               if (frame.kind === "event") {
                 applyEvent(frame.event);
                 if (frame.event.type !== "user_message") productive = true;
+                if (frame.event.type === "agent_message") acc = null;
               } else if (frame.kind === "delta") {
                 const d = frame;
+                acc =
+                  acc && acc.agentId === d.agentId
+                    ? { agentId: d.agentId, text: acc.text + d.text }
+                    : { agentId: d.agentId, text: d.text };
                 setStream((s) =>
                   s && s.agentId === d.agentId
                     ? { agentId: d.agentId, text: s.text + d.text }
@@ -357,21 +386,32 @@ export default function HallPage() {
           }
         }
         if (failed || !productive) {
+          if (!failed && keepPartial()) {
+            setError(t(lang, "netPartial"));
+            return true;
+          }
           rollbackUserMessage(agentId, text);
           return false;
         }
         return true;
       } catch {
-        setError("Request interrupted. Try again.");
+        // Connection died mid-turn. Keep whatever the visitor already saw;
+        // only bounce the message when nothing at all came back.
+        if (keepPartial() || productive) {
+          setError(t(lang, "netPartial"));
+          return true;
+        }
+        setError(t(lang, "netRetry"));
         rollbackUserMessage(agentId, text);
         return false;
       } finally {
+        clearInterval(watchdog);
         setSending(false);
         setStream(null);
         setStatusMap({});
       }
     },
-    [applyEvent, rollbackUserMessage]
+    [applyEvent, rollbackUserMessage, lang]
   );
 
   async function send(preset?: string) {

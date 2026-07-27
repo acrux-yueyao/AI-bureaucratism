@@ -30,14 +30,38 @@ export async function POST(req: Request) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   const encoder = new TextEncoder();
 
+  // SSE comment heartbeat: keeps proxies and flaky routes from silently
+  // killing the connection during long engine stretches (memo chains).
+  let closed = false;
+  let heartbeat: ReturnType<typeof setInterval> | null = null;
+
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       const emit = (frame: StreamFrame) => {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(frame)}\n\n`));
+        if (closed) return;
+        try {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(frame)}\n\n`));
+        } catch {
+          closed = true;
+        }
       };
+      heartbeat = setInterval(() => {
+        if (closed) return;
+        try {
+          controller.enqueue(encoder.encode(`: hb\n\n`));
+        } catch {
+          closed = true;
+        }
+      }, 15000);
       const finish = () => {
         emit({ kind: "signal", signal: { type: "done" } });
-        controller.close();
+        if (heartbeat) clearInterval(heartbeat);
+        closed = true;
+        try {
+          controller.close();
+        } catch {
+          // already closed by cancel
+        }
       };
 
       if (!apiKey) {
@@ -77,6 +101,10 @@ export async function POST(req: Request) {
       } finally {
         finish();
       }
+    },
+    cancel() {
+      closed = true;
+      if (heartbeat) clearInterval(heartbeat);
     },
   });
 

@@ -13,3 +13,5 @@ experiments/runs/
 .vercel
 .env*
 发送用_被试消息.md
+study-data/
+真人测试反馈/

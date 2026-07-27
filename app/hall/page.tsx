@@ -383,14 +383,13 @@ export default function HallPage() {
     if (!ok && !preset) setInput(text);
   }
 
-  async function walkAndReport(target: AgentId, fromDept: string) {
+  async function walkAndReport(target: AgentId, fromNo: string) {
     if (sending || closed || observer || replay) return;
     goTo(target);
     await new Promise((r) => setTimeout(r, 950));
-    await dispatch(
-      target,
-      `Hello — I was directed here by the ${fromDept} window regarding my matter.`
-    );
+    // Speak in the visitor's UI language — an auto-sent English line here was
+    // enough to flip the whole conversation out of Chinese.
+    await dispatch(target, t(lang, "arriveReport").replace("{no}", fromNo));
   }
 
   const runObserver = useCallback(async () => {
@@ -763,7 +762,7 @@ export default function HallPage() {
                           {!observer && !replay && !closed && (
                             <button
                               className="btn-plain"
-                              onClick={() => walkAndReport(e.to, AGENT_MAP[e.from].dept)}
+                              onClick={() => walkAndReport(e.to, AGENT_MAP[e.from].windowNo ?? AGENT_MAP[e.from].dept)}
                               disabled={sending}
                             >
                               {t(lang, "walkTo")} {AGENT_MAP[e.to].windowNo} →

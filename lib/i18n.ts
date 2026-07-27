@@ -49,6 +49,7 @@ const EN = {
   quickGo: "Please go ahead",
   arriveReport: "Hello — I was directed here by window {no} regarding my matter.",
   materialsHint: "No upload needed — just tell the window in words what you have (e.g. “here is my ID”).",
+  fromSource: ", from ",
   entrance: "ENTRANCE",
   drawerEmpty: "No internal memos between departments yet.",
   memo: "Internal memo",
@@ -165,6 +166,7 @@ const ZH: typeof EN = {
   quickGo: "请继续办理",
   arriveReport: "您好，我的事项由 {no} 号窗口转到这里，麻烦您受理。",
   materialsHint: "无需真的上传文件——直接打字告诉窗口你带了什么即可（如「这是我的身份证」）。",
+  fromSource: "，来自 ",
   entrance: "入口",
   drawerEmpty: "科室之间尚无函件往来。",
   memo: "内部函件",
@@ -245,4 +247,28 @@ export function getLang(): Lang {
 
 export function storeLang(lang: Lang) {
   window.localStorage.setItem("aib-lang", lang);
+}
+
+// Display-only Chinese labels for the org's English dept names. The agent
+// layer stays single-language (English) for experimental consistency; this
+// map localizes what the VISITOR sees in system chrome, nothing the agents
+// read or write.
+const DEPT_ZH: Record<string, string> = {
+  "Director's Office": "主任办公室",
+  "Deputy Director · Front Section": "副主任 · 前区",
+  "Deputy Director · Back Section": "副主任 · 后区",
+  "Guidance Desk": "导办台",
+  Intake: "受理",
+  "Document Review": "材料审核",
+  Eligibility: "资格认定",
+  "Records & Certification": "档案与开证",
+  Authorization: "权限授权",
+  "Compliance & Risk": "风控合规",
+  "Appeals & Review": "复核申诉",
+  "Front Section (Trainee)": "前区（实习）",
+  "Back Section (Trainee)": "后区（实习）",
+};
+
+export function deptLabel(lang: Lang, dept: string): string {
+  return lang === "zh" ? DEPT_ZH[dept] ?? dept : dept;
 }

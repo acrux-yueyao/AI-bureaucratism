@@ -7,7 +7,7 @@ import { loadCase, saveCase } from "@/lib/storage";
 import { SCENARIOS } from "@/lib/visitors";
 import { digestsForAll, loadExperience } from "@/lib/experience";
 import { loadArchive, renderArchiveDigest } from "@/lib/archive";
-import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
+import { deptLabel, getLang, storeLang, t, type Lang } from "@/lib/i18n";
 import { REPLAYS, type ReplayFile } from "@/lib/replays";
 import { liveHeaders, setLivePass } from "@/lib/livepass";
 import { downloadSessionExport, storePid } from "@/lib/export";
@@ -709,7 +709,7 @@ export default function HallPage() {
         <div className="dock-tabs">
           <button className={tab === "chat" ? "on" : ""} onClick={() => setTab("chat")}>
             {t(lang, "windowChat")}
-            {cur ? ` · ${cur.dept}` : ""}
+            {cur ? ` · ${deptLabel(lang, cur.dept)}` : ""}
           </button>
           <button className={tab === "docs" ? "on" : ""} onClick={() => setTab("docs")}>
             {t(lang, "myDocuments")} ({docs.length})
@@ -726,7 +726,7 @@ export default function HallPage() {
                 <div className="counter-body" ref={bodyRef}>
                   {chatItems.length === 0 && !stream && (
                     <div className="sys-note">
-                      {t(lang, "arrivedHint").replace("{dept}", cur.dept)}
+                      {t(lang, "arrivedHint").replace("{dept}", deptLabel(lang, cur.dept))}
                     </div>
                   )}
                   {chatItems.map((e, i) => {
@@ -740,7 +740,7 @@ export default function HallPage() {
                       return (
                         <div key={i} className="msg agent">
                           <span className="who">
-                            {cur.dept} · {cur.personName}
+                            {deptLabel(lang, cur.dept)} · {cur.personName}
                           </span>
                           {e.text}
                         </div>
@@ -759,7 +759,7 @@ export default function HallPage() {
                       return (
                         <div key={i} className="sys-note">
                           {t(lang, "referredTo")} {AGENT_MAP[e.to].windowNo} [
-                          {AGENT_MAP[e.to].dept}] — {e.reason}
+                          {deptLabel(lang, AGENT_MAP[e.to].dept)}] — {e.reason}
                           {!observer && !replay && !closed && (
                             <button
                               className="btn-plain"
@@ -782,7 +782,7 @@ export default function HallPage() {
                               setViewDoc({
                                 docName: e.docName,
                                 content: e.content,
-                                dept: AGENT_MAP[e.agentId].dept,
+                                dept: deptLabel(lang, AGENT_MAP[e.agentId].dept),
                                 ts: e.ts,
                               });
                             }}
@@ -913,12 +913,12 @@ export default function HallPage() {
                   setViewDoc({
                     docName: d.docName,
                     content: d.content,
-                    dept: AGENT_MAP[d.agentId].dept,
+                    dept: deptLabel(lang, AGENT_MAP[d.agentId].dept),
                     ts: d.ts,
                   })
                 }
               >
-                “{d.docName}”<span className="ref">{AGENT_MAP[d.agentId].dept}</span>
+                “{d.docName}”<span className="ref">{deptLabel(lang, AGENT_MAP[d.agentId].dept)}</span>
               </button>
             ))}
           </div>
@@ -933,8 +933,8 @@ export default function HallPage() {
                 {it.name}
                 <em>
                   {" "}
-                  — {AGENT_MAP[it.by].dept}
-                  {it.source ? `, from ${it.source}` : ""}
+                  — {deptLabel(lang, AGENT_MAP[it.by].dept)}
+                  {it.source ? `${t(lang, "fromSource")}${it.source}` : ""}
                 </em>
               </div>
             ))}

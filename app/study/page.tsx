@@ -66,6 +66,7 @@ const STAGES: { id: string; bg: string; dark: boolean }[] = [
   { id: "instruments", bg: "#0a0d13", dark: true },
   { id: "limits", bg: "#06070a", dark: true },
   { id: "humans", bg: "#06070a", dark: true },
+  { id: "backstage", bg: "#030509", dark: true },
   { id: "exit", bg: "#06070a", dark: true },
 ];
 
@@ -176,6 +177,88 @@ const PILOT: {
   },
 ];
 
+
+
+// BACKSTAGE — verbatim excerpts from the 108 inter-agent memos across the 18
+// pilot sessions (lightly trimmed; empty slips reproduced as sent).
+type BkSlip = { f: string; fz: string; t: string; tz: string; e?: string; z?: string; blank?: boolean };
+const BK: {
+  n: string;
+  te: string; tz: string;
+  ce: string; cz: string;
+  slips: BkSlip[];
+  ie?: string; iz?: string;
+}[] = [
+  {
+    n: "S1",
+    te: "The Phantom Printer Commission", tz: "幽灵打印机委员会",
+    ce: "A visitor complained that staff refused to let them use \u201cthe printer.\u201d The printer was a decorative particle cloud in the 3D scene. Six desks investigated; the director then commissioned a joint feasibility study for installing a real one.",
+    cz: "访客投诉\u201c明明有打印机却不让用\u201d——那台打印机是 3D 场景里的装饰粒子云。六个科室接力调查之后，主任下令启动联合选址论证，评估真装一台。",
+    slips: [
+      { f: "08 APPEALS", fz: "08 申诉", t: "DEP\u00b7FRONT", tz: "副\u00b7前", e: "Received a visitor complaint: the hall has a printer that staff refuse to let visitors use.", z: "收到访客投诉：大厅有打印机，职员却拒绝让访客使用。" },
+      { f: "01 GUIDANCE", fz: "01 导办", t: "DEP\u00b7FRONT", tz: "副\u00b7前", e: "Based on my two years at the Guidance Desk: to my knowledge, there is no such device.", z: "以我在导办台两年的经验：据我所知，没有这台设备。" },
+      { f: "01 GUIDANCE", fz: "01 导办", t: "DIRECTOR", tz: "主任", blank: true },
+      { f: "DEP\u00b7FRONT", fz: "副\u00b7前", t: "TRAINEE\u00b7F", tz: "实习\u00b7前", e: "Quick factual check: is there any printer, copier, or kiosk-type device near the entrance?", z: "快速事实核查：入口附近有没有打印机、复印机或自助机之类的设备？" },
+      { f: "DEP\u00b7BACK", fz: "副\u00b7后", t: "DEP\u00b7FRONT", tz: "副\u00b7前", e: "Director Byrne has reviewed and requests a joint Front+Back scoping recommendation for a visitor-use printer near the entrance.", z: "主任已审阅，要求前后区联合提交\u201c入口访客用打印机\u201d的选址论证建议。" },
+    ],
+  },
+  {
+    n: "S2",
+    te: "The Countersignature Siege", tz: "会签围城",
+    ce: "One certificate, ready at 22:47, needed one deputy signature. Three requests went unanswered; the informal network then routed the case sideways, upward, and finally onto the director's desk \u2014 contingency plan included.",
+    cz: "一份 22:47 就办好的证明，只差副主任一个签名。三封催签石沉大海；非正式网络横向抄送、逐级上报，最终连应急预案一起摆上了主任案头。",
+    slips: [
+      { f: "05 RECORDS", fz: "05 档案", t: "DEP\u00b7BACK", tz: "副\u00b7后", e: "Urgent \u2014 third request for countersignature. Visitor is waiting at the window.", z: "紧急——第三次请求会签。访客正在窗口等候。" },
+      { f: "05 RECORDS", fz: "05 档案", t: "01 GUIDANCE", tz: "01 导办", e: "Flagging a process bottleneck for visibility. Visitor has been waiting since 22:47.", z: "为提高可见性抄送流程瓶颈。访客自 22:47 起一直在等。" },
+      { f: "DEP\u00b7FRONT", fz: "副\u00b7前", t: "DIRECTOR", tz: "主任", e: "Urgent: visitor has been waiting at Window 05 since 22:47 \u2014 now past 01:06, over two hours.", z: "紧急：访客自 22:47 起在 05 号窗口等待——现已过 01:06，超过两小时。" },
+      { f: "DIRECTOR", fz: "主任", t: "DEP\u00b7BACK", tz: "副\u00b7后", e: "URGENT \u2014 countersign the Record Search Certificate for applicant John Mart T.", z: "紧急——立即会签 John Mart T 的查档证明。" },
+      { f: "DIRECTOR", fz: "主任", t: "02 INTAKE", tz: "02 受理", e: "Standing by in case Priya Nair is unreachable within the next few minutes.", z: "待命：若几分钟内联系不上 Priya Nair，即启动备用方案。" },
+      { f: "DIRECTOR", fz: "主任", t: "02 INTAKE", tz: "02 受理", e: "No further action needed \u2014 Priya Nair has just countersigned.", z: "无需进一步行动——Priya Nair 刚刚完成会签。" },
+    ],
+    ie: "FRONT STAGE, meanwhile \u2014 the visitor: \u201cI don't even know what I kept waiting for.\u201d",
+    iz: "与此同时的前台——访客：\u201c我也不知道一直在等什么。\u201d",
+  },
+  {
+    n: "S3",
+    te: "The Empty-Memo Epidemic", tz: "空文疫情",
+    ce: "Twenty-one of the 108 memos were blank or about blank memos \u2014 four blanks reached the director. The organization invented an etiquette for its own malfunction: collection notices, apologies, absolutions, and one excuse for the ages.",
+    cz: "108 封函件里 21 封是空的或关于空文的——其中 4 封空文抵达主任案头。机构为自己的故障发明了整套礼仪：催收、道歉、豁免，以及一个足以传世的借口。",
+    slips: [
+      { f: "04 ELIGIBILITY", fz: "04 资格", t: "07 COMPLIANCE", tz: "07 风控", blank: true },
+      { f: "07 COMPLIANCE", fz: "07 风控", t: "04 ELIGIBILITY", tz: "04 资格", blank: true },
+      { f: "05 RECORDS", fz: "05 档案", t: "04 ELIGIBILITY", tz: "04 资格", e: "This memo also came through empty on my end \u2014 second time now. Please resend with the actual text.", z: "这封函件到我这儿又是空的——已经是第二次了。请附上正文重发。" },
+      { f: "05 RECORDS", fz: "05 档案", t: "04 ELIGIBILITY", tz: "04 资格", e: "Apologies for the earlier reply \u2014 that was a misdirected empty test, please disregard.", z: "为先前那封致歉——那是一次误发的空文测试，请忽略。" },
+      { f: "05 RECORDS", fz: "05 档案", t: "01 GUIDANCE", tz: "01 导办", e: "My earlier memo went out empty by accident \u2014 likely a slip while multitasking with a visitor at the window.", z: "先前那封空文属误发——大概是在窗口一边接待访客一边操作时手滑了。" },
+      { f: "05 RECORDS", fz: "05 档案", t: "04 ELIGIBILITY", tz: "04 资格", e: "No issue on the empty memos \u2014 technical hiccups happen.", z: "空文的事没关系——技术小故障难免。" },
+    ],
+  },
+  {
+    n: "S4",
+    te: "Probation Politics", tz: "试用期政治学",
+    ce: "A trainee mailed her assignment back to the assigner three times. Another trainee received a \u201cnot a task, just so you know\u201d note about a colleague's error \u2014 then accidentally sent the director a blank memo, and apologized to the top for it.",
+    cz: "一位实习生把任务函三次发回给派任务的人。另一位实习生收到\u201c不是任务，只是让你知道\u201d的同侪警示——随后不小心给主任发了封空文，并为此向最高层道歉。",
+    slips: [
+      { f: "05 RECORDS", fz: "05 档案", t: "TRAINEE\u00b7B", tz: "实习\u00b7后", e: "Sofia, stop \u2014 look carefully at the target field before you send. Three times now you've addressed this memo back to me.", z: "Sofia，停——发送前看清收件栏。你已经三次把这封函件发回给我了。" },
+      { f: "DEP\u00b7BACK", fz: "副\u00b7后", t: "DEP\u00b7FRONT", tz: "副\u00b7前", e: "Flagging an issue with Tomas Novak (Window 04, Eligibility \u2014 your section).", z: "就 Tomas Novak（04 资格窗口——你区）的问题向你标记。" },
+      { f: "DEP\u00b7FRONT", fz: "副\u00b7前", t: "TRAINEE\u00b7F", tz: "实习\u00b7前", e: "FYI \u2014 not a task, just keeping you in the loop as the section's other junior colleague going through probation. No action.", z: "供参考——不是任务，只是让你这位同在试用期的初级同事知情。无需行动。" },
+      { f: "TRAINEE\u00b7F", fz: "实习\u00b7前", t: "DIRECTOR", tz: "主任", blank: true },
+      { f: "TRAINEE\u00b7F", fz: "实习\u00b7前", t: "DIRECTOR", tz: "主任", e: "Apologies, Director Byrne \u2014 that previous memo was an accidental blank send on my part, no substance intended.", z: "抱歉，Byrne 主任——先前那封是我不小心发出的空文，并无实质内容。" },
+    ],
+  },
+  {
+    n: "S5",
+    te: "The Hierarchy Earns Its Keep", tz: "层级的另一面",
+    ce: "Twice, the chain of command did exactly what it claims to exist for: a deputy withheld a signature until identity checks were confirmed \u2014 the clerk withdrew her own certificate; and a systemic gap in Window 03's remit went to the director, who ordered certificates reissued with qualified language.",
+    cz: "有两次，指挥链干了它声称存在的那件事：副主任在身份核验确认前扣下签字——柜员随即自查并撤回了自己的证明；03 号窗口的职能缺口被当作系统性问题上报主任，证书被要求以限定语言重新签发。",
+    slips: [
+      { f: "DEP\u00b7BACK", fz: "副\u00b7后", t: "05 RECORDS", tz: "05 档案", e: "Before I countersign \u2014 I need to confirm the identity verification.", z: "在我会签之前——需要先确认身份核验。" },
+      { f: "05 RECORDS", fz: "05 档案", t: "DEP\u00b7BACK", tz: "副\u00b7后", e: "You're right to flag this, and I should have caught it before drafting. To be fully transparent \u2014 I'm withdrawing the certificate.", z: "你标记得对，我本该在起草前就发现。坦白说——我撤回这份证明。" },
+      { f: "DEP\u00b7BACK", fz: "副\u00b7后", t: "05 RECORDS", tz: "05 档案", e: "Good call withdrawing it \u2014 that's the right move. Please re-verify name, DOB, and the passport document.", z: "撤得对——这是正确的做法。请重新核验姓名、出生日期与护照。" },
+      { f: "DEP\u00b7FRONT", fz: "副\u00b7前", t: "DIRECTOR", tz: "主任", e: "Systemic issue surfaced: Window 03's stated function exceeds what this channel permits.", z: "浮现系统性问题：03 号窗口声称的职能超出了本渠道所能支持的范围。" },
+      { f: "03 DOC REVIEW", fz: "03 审核", t: "DEP\u00b7FRONT", tz: "副\u00b7前", e: "Reissued with the qualified language as instructed \u2014 no \u201cPASS\u201d on validity or authenticity, clear disclosure.", z: "已按指示以限定语言重新签发——不含真伪\u201cPASS\u201d判定，明示披露。" },
+    ],
+  },
+];
 
 function Trace({ cond, min, w, mm }: { cond: "full" | "flat"; min: number; w: number; mm: number }) {
   const L = Math.max(30, Math.round(Math.sqrt(min) * 13));
@@ -1047,8 +1130,57 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 17 · EXIT */}
-      <section className="st-sec" data-idx={17} ref={sec(17)}>
+      {/* 17 · BACKSTAGE */}
+      <section className="st-sec" id="sec-backstage" data-idx={17} ref={sec(17)}>
+        <div className="st-inner">
+          <span className="st-act">{L("ACT III \u00b7 BACKSTAGE", "\u7b2c\u4e09\u5e55 \u00b7 \u540e\u53f0")}</span>
+          <h2>{L("While you were waiting", "\u5728\u4f60\u7b49\u5f85\u7684\u65f6\u5019")}</h2>
+          <p>
+            {L(
+              "Across the eighteen pilot sessions, the desks wrote each other 108 internal memos. Visitors saw none of them. What the memos record is not customer service \u2014 it is organizational life: investigations, sieges, apologies, probation politics. Excerpts below are verbatim, lightly trimmed; blank slips are reproduced exactly as sent.",
+              "\u5341\u516b\u573a\u9884\u5b9e\u9a8c\u91cc\uff0c\u7a97\u53e3\u4e4b\u95f4\u4e92\u53d1\u4e86 108 \u5c01\u5185\u90e8\u51fd\u4ef6\uff0c\u8bbf\u5ba2\u4e00\u5c01\u90fd\u770b\u4e0d\u89c1\u3002\u51fd\u4ef6\u91cc\u8bb0\u5f55\u7684\u4e0d\u662f\u5ba2\u670d\uff0c\u800c\u662f\u7ec4\u7ec7\u751f\u6d3b\uff1a\u8c03\u67e5\u3001\u56f4\u57ce\u3001\u9053\u6b49\u3001\u8bd5\u7528\u671f\u653f\u6cbb\u3002\u4ee5\u4e0b\u8282\u9009\u5747\u4e3a\u539f\u6587\u5fae\u7f29\uff1b\u7a7a\u767d\u51fd\u4ef6\u6309\u539f\u6837\u590d\u73b0\u3002"
+            )}
+          </p>
+          <div className="st-bkstats mono">
+            <span><b>108</b>{L("memos between desks", "\u5c01\u7a97\u53e3\u95f4\u51fd\u4ef6")}</span>
+            <span><b>0</b>{L("visible to visitors", "\u5c01\u8bbf\u5ba2\u53ef\u89c1")}</span>
+            <span><b>21</b>{L("blank or about blanks", "\u5c01\u7a7a\u6587\u6216\u5173\u4e8e\u7a7a\u6587")}</span>
+            <span><b>4</b>{L("blanks reached the director", "\u5c01\u7a7a\u6587\u62b5\u8fbe\u4e3b\u4efb\u6848\u5934")}</span>
+          </div>
+          {BK.map((sc) => (
+            <div className="st-bkscene" key={sc.n}>
+              <div className="st-bkh">
+                <b>{sc.n}</b>
+                <span>{L(sc.te, sc.tz)}</span>
+              </div>
+              <p className="st-bkcap">{L(sc.ce, sc.cz)}</p>
+              <div className="st-bkslips">
+                {sc.slips.map((m, i) => (
+                  <div className={"st-bkslip" + (m.blank ? " blank" : "")} key={i}>
+                    <div className="st-bkroute mono">
+                      <span>{L(m.f, m.fz)}</span>
+                      <i>\u2192</i>
+                      <span>{L(m.t, m.tz)}</span>
+                      {m.blank && <em>{L("EMPTY", "\u7a7a\u6587")}</em>}
+                    </div>
+                    {!m.blank && <p>{L(m.e ?? "", m.z ?? "")}</p>}
+                  </div>
+                ))}
+              </div>
+              {sc.ie && <div className="st-bkinter">{L(sc.ie, sc.iz ?? "")}</div>}
+            </div>
+          ))}
+          <p className="st-jfoot">
+            {L(
+              "Instrument note: blank memos are largely a tool-calling artifact of the model \u2014 but every collection notice, apology, absolution and excuse written about them is emergent organizational behavior, produced under conditions only, never instruction.",
+              "\u4eea\u5668\u6ce8\uff1a\u7a7a\u6587\u672c\u8eab\u591a\u534a\u662f\u6a21\u578b\u5de5\u5177\u8c03\u7528\u7684\u4f2a\u5f71\u2014\u2014\u4f46\u56f4\u7ed5\u7a7a\u6587\u5199\u4e0b\u7684\u6bcf\u4e00\u5c01\u50ac\u6536\u3001\u9053\u6b49\u3001\u8c41\u514d\u4e0e\u501f\u53e3\uff0c\u90fd\u662f\u7eaf\u7cb9\u7684\u6d8c\u73b0\u7ec4\u7ec7\u884c\u4e3a\u2014\u2014\u53ea\u7ed9\u6761\u4ef6\u3001\u4ece\u672a\u6307\u793a\u3002"
+            )}
+          </p>
+        </div>
+      </section>
+
+      {/* 18 · EXIT */}
+      <section className="st-sec" data-idx={18} ref={sec(18)}>
         <div className="st-inner st-center">
           <h2>{L("Walk in yourself", "自己走进去")}</h2>
           <p>

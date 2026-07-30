@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AGENTS } from "@/lib/agents";
 import { REPLAYS } from "@/lib/replays";
 import { getLang, storeLang, type Lang } from "@/lib/i18n";
+import AgentNetwork from "../pilot/AgentNetwork";
 import Hall3D, { ROOMS } from "../hall/Hall3D";
 
 // The case study as a descent: the page begins in GOV.UK daylight and sinks
@@ -1178,6 +1179,19 @@ export default function StudyPage() {
             <span><b>0</b>{L("visible to visitors", "\u5c01\u8bbf\u5ba2\u53ef\u89c1")}</span>
             <span><b>21</b>{L("blank or about blanks", "\u5c01\u7a7a\u6587\u6216\u5173\u4e8e\u7a7a\u6587")}</span>
             <span><b>4</b>{L("blanks reached the director", "\u5c01\u7a7a\u6587\u62b5\u8fbe\u4e3b\u4efb\u6848\u5934")}</span>
+          </div>
+          <div className="st-bknet">
+            <div className="st-bkneth mono">
+              <b>[ FIG. B-1 ]</b>
+              <span>{L("WHO WROTE TO WHOM — CLICK ANY DESK", "谁给谁写——点任意科室")}</span>
+            </div>
+            <AgentNetwork lang={lang} compact />
+            <p className="st-bknetnote">
+              {L(
+                "The organization's private traffic, mapped: 75 memos sideways, 28 upward, 5 downward. Records (05) is the bottleneck of the building; Intake (02) receives eleven and answers three. Below: five scenes from the same correspondence.",
+                "机构私下的往来，被绘成了图：75 封横向、28 封向上、5 封向下。档案（05）是全楼的瓶颈；受理（02）收十一封、回三封。以下是同一批公文里的五幕。"
+              )}
+            </p>
           </div>
           {BK.map((sc) => (
             <div className="st-bkscene" key={sc.n}>

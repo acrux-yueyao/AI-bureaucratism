@@ -92,7 +92,7 @@ const HALLS = [
 const PILOT: {
   id: string;
   note?: { en: string; zh: string };
-  runs: { cond: "full" | "flat"; min: number; g: "●" | "✕" | "■" | "○" | "⚡" }[];
+  runs: { cond: "full" | "flat"; min: number; g: "●" | "✕" | "■" | "○" | "⚡"; w: number; mm: number }[];
   attr: { en: string; zh: string };
   fair: { en: string; zh: string };
   q: { en: string; zh: string };
@@ -101,11 +101,11 @@ const PILOT: {
     id: "P1",
     note: { en: "5 runs — practice effects, qualitative only", zh: "5 场——学习效应，只作定性" },
     runs: [
-      { cond: "flat", min: 3, g: "■" },
-      { cond: "full", min: 8, g: "✕" },
-      { cond: "flat", min: 14, g: "■" },
-      { cond: "flat", min: 15, g: "○" },
-      { cond: "full", min: 4, g: "○" },
+      { cond: "flat", min: 3, g: "■", w: 1, mm: 0 },
+      { cond: "full", min: 8, g: "✕", w: 1, mm: 0 },
+      { cond: "flat", min: 14, g: "■", w: 3, mm: 0 },
+      { cond: "flat", min: 15, g: "○", w: 3, mm: 1 },
+      { cond: "full", min: 4, g: "○", w: 2, mm: 7 },
     ],
     attr: { en: "the back-office designers", zh: "后台设计者" },
     fair: { en: "couldn't feel fairness anywhere", zh: "没感觉到流程的公平" },
@@ -117,8 +117,8 @@ const PILOT: {
   {
     id: "P2",
     runs: [
-      { cond: "flat", min: 5, g: "●" },
-      { cond: "full", min: 328, g: "●" },
+      { cond: "flat", min: 5, g: "●", w: 4, mm: 0 },
+      { cond: "full", min: 328, g: "●", w: 5, mm: 39 },
     ],
     attr: { en: "“the system”", zh: "“系统”" },
     fair: { en: "nowhere for fairness to show up", zh: "没觉得公平能体现在哪里" },
@@ -127,9 +127,9 @@ const PILOT: {
   {
     id: "P3",
     runs: [
-      { cond: "full", min: 2, g: "○" },
-      { cond: "full", min: 30, g: "○" },
-      { cond: "flat", min: 9, g: "●" },
+      { cond: "full", min: 2, g: "○", w: 2, mm: 0 },
+      { cond: "full", min: 30, g: "○", w: 5, mm: 17 },
+      { cond: "flat", min: 9, g: "●", w: 2, mm: 0 },
     ],
     attr: { en: "the counter clerks", zh: "柜台" },
     fair: { en: "fair = doing what was said", zh: "公平在于说到做到" },
@@ -138,8 +138,8 @@ const PILOT: {
   {
     id: "P4",
     runs: [
-      { cond: "flat", min: 7, g: "○" },
-      { cond: "full", min: 21, g: "○" },
+      { cond: "flat", min: 7, g: "○", w: 3, mm: 0 },
+      { cond: "full", min: 21, g: "○", w: 2, mm: 0 },
     ],
     attr: { en: "the system vs. counter mismatch", zh: "系统与柜台的不一致" },
     fair: { en: "the strict one was the fair one", zh: "严格审查的那次才公平" },
@@ -149,9 +149,9 @@ const PILOT: {
     id: "P5",
     note: { en: "both endings were connection failures, not choices", zh: "两轮均因技术中断结束，非主动放弃" },
     runs: [
-      { cond: "full", min: 35, g: "⚡" },
-      { cond: "full", min: 16, g: "○" },
-      { cond: "flat", min: 25, g: "⚡" },
+      { cond: "full", min: 35, g: "⚡", w: 3, mm: 12 },
+      { cond: "full", min: 16, g: "○", w: 4, mm: 4 },
+      { cond: "flat", min: 25, g: "⚡", w: 6, mm: 8 },
     ],
     attr: { en: "the procedures and their rules", zh: "流程与规章设计" },
     fair: { en: "fair = efficient, one-stop", zh: "公平＝高效、不折返" },
@@ -163,9 +163,9 @@ const PILOT: {
   {
     id: "P6",
     runs: [
-      { cond: "flat", min: 99, g: "●" },
-      { cond: "full", min: 164, g: "○" },
-      { cond: "full", min: 270, g: "○" },
+      { cond: "flat", min: 99, g: "●", w: 4, mm: 0 },
+      { cond: "full", min: 164, g: "○", w: 2, mm: 0 },
+      { cond: "full", min: 270, g: "○", w: 4, mm: 20 },
     ],
     attr: { en: "myself", zh: "我自己" },
     fair: { en: "fair = symmetric power, proportionate scrutiny", zh: "公平＝权力对等、审查相称" },
@@ -175,6 +175,26 @@ const PILOT: {
     },
   },
 ];
+
+
+function Trace({ cond, min, w, mm }: { cond: "full" | "flat"; min: number; w: number; mm: number }) {
+  const L = Math.max(30, Math.round(Math.sqrt(min) * 13));
+  const col = cond === "full" ? "#d98a72" : "#8fb0dc";
+  const dots = Array.from({ length: w }, (_, i) => 8 + (L - 16) * (w === 1 ? 0.5 : i / (w - 1)));
+  const ticks = Math.min(mm, 24);
+  const tickXs = Array.from({ length: ticks }, (_, i) => 6 + ((L - 12) * (i + 0.5)) / ticks);
+  return (
+    <svg width={L} height={26} className="st-jtr" aria-hidden>
+      <line x1={3} y1={17} x2={L - 3} y2={17} stroke={col} strokeWidth={2} />
+      {tickXs.map((x, i) => (
+        <line key={"t" + i} x1={x} y1={6} x2={x} y2={12} stroke="#a8cf90" strokeWidth={1} opacity={0.85} />
+      ))}
+      {dots.map((x, i) => (
+        <circle key={"d" + i} cx={x} cy={17} r={2.4} fill="#0a0d12" stroke={col} strokeWidth={1.3} />
+      ))}
+    </svg>
+  );
+}
 
 export default function StudyPage() {
   const [lang, setLang] = useState<Lang>("en");
@@ -896,6 +916,11 @@ export default function StudyPage() {
 
           {/* joint display — did × felt × said */}
           <div className="st-joint">
+            <div className="st-jph">
+              <b>[ FIG. H-1 ]</b>
+              <span>{L("JOINT DISPLAY — SIX HUMANS · EIGHTEEN SESSIONS", "联合展示——六个人 · 十八场")}</span>
+              <i className="st-jbc" aria-hidden />
+            </div>
             <div className="st-jhead">
               <span>{L("DID — sessions (bar = duration)", "所为——场次（条长＝时长）")}</span>
               <span>{L("FELT — blame · fairness", "所感——归因 · 公平")}</span>
@@ -907,15 +932,12 @@ export default function StudyPage() {
                   <b className="mono">{p.id}</b>
                   <div className="st-jruns">
                     {p.runs.map((r, i) => (
-                      <span
-                        key={i}
-                        className={"st-jrun " + r.cond}
-                        style={{ width: Math.max(26, Math.round(Math.sqrt(r.min) * 13)) }}
-                        title={`${r.cond} · ${r.min} min`}
-                      >
-                        <i>{r.g}</i>
-                        {r.min}
-                        {L("m", "分")}
+                      <span key={i} className="st-jtrace" title={`${r.cond} · ${r.min} min · ${r.w} windows · ${r.mm} memos`}>
+                        <Trace cond={r.cond} min={r.min} w={r.w} mm={r.mm} />
+                        <span className="st-jm">
+                          {r.min}
+                          {L("m", "分")} {r.g}
+                        </span>
                       </span>
                     ))}
                   </div>
@@ -929,12 +951,13 @@ export default function StudyPage() {
               </div>
             ))}
             <div className="st-jlegend mono">
-              <span className="st-jrun full" style={{ width: 40 }}>
-                FULL
+              <span>
+                <i className="st-jsw full" /> FULL
               </span>
-              <span className="st-jrun flat" style={{ width: 40 }}>
-                FLAT
+              <span>
+                <i className="st-jsw flat" /> FLAT
               </span>
+              <span>{L("dots = windows visited · green ticks = internal memos", "轨上圆点＝走过的窗口 · 绿色刻线＝内部函件")}</span>
               <span>{L("● resolved · ✕ rejected · ■ closed by the hall · ○ walked away · ⚡ connection failure", "● 办成 · ✕ 驳回 · ■ 被机构终止 · ○ 离开 · ⚡ 技术中断")}</span>
             </div>
           </div>
@@ -942,21 +965,24 @@ export default function StudyPage() {
           {/* the three spectra */}
           <div className="st-jsynth">
             <div>
-              <b>{L("0 / 6 asked for a manager.", "六个人，零人想找经理。")}</b>
+              <span className="st-jbig">0/6</span>
+              <b>{L("asked for a manager", "想找经理的人")}</b>
               {L(
                 " The appeal instinct never fired. In its place: resignation, a paid-service imagining, adversarial probing, a wish for a navigator, trust in the machine, and “humans would be no better.”",
                 " 申诉本能一次都没有点燃。取而代之的是：认命内化、付费服务想象、对抗博弈、导航需求、机器信任、以及“真人也好不到哪去”。"
               )}
             </div>
             <div>
-              <b>{L("Six people, six different places to put the blame.", "六个人，六个互不重合的归因对象。")}</b>
+              <span className="st-jbig">6</span>
+              <b>{L("different places the blame landed", "互不重合的归因对象")}</b>
               {L(
                 " Clerk, designer, system-counter mismatch, the rules, the abstract system, oneself — responsibility never landed twice in the same spot. Diffusion, embodied.",
                 " 柜台、设计者、系统与柜台的不一致、流程规章、抽象的“系统”、我自己——责任没有两次落在同一处。责任弥散，有了人形。"
               )}
             </div>
             <div>
-              <b>{L("Five different fairnesses.", "五种互不相同的公平。")}</b>
+              <span className="st-jbig">5</span>
+              <b>{L("different fairnesses", "互不相同的公平")}</b>
               {L(
                 " Keeping one's word; strict diligence; one-stop efficiency; symmetric, proportionate power; and “fairness has nowhere to show up.” Same halls, five yardsticks.",
                 " 说到做到；严格尽责；高效一站；权力对等与相称；以及“公平无处体现”。同样的大厅，五把尺子。"

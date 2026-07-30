@@ -1956,11 +1956,105 @@ textarea {
 /* ── study · joint display (did × felt × said) ── */
 .st-joint {
   margin: 34px 0 26px;
+  position: relative;
   border: 1px solid #232b38;
   background:
     linear-gradient(rgba(130, 150, 180, 0.045) 1px, transparent 1px) 0 0 / 26px 26px,
     linear-gradient(90deg, rgba(130, 150, 180, 0.045) 1px, transparent 1px) 0 0 / 26px 26px,
     #090c11;
+}
+
+.st-joint::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 14px;
+  height: 14px;
+  border-top: 1px solid #d98a72;
+  border-left: 1px solid #d98a72;
+}
+.st-joint::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 14px;
+  height: 14px;
+  border-bottom: 1px solid #d98a72;
+  border-right: 1px solid #d98a72;
+}
+.st-jph {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #232b38;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 1.6px;
+  color: #78849a;
+  background: rgba(11, 14, 20, 0.7);
+}
+.st-jph b {
+  color: #d98a72;
+  font-weight: 500;
+}
+.st-jbc {
+  margin-left: auto;
+  width: 74px;
+  height: 11px;
+  opacity: 0.45;
+  background: repeating-linear-gradient(
+    90deg,
+    #6b7686 0 1px,
+    transparent 1px 3px,
+    #6b7686 3px 5px,
+    transparent 5px 6px,
+    #6b7686 6px 9px,
+    transparent 9px 12px
+  );
+}
+.st-jtrace {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 2px 9px 2px 4px;
+  border: 1px solid #1a2029;
+  background: rgba(13, 17, 24, 0.55);
+}
+.st-jtr {
+  display: block;
+}
+.st-jm {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.5px;
+  color: #8291a6;
+  white-space: nowrap;
+}
+.st-jsw {
+  display: inline-block;
+  width: 22px;
+  height: 3px;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+.st-jsw.full {
+  background: #d98a72;
+}
+.st-jsw.flat {
+  background: #8fb0dc;
+}
+.st-jbig {
+  display: block;
+  font-family: "Archivo", -apple-system, sans-serif;
+  font-weight: 800;
+  font-size: 42px;
+  line-height: 1;
+  letter-spacing: -1px;
+  color: #e8eef8;
+  margin-bottom: 9px;
 }
 .st-jhead,
 .st-jrow {
@@ -2081,9 +2175,13 @@ textarea {
 }
 .st-jsynth b {
   display: block;
-  color: #e8eef8;
-  font-size: 13.5px;
-  margin-bottom: 7px;
+  color: #d98a72;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
 }
 .st-jfoot {
   font-size: 12.5px;

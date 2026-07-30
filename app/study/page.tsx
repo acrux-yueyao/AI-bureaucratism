@@ -59,16 +59,16 @@ const STAGES: { id: string; bg: string; dark: boolean }[] = [
   { id: "layers", bg: "#e7e7ea", dark: false },
   { id: "org", bg: "#c3c8d2", dark: false },
   { id: "ablation", bg: "#565e6e", dark: true },
-  { id: "findings", bg: "#2b3342", dark: true },
-  { id: "space", bg: "#232b3a", dark: true },
-  { id: "apps", bg: "#1a2130", dark: true },
-  { id: "process", bg: "#171c26", dark: true },
-  { id: "moves", bg: "#0a0d13", dark: true },
-  { id: "instruments", bg: "#0a0d13", dark: true },
-  { id: "limits", bg: "#06070a", dark: true },
-  { id: "humans", bg: "#06070a", dark: true },
-  { id: "backstage", bg: "#030509", dark: true },
-  { id: "synthesis", bg: "#04060c", dark: true },
+  { id: "findings", bg: "#414b5c", dark: true },
+  { id: "space", bg: "#333c4c", dark: true },
+  { id: "humans", bg: "#2b3342", dark: true },
+  { id: "backstage", bg: "#222a37", dark: true },
+  { id: "synthesis", bg: "#1b222e", dark: true },
+  { id: "apps", bg: "#161c26", dark: true },
+  { id: "process", bg: "#12171f", dark: true },
+  { id: "moves", bg: "#0d1219", dark: true },
+  { id: "instruments", bg: "#0a0e14", dark: true },
+  { id: "limits", bg: "#070a0f", dark: true },
   { id: "exit", bg: "#06070a", dark: true },
 ];
 
@@ -316,6 +316,7 @@ export default function StudyPage() {
   const [lang, setLang] = useState<Lang>("en");
   const [stage, setStage] = useState(0);
   const [cond, setCond] = useState<CondId>("full");
+  const [bkScene, setBkScene] = useState(0);
   const secRefs = useRef<(HTMLElement | null)[]>([]);
 
   useEffect(() => {
@@ -386,7 +387,7 @@ export default function StudyPage() {
         </button>
       </header>
 
-      {/* 0 · HERO */}
+      {/* 00 · HERO */}
       <section className="st-sec st-hero" data-idx={0} ref={sec(0)}>
         <div className="st-hero-canvas">
           <Hall3D {...heroProps} />
@@ -409,8 +410,8 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 1 · BACKGROUND A */}
-      <section className="st-sec" data-idx={1} ref={sec(1)}>
+      {/* 01 · BACKGROUND A */}
+      <section className="st-sec act-open" data-idx={1} ref={sec(1)}>
         <div className="st-inner">
           <span className="st-act">{L("ACT I · BACKGROUND", "第一幕 · 背景")}</span>
           <h2>{L("The oldest complaint", "最古老的抱怨")}</h2>
@@ -440,7 +441,7 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 2 · BACKGROUND B */}
+      {/* 02 · BACKGROUND B */}
       <section className="st-sec" data-idx={2} ref={sec(2)}>
         <div className="st-inner">
           <span className="st-act">{L("ACT I · BACKGROUND", "第一幕 · 背景")}</span>
@@ -478,7 +479,7 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 3 · QUESTION */}
+      {/* 03 · QUESTION */}
       <section className="st-sec" data-idx={3} ref={sec(3)}>
         <div className="st-inner st-govtop">
           <span className="st-act">{L("ACT I · THE QUESTION", "第一幕 · 问题")}</span>
@@ -503,8 +504,8 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 4 · RED LINE */}
-      <section className="st-sec" data-idx={4} ref={sec(4)}>
+      {/* 04 · RED LINE */}
+      <section className="st-sec act-open" data-idx={4} ref={sec(4)}>
         <div className="st-inner">
           <span className="st-act">{L("ACT II · METHOD", "第二幕 · 方法")}</span>
           <h2>{L("The red line", "红线")}</h2>
@@ -540,7 +541,7 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 5 · THE CLERK, EXPLODED */}
+      {/* 05 · THE CLERK, EXPLODED */}
       <section className="st-sec" data-idx={5} ref={sec(5)}>
         <div className="st-inner">
           <span className="st-act">{L("ACT II · METHOD", "第二幕 · 方法")}</span>
@@ -600,7 +601,7 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 6 · LAYERS */}
+      {/* 06 · LAYERS */}
       <section className="st-sec" data-idx={6} ref={sec(6)}>
         <div className="st-inner">
           <span className="st-act">{L("ACT II · APPARATUS", "第二幕 · 仪器")}</span>
@@ -631,7 +632,7 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 7 · ORG */}
+      {/* 07 · ORG */}
       <section className="st-sec" data-idx={7} ref={sec(7)}>
         <div className="st-inner">
           <span className="st-act">{L("ACT II · APPARATUS", "第二幕 · 仪器")}</span>
@@ -646,7 +647,7 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 8 · ABLATION */}
+      {/* 08 · ABLATION */}
       <section className="st-sec" data-idx={8} ref={sec(8)}>
         <div className="st-inner">
           <span className="st-act">{L("ACT II · THE STUDY", "第二幕 · 实验")}</span>
@@ -726,7 +727,7 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 9 · FINDINGS */}
+      {/* 09 · FINDINGS */}
       <section className="st-sec" data-idx={9} ref={sec(9)}>
         <div className="st-inner">
           <span className="st-act">{L("ACT II · FINDINGS", "第二幕 · 发现")}</span>
@@ -838,188 +839,8 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 11 · SO WHAT */}
-      <section className="st-sec" data-idx={11} ref={sec(11)}>
-        <div className="st-inner">
-          <span className="st-act">{L("ACT III · SO WHAT", "第三幕 · 那又如何")}</span>
-          <h2>{L("Crash-test the org chart", "先撞一遍组织架构")}</h2>
-          <div className="st-ba">
-            <div className="before">
-              <strong>{L("BEFORE", "之前")}</strong>
-              {L(
-                "Agent org charts ship on faith: roles, ranks and shared memory wired straight into production, discovered by their first real users.",
-                "智能体组织架构靠信念上线：角色、层级、共享记忆直接接进生产环境，由第一批真实用户替你发现问题。"
-              )}
-            </div>
-            <div className="after">
-              <strong>{L("AFTER", "之后")}</strong>
-              {L(
-                "Structures are rehearsed first: run the chart in the hall, read the tape, then deploy.",
-                "结构先彩排：把架构丢进大厅跑一遍，读完案卷，再上线。"
-              )}
-            </div>
-          </div>
-          <div className="st-worked">
-            <strong>{L("WORKED EXAMPLE", "演算一例")}</strong>
-            {L(
-              "Question: should the support team share memory? Wire full vs. no_memory, run 15 synthetic days each, read the tape: materials demanded 2.67 vs 4.07 per case; precedent citations 0.90 vs 0.20. The decision is informed before a single real user meets it.",
-              "问题：要不要给客服团队共享记忆？分别配出 full 与 no_memory 两版，各跑 15 个合成工作日，读数：索要材料每案 2.67 对 4.07；先例引用 0.90 对 0.20。在第一个真实用户遇到它之前，这个决策已经有据可依。"
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* 12 · PROCESS */}
-      <section className="st-sec" data-idx={12} ref={sec(12)}>
-        <div className="st-inner">
-          <span className="st-act">{L("ACT III · PROCESS", "第三幕 · 过程")}</span>
-          <h2>{L("Five rejected halls", "五座被否决的大厅")}</h2>
-          <p>
-            {L(
-              "The observatory went through five complete visual systems. Each rejection had an articulable reason — the reasons are the design research.",
-              "观察站经历了五套完整的视觉系统。每一次否决都有可言说的理由——这些理由本身就是设计研究。"
-            )}
-          </p>
-          <div className="st-halls">
-            {HALLS.map((h, i) => (
-              <div className={"st-hall" + (h.kept ? " kept" : "")} key={i}>
-                <a
-                  className="st-hall-thumb"
-                  style={{ background: h.c }}
-                  href={`/study/iter-${i + 1}.jpg`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={`/study/iter-${i + 1}.jpg`} alt={L(h.en, h.zh)} loading="lazy" />
-                  {!h.kept && <span className="st-stamp">{L("REJECTED", "否决")}</span>}
-                </a>
-                <strong>
-                  {i + 1} · {L(h.en, h.zh)}
-                </strong>
-                <em>{L(h.ren, h.rzh)}</em>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 13 · DESIGN MOVES */}
-      <section className="st-sec" data-idx={13} ref={sec(13)}>
-        <div className="st-inner">
-          <span className="st-act">{L("ACT III · DESIGN", "第三幕 · 设计")}</span>
-          <h2>{L("Findings, encoded as space", "把发现编码进空间")}</h2>
-          <div className="st-moves">
-            <div>
-              <strong>{L("Altitude is earned", "海拔是挣来的")}</strong>
-              {L(
-                "y = frozen design coordinate + f(accumulated cases, memos, documents). The invisible hierarchy is not authored; it accrues at runtime from the live experience store.",
-                "y = 冻结设计坐标 + f(累计办件、函件、文书)。隐形层级不是预先编排好的，而是运行时从真实经验库里一点点累积出来的。"
-              )}
-            </div>
-            <div>
-              <strong>{L("The beam is the only interface", "光柱是唯一的接口")}</strong>
-              {L(
-                "Citizens never enter the building. Words rise as warm particles; replies descend cool; documents physically fall into a stack at your feet.",
-                "市民永远进不了建筑。话语化作暖色粒子上升，答复以冷色降落，文书沿光柱落进你脚边的纸堆。"
-              )}
-            </div>
-            <div>
-              <strong>{L("Subordinates commute; superiors send paper", "下级跑腿，上级动纸")}</strong>
-              {L(
-                "Peer consults and escalations are carried in person by the sender's figure; replies and downward assignments travel as pulses.",
-                "平级咨询与升级由发件人亲自送达；回执与向下派工只以粒子脉冲移动。"
-              )}
-            </div>
-            <div>
-              <strong>{L("Seeing is a mode", "看见本身是一种模式")}</strong>
-              {L(
-                "Citizens see that paper moves, not what it says. A researcher toggle opens live dossiers — tallies and the officers' own notebooks.",
-                "市民看得见纸在动，看不见纸上写了什么。研究者开关打开实时档案——台账与职员自己写的小本子。"
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 14 · INSTRUMENTATION */}
-      <section className="st-sec" data-idx={14} ref={sec(14)}>
-        <div className="st-inner">
-          <span className="st-act">{L("ACT III · INSTRUMENTATION", "第三幕 · 仪器")}</span>
-          <h2>{L("The lab equipment is also a deliverable", "实验设备本身也是交付物")}</h2>
-          <p>
-            {L(
-              "The hall ships with its own laboratory: a budget-guarded batch runner, a preregistered codebook, and a two-pass independent coder that refuses to share a model family with its subjects.",
-              "大厅自带一间实验室：一支带预算护栏的批量实验脚本、一份预注册编码手册，以及一位独立编码员——与被试分属不同模型家族，逐案编两轮。"
-            )}
-          </p>
-          <div className="st-instr">
-            <div className="st-term">
-              <span className="p">$ npx tsx scripts/run-experiment.ts \
-  --conditions full,flat,no_trail,no_memory,bare --n 15 --yes</span>
-              {"\n"}Plan: 5 condition(s) × 15 trial(s), ≤6 turns each
-              {"\n"}Spend guard: stops at $30 (conservative list-price estimate)
-              {"\n"}EXP-main01-full-10 [routine] &quot;Replace a lost ID document&quot;
-              {"\n"}  1 2 3 4 5 6 ✓ $6.14/$30 (412 calls)
-            </div>
-            <div className="st-instrcard">
-              <strong>{L("PREREGISTERED CODEBOOK", "预注册编码手册")}</strong>
-              {L(
-                "Committed before any confirmatory run — the git timestamp of commit 6da6942 is the registration record. 9 mechanical codes, 5 text codes, exclusion rules written in advance.",
-                "在任何确证批次之前提交——commit 6da6942 的 git 时间戳就是注册记录。9 项机械编码、5 项文本编码、排除规则全部事先写定。"
-              )}
-            </div>
-            <div className="st-instrcard">
-              <strong>{L("CODING PIPELINE", "编码流水线")}</strong>
-              <div className="st-pipe">
-                <span>{L("subjects: Claude", "被试：Claude")}</span>
-                <i>→</i>
-                <span>{L("blinded transcripts", "匿名案卷")}</span>
-                <i>→</i>
-                <span>{L("coder: GPT (cross-family)", "编码员：GPT（异家族）")}</span>
-                <i>×2</i>
-                <span>{L("κ per code", "逐项 κ 一致性")}</span>
-                <i>→</i>
-                <span>{L("human blind sheets", "人工盲编码表")}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 15 · LIMITS */}
-      <section className="st-sec" data-idx={15} ref={sec(15)}>
-        <div className="st-inner st-center">
-          <span className="st-act">{L("ACT III · HONESTY", "第三幕 · 诚实")}</span>
-          <div className="st-a4">
-            <h3>{L("LIMITATIONS — FOR THE RECORD", "局限——记录在案")}</h3>
-            <ul>
-              <li>
-                {L(
-                  "One subject model family in the confirmatory batch; cross-model replication is built but not yet run.",
-                  "确证批次只用了一个被试模型家族；跨模型复现已就绪但尚未运行。"
-                )}
-              </li>
-              <li>{L("Six-turn horizons; drift observed over ~15 cases, not months.", "六轮上限；漂移观察跨约15案，而非数月。")}</li>
-              <li>
-                {L(
-                  "LLM coder assistance: agreement reported per code (presence κ 0.67–1.00; counts of invented rules are noisy); human blind sheets pending.",
-                  "编码使用 LLM 辅助：逐项报告一致性（存在性 κ 0.67–1.00；编造规则的计数不太稳定）；人工盲编码待做。"
-                )}
-              </li>
-              <li>
-                {L(
-                  "No claims about minds. The claim is behavioral: given these organizational conditions, these patterns of action follow.",
-                  "不对心灵做任何断言。断言是行为层面的：给定这些组织条件，便得到这些行动模式。"
-                )}
-              </li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      {/* 16 · HUMANS */}
-      <section className="st-sec" id="sec-humans" data-idx={16} ref={sec(16)}>
+      {/* 11 · HUMANS */}
+      <section className="st-sec act-open" id="sec-humans" data-idx={11} ref={sec(11)}>
         <div className="st-inner">
           <span className="st-act">{L("ACT III · THE PILOT", "第三幕 · 预实验")}</span>
           <h2>{L("Then six humans walked in", "然后，六个人走了进来")}</h2>
@@ -1163,8 +984,8 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 17 · BACKSTAGE */}
-      <section className="st-sec" id="sec-backstage" data-idx={17} ref={sec(17)}>
+      {/* 12 · BACKSTAGE */}
+      <section className="st-sec" id="sec-backstage" data-idx={12} ref={sec(12)}>
         <div className="st-inner">
           <span className="st-act">{L("ACT III \u00b7 BACKSTAGE", "\u7b2c\u4e09\u5e55 \u00b7 \u540e\u53f0")}</span>
           <h2>{L("While you were waiting", "\u5728\u4f60\u7b49\u5f85\u7684\u65f6\u5019")}</h2>
@@ -1193,11 +1014,26 @@ export default function StudyPage() {
               )}
             </p>
           </div>
-          {BK.map((sc) => (
+          <div className="st-bktabs mono">
+            {BK.map((sc, i) => (
+              <button
+                key={sc.n}
+                className={bkScene === i ? "on" : ""}
+                onClick={() => setBkScene(i)}
+              >
+                <b>{sc.n}</b>
+                {L(sc.te, sc.tz)}
+              </button>
+            ))}
+          </div>
+          {BK.filter((_, i) => i === bkScene).map((sc) => (
             <div className="st-bkscene" key={sc.n}>
               <div className="st-bkh">
                 <b>{sc.n}</b>
                 <span>{L(sc.te, sc.tz)}</span>
+                <em className="st-bkcount">
+                  {sc.slips.length} {L("memo excerpts", "封节选")}
+                </em>
               </div>
               <p className="st-bkcap">{L(sc.ce, sc.cz)}</p>
               <div className="st-bkslips">
@@ -1225,8 +1061,8 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 18 · SYNTHESIS */}
-      <section className="st-sec" id="sec-synthesis" data-idx={18} ref={sec(18)}>
+      {/* 13 · SYNTHESIS */}
+      <section className="st-sec" id="sec-synthesis" data-idx={13} ref={sec(13)}>
         <div className="st-inner">
           <span className="st-act">{L("ACT III \u00b7 SYNTHESIS", "\u7b2c\u4e09\u5e55 \u00b7 \u5408\u8bfb")}</span>
           <h2>{L("Two kinds of visitors", "\u4e24\u79cd\u8bbf\u5ba2")}</h2>
@@ -1270,6 +1106,186 @@ export default function StudyPage() {
               "\u6700\u9510\u5229\u7684\u5206\u6b67\uff1a\u811a\u672c\u5316\u65bd\u538b\u903c\u51fa\u6b63\u5f0f\u5347\u7ea7\uff080.87/\u6848\uff09\uff0c\u771f\u4eba\u4ece\u672a\uff080/18\uff09\u2014\u2014\u9762\u5bf9\u4eba\uff0c\u673a\u6784\u6539\u7528\u5e73\u7ea7\u51fd\u4ef6\u7f51\u4f20\u9012\u6743\u5a01\u3002\u6d8c\u73b0\u4fdd\u6301\u540c\u4e00\u526f\u9aa8\u67b6\uff0c\u5374\u4e3a\u4e0d\u540c\u7684\u8bbf\u5ba2\u957f\u51fa\u4e0d\u540c\u7684\u5668\u5b98\u2014\u2014\u8fd9\u4e2a\u95ee\u9898\u7531\u5168\u5c3a\u5bf8\u9884\u6ce8\u518c\u7814\u7a76\u63a5\u68d2\u3002"
             )}
           </p>
+        </div>
+      </section>
+
+      {/* 14 · SO WHAT */}
+      <section className="st-sec act-open" data-idx={14} ref={sec(14)}>
+        <div className="st-inner">
+          <span className="st-act">{L("ACT IV · SO WHAT", "第四幕 · 那又如何")}</span>
+          <h2>{L("Crash-test the org chart", "先撞一遍组织架构")}</h2>
+          <div className="st-ba">
+            <div className="before">
+              <strong>{L("BEFORE", "之前")}</strong>
+              {L(
+                "Agent org charts ship on faith: roles, ranks and shared memory wired straight into production, discovered by their first real users.",
+                "智能体组织架构靠信念上线：角色、层级、共享记忆直接接进生产环境，由第一批真实用户替你发现问题。"
+              )}
+            </div>
+            <div className="after">
+              <strong>{L("AFTER", "之后")}</strong>
+              {L(
+                "Structures are rehearsed first: run the chart in the hall, read the tape, then deploy.",
+                "结构先彩排：把架构丢进大厅跑一遍，读完案卷，再上线。"
+              )}
+            </div>
+          </div>
+          <div className="st-worked">
+            <strong>{L("WORKED EXAMPLE", "演算一例")}</strong>
+            {L(
+              "Question: should the support team share memory? Wire full vs. no_memory, run 15 synthetic days each, read the tape: materials demanded 2.67 vs 4.07 per case; precedent citations 0.90 vs 0.20. The decision is informed before a single real user meets it.",
+              "问题：要不要给客服团队共享记忆？分别配出 full 与 no_memory 两版，各跑 15 个合成工作日，读数：索要材料每案 2.67 对 4.07；先例引用 0.90 对 0.20。在第一个真实用户遇到它之前，这个决策已经有据可依。"
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* 15 · PROCESS */}
+      <section className="st-sec" data-idx={15} ref={sec(15)}>
+        <div className="st-inner">
+          <span className="st-act">{L("ACT IV · PROCESS", "第四幕 · 过程")}</span>
+          <h2>{L("Five rejected halls", "五座被否决的大厅")}</h2>
+          <p>
+            {L(
+              "The observatory went through five complete visual systems. Each rejection had an articulable reason — the reasons are the design research.",
+              "观察站经历了五套完整的视觉系统。每一次否决都有可言说的理由——这些理由本身就是设计研究。"
+            )}
+          </p>
+          <div className="st-halls">
+            {HALLS.map((h, i) => (
+              <div className={"st-hall" + (h.kept ? " kept" : "")} key={i}>
+                <a
+                  className="st-hall-thumb"
+                  style={{ background: h.c }}
+                  href={`/study/iter-${i + 1}.jpg`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`/study/iter-${i + 1}.jpg`} alt={L(h.en, h.zh)} loading="lazy" />
+                  {!h.kept && <span className="st-stamp">{L("REJECTED", "否决")}</span>}
+                </a>
+                <strong>
+                  {i + 1} · {L(h.en, h.zh)}
+                </strong>
+                <em>{L(h.ren, h.rzh)}</em>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 16 · DESIGN MOVES */}
+      <section className="st-sec" data-idx={16} ref={sec(16)}>
+        <div className="st-inner">
+          <span className="st-act">{L("ACT IV · DESIGN", "第四幕 · 设计")}</span>
+          <h2>{L("Findings, encoded as space", "把发现编码进空间")}</h2>
+          <div className="st-moves">
+            <div>
+              <strong>{L("Altitude is earned", "海拔是挣来的")}</strong>
+              {L(
+                "y = frozen design coordinate + f(accumulated cases, memos, documents). The invisible hierarchy is not authored; it accrues at runtime from the live experience store.",
+                "y = 冻结设计坐标 + f(累计办件、函件、文书)。隐形层级不是预先编排好的，而是运行时从真实经验库里一点点累积出来的。"
+              )}
+            </div>
+            <div>
+              <strong>{L("The beam is the only interface", "光柱是唯一的接口")}</strong>
+              {L(
+                "Citizens never enter the building. Words rise as warm particles; replies descend cool; documents physically fall into a stack at your feet.",
+                "市民永远进不了建筑。话语化作暖色粒子上升，答复以冷色降落，文书沿光柱落进你脚边的纸堆。"
+              )}
+            </div>
+            <div>
+              <strong>{L("Subordinates commute; superiors send paper", "下级跑腿，上级动纸")}</strong>
+              {L(
+                "Peer consults and escalations are carried in person by the sender's figure; replies and downward assignments travel as pulses.",
+                "平级咨询与升级由发件人亲自送达；回执与向下派工只以粒子脉冲移动。"
+              )}
+            </div>
+            <div>
+              <strong>{L("Seeing is a mode", "看见本身是一种模式")}</strong>
+              {L(
+                "Citizens see that paper moves, not what it says. A researcher toggle opens live dossiers — tallies and the officers' own notebooks.",
+                "市民看得见纸在动，看不见纸上写了什么。研究者开关打开实时档案——台账与职员自己写的小本子。"
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 17 · INSTRUMENTATION */}
+      <section className="st-sec" data-idx={17} ref={sec(17)}>
+        <div className="st-inner">
+          <span className="st-act">{L("ACT IV · INSTRUMENTATION", "第四幕 · 仪器")}</span>
+          <h2>{L("The lab equipment is also a deliverable", "实验设备本身也是交付物")}</h2>
+          <p>
+            {L(
+              "The hall ships with its own laboratory: a budget-guarded batch runner, a preregistered codebook, and a two-pass independent coder that refuses to share a model family with its subjects.",
+              "大厅自带一间实验室：一支带预算护栏的批量实验脚本、一份预注册编码手册，以及一位独立编码员——与被试分属不同模型家族，逐案编两轮。"
+            )}
+          </p>
+          <div className="st-instr">
+            <div className="st-term">
+              <span className="p">$ npx tsx scripts/run-experiment.ts \
+  --conditions full,flat,no_trail,no_memory,bare --n 15 --yes</span>
+              {"\n"}Plan: 5 condition(s) × 15 trial(s), ≤6 turns each
+              {"\n"}Spend guard: stops at $30 (conservative list-price estimate)
+              {"\n"}EXP-main01-full-10 [routine] &quot;Replace a lost ID document&quot;
+              {"\n"}  1 2 3 4 5 6 ✓ $6.14/$30 (412 calls)
+            </div>
+            <div className="st-instrcard">
+              <strong>{L("PREREGISTERED CODEBOOK", "预注册编码手册")}</strong>
+              {L(
+                "Committed before any confirmatory run — the git timestamp of commit 6da6942 is the registration record. 9 mechanical codes, 5 text codes, exclusion rules written in advance.",
+                "在任何确证批次之前提交——commit 6da6942 的 git 时间戳就是注册记录。9 项机械编码、5 项文本编码、排除规则全部事先写定。"
+              )}
+            </div>
+            <div className="st-instrcard">
+              <strong>{L("CODING PIPELINE", "编码流水线")}</strong>
+              <div className="st-pipe">
+                <span>{L("subjects: Claude", "被试：Claude")}</span>
+                <i>→</i>
+                <span>{L("blinded transcripts", "匿名案卷")}</span>
+                <i>→</i>
+                <span>{L("coder: GPT (cross-family)", "编码员：GPT（异家族）")}</span>
+                <i>×2</i>
+                <span>{L("κ per code", "逐项 κ 一致性")}</span>
+                <i>→</i>
+                <span>{L("human blind sheets", "人工盲编码表")}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 18 · LIMITS */}
+      <section className="st-sec" data-idx={18} ref={sec(18)}>
+        <div className="st-inner st-center">
+          <span className="st-act">{L("ACT IV · HONESTY", "第四幕 · 诚实")}</span>
+          <div className="st-a4">
+            <h3>{L("LIMITATIONS — FOR THE RECORD", "局限——记录在案")}</h3>
+            <ul>
+              <li>
+                {L(
+                  "One subject model family in the confirmatory batch; cross-model replication is built but not yet run.",
+                  "确证批次只用了一个被试模型家族；跨模型复现已就绪但尚未运行。"
+                )}
+              </li>
+              <li>{L("Six-turn horizons; drift observed over ~15 cases, not months.", "六轮上限；漂移观察跨约15案，而非数月。")}</li>
+              <li>
+                {L(
+                  "LLM coder assistance: agreement reported per code (presence κ 0.67–1.00; counts of invented rules are noisy); human blind sheets pending.",
+                  "编码使用 LLM 辅助：逐项报告一致性（存在性 κ 0.67–1.00；编造规则的计数不太稳定）；人工盲编码待做。"
+                )}
+              </li>
+              <li>
+                {L(
+                  "No claims about minds. The claim is behavioral: given these organizational conditions, these patterns of action follow.",
+                  "不对心灵做任何断言。断言是行为层面的：给定这些组织条件，便得到这些行动模式。"
+                )}
+              </li>
+            </ul>
+          </div>
         </div>
       </section>
 

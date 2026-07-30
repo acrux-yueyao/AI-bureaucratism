@@ -2061,7 +2061,7 @@ textarea {
   display: grid;
   grid-template-columns: 1.1fr 0.8fr 1fr;
   gap: 18px;
-  padding: 14px 18px;
+  padding: 12px 18px;
   border-bottom: 1px solid #161c26;
 }
 .st-jhead {
@@ -2232,7 +2232,7 @@ textarea {
   vertical-align: middle;
 }
 .st-bkscene {
-  margin: 0 0 34px;
+  margin: 0 0 24px;
   border: 1px solid #1a2029;
   background:
     linear-gradient(rgba(130, 150, 180, 0.04) 1px, transparent 1px) 0 0 / 26px 26px,
@@ -2285,14 +2285,14 @@ textarea {
 .st-bkslips {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 .st-bkslip {
   border: 1px solid #1c2430;
   border-left: 3px solid #a8cf90;
   background: rgba(13, 17, 24, 0.75);
-  padding: 9px 14px 10px;
-  max-width: 720px;
+  padding: 8px 13px 9px;
+  max-width: 700px;
 }
 .st-bkslip:nth-child(even) {
   margin-left: 34px;
@@ -4617,4 +4617,77 @@ textarea {
 }
 .agnet.compact .pl-pathc b {
   font-size: 21px;
+}
+
+/* study · act rhythm — a hairline before each act's opening section */
+.st-sec.act-open .st-inner::before {
+  content: "";
+  display: block;
+  width: 42px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.28;
+  margin-bottom: 22px;
+}
+/* the pilot act opens the empirical human turn — give it a touch more air */
+#sec-humans .st-inner > p:first-of-type {
+  font-size: 15.5px;
+  line-height: 1.75;
+  max-width: 640px;
+}
+.st-bknet {
+  margin: 4px 0 24px;
+}
+
+/* study · backstage scene tabs */
+.st-bktabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.st-bktabs button {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 1.2px;
+  text-align: left;
+  color: #8291a6;
+  background: rgba(13, 17, 24, 0.55);
+  border: 1px solid #1c2430;
+  padding: 7px 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.st-bktabs button:hover {
+  border-color: #3a4658;
+  color: #dfe6f2;
+}
+.st-bktabs button.on {
+  border-color: #a8cf90;
+  color: #e8eef8;
+  background: rgba(168, 207, 144, 0.07);
+}
+.st-bktabs button b {
+  color: #a8cf90;
+  font-weight: 500;
+}
+.st-bkcount {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 8px;
+  letter-spacing: 1.2px;
+  color: #55617a;
+}
+
+@media (max-width: 900px) {
+  .agnet.compact .pl-netwrap,
+  .agnet .pl-netwrap {
+    grid-template-columns: 1fr;
+  }
+  .agnet .pl-netside {
+    min-height: 0;
+  }
 }

@@ -4691,3 +4691,62 @@ textarea {
     min-height: 0;
   }
 }
+
+/* study · design moves, figure-driven */
+.st-dz {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-top: 26px;
+}
+.st-dzf {
+  margin: 0;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(6, 8, 12, 0.5);
+  overflow: hidden;
+}
+.st-dzf.wide {
+  grid-column: 1 / -1;
+}
+.st-dzf img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+.st-dzf.wide img {
+  max-height: 420px;
+  object-fit: cover;
+  object-position: center 42%;
+}
+.st-dzf figcaption {
+  padding: 15px 17px 17px;
+  font-size: 13px;
+  line-height: 1.68;
+  color: currentColor;
+  opacity: 0.78;
+}
+.st-dzk {
+  display: block;
+  font-size: 8.5px;
+  letter-spacing: 1.5px;
+  color: #d98a72;
+  margin-bottom: 7px;
+  opacity: 0.95;
+}
+.st-dzf strong {
+  display: block;
+  font-size: 16.5px;
+  line-height: 1.25;
+  letter-spacing: -0.2px;
+  margin-bottom: 9px;
+  opacity: 1;
+}
+@media (max-width: 760px) {
+  .st-dz {
+    grid-template-columns: 1fr;
+  }
+  .st-dzf.wide img {
+    max-height: 260px;
+  }
+}

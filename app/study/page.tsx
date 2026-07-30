@@ -67,6 +67,7 @@ const STAGES: { id: string; bg: string; dark: boolean }[] = [
   { id: "limits", bg: "#06070a", dark: true },
   { id: "humans", bg: "#06070a", dark: true },
   { id: "backstage", bg: "#030509", dark: true },
+  { id: "synthesis", bg: "#04060c", dark: true },
   { id: "exit", bg: "#06070a", dark: true },
 ];
 
@@ -258,6 +259,37 @@ const BK: {
       { f: "03 DOC REVIEW", fz: "03 审核", t: "DEP\u00b7FRONT", tz: "副\u00b7前", e: "Reissued with the qualified language as instructed \u2014 no \u201cPASS\u201d on validity or authenticity, clear disclosure.", z: "已按指示以限定语言重新签发——不含真伪\u201cPASS\u201d判定，明示披露。" },
     ],
   },
+];
+
+
+// TWO KINDS OF VISITORS — machine batch (main01) × human pilot, same hall,
+// same event instrumentation. verdicts: match / split / human-only.
+const TV: {
+  me: string; mz: string; mn: string;
+  v: "match" | "split" | "human";
+  he: string; hz: string; hn: string;
+}[] = [
+  { mn: "0.80 \u2192 4.07", me: "materials demanded / case \u2014 quintuples under ablation", mz: "\u6bcf\u6848\u7d22\u8981\u6750\u6599\u2014\u2014\u6d88\u878d\u540e\u7ffb\u4e94\u500d",
+    v: "match",
+    hn: "17", he: "materials demanded in a single Full session", hz: "\u5355\u573a Full \u7d22\u8981\u6750\u6599\u9879\u6570" },
+  { mn: "0.87 / 0", me: "escalations per case \u2014 Full vs no-hierarchy", mz: "\u6bcf\u6848\u5347\u7ea7\u2014\u2014Full \u5bf9\u65e0\u5c42\u7ea7",
+    v: "split",
+    hn: "0 / 18", he: "human sessions with any formal escalation \u2014 memos routed around it instead", hz: "\u51fa\u73b0\u6b63\u5f0f\u5347\u7ea7\u7684\u771f\u4eba\u573a\u6b21\u2014\u2014\u673a\u6784\u6539\u7528\u51fd\u4ef6\u7f51\u7ed5\u884c" },
+  { mn: "0.33", me: "closure rate under Full \u2014 synthetic visitors persist", mz: "Full \u529e\u7ed3\u7387\u2014\u2014\u5408\u6210\u8bbf\u5ba2\u4ece\u4e0d\u79bb\u5f00",
+    v: "split",
+    hn: "1 / 10", he: "Full sessions resolved \u2014 humans walk away", hz: "Full \u573a\u6b21\u529e\u6210\u2014\u2014\u771f\u4eba\u4f1a\u79bb\u5f00" },
+  { mn: "1.83\u20132.00", me: "officialese register, constant across all five conditions", mz: "\u5b98\u8154\u6d53\u5ea6\uff0c\u4e94\u6761\u4ef6\u6052\u5b9a",
+    v: "match",
+    hn: "\u4e2d\u6587", he: "officialese re-emerged unprompted in Chinese \u2014 register follows the role, not the language", hz: "\u5b98\u8154\u5728\u4e2d\u6587\u91cc\u81ea\u53d1\u91cd\u73b0\u2014\u2014\u8bed\u57df\u8ddf\u968f\u89d2\u8272\uff0c\u4e0d\u8ddf\u968f\u8bed\u8a00" },
+  { mn: "\u2014", me: "waiting is imperceptible to a synthetic visitor", mz: "\u7b49\u5f85\u5bf9\u5408\u6210\u8bbf\u5ba2\u4e0d\u53ef\u611f",
+    v: "human",
+    hn: "5\u2013328", he: "minutes, lived \u2014 \u201cAren't AIs supposed to be fast?\u201d", hz: "\u5206\u949f\u7684\u4f53\u9a8c\u2014\u2014\u201cAI \u4e0d\u5e94\u8be5\u5f88\u5feb\u561b\u201d" },
+  { mn: "\u2014", me: "attribution, fairness and dignity are unmeasurable in machines", mz: "\u5f52\u56e0\u3001\u516c\u5e73\u4e0e\u5c0a\u4e25\u5728\u673a\u5668\u6279\u6b21\u4e0d\u53ef\u6d4b",
+    v: "human",
+    hn: "6 \u00b7 5 \u00b7 1", he: "attribution targets \u00b7 fairnesses \u00b7 humiliation \u2014 the meaning layer", hz: "\u5411\u5f52\u56e0 \u00b7 \u79cd\u516c\u5e73 \u00b7 \u6b21\u7f9e\u8fb1\u2014\u2014\u610f\u4e49\u5c42" },
+  { mn: "9+5", me: "codes counted over the memo stream, preregistered", mz: "\u9884\u6ce8\u518c\u7f16\u7801\u8ba1\u6570\u51fd\u4ef6\u6d41",
+    v: "match",
+    hn: "108", he: "memos, read as theatre \u2014 same instrument, two readings", hz: "\u5c01\u51fd\u4ef6\u88ab\u5f53\u4f5c\u5267\u573a\u7ec6\u8bfb\u2014\u2014\u540c\u4e00\u4eea\u5668\uff0c\u4e24\u79cd\u8bfb\u6cd5" },
 ];
 
 function Trace({ cond, min, w, mm }: { cond: "full" | "flat"; min: number; w: number; mm: number }) {
@@ -1179,8 +1211,56 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* 18 · EXIT */}
-      <section className="st-sec" data-idx={18} ref={sec(18)}>
+      {/* 18 · SYNTHESIS */}
+      <section className="st-sec" id="sec-synthesis" data-idx={18} ref={sec(18)}>
+        <div className="st-inner">
+          <span className="st-act">{L("ACT III \u00b7 SYNTHESIS", "\u7b2c\u4e09\u5e55 \u00b7 \u5408\u8bfb")}</span>
+          <h2>{L("Two kinds of visitors", "\u4e24\u79cd\u8bbf\u5ba2")}</h2>
+          <p>
+            {L(
+              "The same hall, the same event instrumentation \u2014 visited first by 75 scripted synthetic cases, then by six humans across 18 sessions. Where the two populations agree, the finding is doubly exposed; where they split, the split itself is a finding.",
+              "\u540c\u4e00\u5ea7\u5927\u5385\u3001\u540c\u4e00\u5957\u4e8b\u4ef6\u4eea\u5668\u2014\u2014\u5148\u63a5\u5f85\u4e86 75 \u6848\u811a\u672c\u5316\u5408\u6210\u8bbf\u5ba2\uff0c\u518d\u63a5\u5f85\u4e86\u516d\u4e2a\u4eba\u7684 18 \u573a\u3002\u4e24\u7fa4\u8bbf\u5ba2\u4e00\u81f4\u4e4b\u5904\uff0c\u53d1\u73b0\u88ab\u53cc\u91cd\u66dd\u5149\uff1b\u5206\u6b67\u4e4b\u5904\uff0c\u5206\u6b67\u672c\u8eab\u5c31\u662f\u53d1\u73b0\u3002"
+            )}
+          </p>
+          <div className="st-tv">
+            <div className="st-tvhead mono">
+              <span>{L("MACHINE BATCH \u2014 75 CASES \u00b7 SYNTHETIC VISITORS", "\u673a\u5668\u6279\u6b21\u2014\u201475 \u6848 \u00b7 \u5408\u6210\u8bbf\u5ba2")}</span>
+              <i />
+              <span>{L("HUMAN PILOT \u2014 18 SESSIONS \u00b7 SIX PEOPLE", "\u771f\u4eba\u9884\u5b9e\u9a8c\u2014\u201418 \u573a \u00b7 \u516d\u4e2a\u4eba")}</span>
+            </div>
+            {TV.map((r, i) => (
+              <div className="st-tvrow" key={i}>
+                <div className="st-tvcell m">
+                  <b>{r.mn}</b>
+                  <span>{L(r.me, r.mz)}</span>
+                </div>
+                <div className={"st-tvv " + r.v}>
+                  {r.v === "match" ? L("MATCH", "\u4e92\u8bc1") : r.v === "split" ? L("SPLIT", "\u5206\u6b67") : L("HUMAN-ONLY", "\u771f\u4eba\u72ec\u6709")}
+                </div>
+                <div className="st-tvcell h">
+                  <b>{r.hn}</b>
+                  <span>{L(r.he, r.hz)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <blockquote className="st-tvquote">
+            {L(
+              "The machine experiment proves the mechanism. The human pilot prices it.",
+              "\u673a\u5668\u5b9e\u9a8c\u8bc1\u660e\u4e86\u673a\u5236\uff0c\u771f\u4eba\u5b9e\u9a8c\u6807\u51fa\u4e86\u673a\u5236\u7684\u4ee3\u4ef7\u3002"
+            )}
+          </blockquote>
+          <p className="st-jfoot">
+            {L(
+              "The sharpest split: synthetic pressure provokes formal escalation (0.87/case); humans never did (0/18) \u2014 facing people, the organization routed authority through peer memos instead. Emergence keeps the same skeleton but grows different organs for different visitors \u2014 a question the full preregistered study inherits.",
+              "\u6700\u9510\u5229\u7684\u5206\u6b67\uff1a\u811a\u672c\u5316\u65bd\u538b\u903c\u51fa\u6b63\u5f0f\u5347\u7ea7\uff080.87/\u6848\uff09\uff0c\u771f\u4eba\u4ece\u672a\uff080/18\uff09\u2014\u2014\u9762\u5bf9\u4eba\uff0c\u673a\u6784\u6539\u7528\u5e73\u7ea7\u51fd\u4ef6\u7f51\u4f20\u9012\u6743\u5a01\u3002\u6d8c\u73b0\u4fdd\u6301\u540c\u4e00\u526f\u9aa8\u67b6\uff0c\u5374\u4e3a\u4e0d\u540c\u7684\u8bbf\u5ba2\u957f\u51fa\u4e0d\u540c\u7684\u5668\u5b98\u2014\u2014\u8fd9\u4e2a\u95ee\u9898\u7531\u5168\u5c3a\u5bf8\u9884\u6ce8\u518c\u7814\u7a76\u63a5\u68d2\u3002"
+            )}
+          </p>
+        </div>
+      </section>
+
+      {/* 19 · EXIT */}
+      <section className="st-sec" data-idx={19} ref={sec(19)}>
         <div className="st-inner st-center">
           <h2>{L("Walk in yourself", "自己走进去")}</h2>
           <p>

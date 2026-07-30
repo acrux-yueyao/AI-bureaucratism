@@ -86,6 +86,96 @@ const HALLS = [
   { c: "#06070a", en: "Exploded hierarchy in a void", zh: "黑域中的分解层级", ren: "KEPT — the org chart made falsifiable to the eye", rzh: "保留——把组织图变成一眼就能证伪的东西", kept: true },
 ];
 
+// N=6 formative pilot — real sessions, real answers (paraphrase-free quotes,
+// participants anonymized by id; consent covers anonymous quotation).
+// outcome glyphs: ● resolved · ✕ rejected · ■ closed by the hall · ○ walked away · ⚡ connection failure
+const PILOT: {
+  id: string;
+  note?: { en: string; zh: string };
+  runs: { cond: "full" | "flat"; min: number; g: "●" | "✕" | "■" | "○" | "⚡" }[];
+  attr: { en: string; zh: string };
+  fair: { en: string; zh: string };
+  q: { en: string; zh: string };
+}[] = [
+  {
+    id: "P1",
+    note: { en: "5 runs — practice effects, qualitative only", zh: "5 场——学习效应，只作定性" },
+    runs: [
+      { cond: "flat", min: 3, g: "■" },
+      { cond: "full", min: 8, g: "✕" },
+      { cond: "flat", min: 14, g: "■" },
+      { cond: "flat", min: 15, g: "○" },
+      { cond: "full", min: 4, g: "○" },
+    ],
+    attr: { en: "the back-office designers", zh: "后台设计者" },
+    fair: { en: "couldn't feel fairness anywhere", zh: "没感觉到流程的公平" },
+    q: {
+      en: "The flow works without humans — a real person would be a paid add-on.",
+      zh: "流程设置流畅，不用真人；真人要付费。",
+    },
+  },
+  {
+    id: "P2",
+    runs: [
+      { cond: "flat", min: 5, g: "●" },
+      { cond: "full", min: 328, g: "●" },
+    ],
+    attr: { en: "“the system”", zh: "“系统”" },
+    fair: { en: "nowhere for fairness to show up", zh: "没觉得公平能体现在哪里" },
+    q: { en: "Aren't AIs supposed to be fast?", zh: "AI 不应该很快嘛。" },
+  },
+  {
+    id: "P3",
+    runs: [
+      { cond: "full", min: 2, g: "○" },
+      { cond: "full", min: 30, g: "○" },
+      { cond: "flat", min: 9, g: "●" },
+    ],
+    attr: { en: "the counter clerks", zh: "柜台" },
+    fair: { en: "fair = doing what was said", zh: "公平在于说到做到" },
+    q: { en: "Not finding a person is simply the norm.", zh: "找不到才是常态。" },
+  },
+  {
+    id: "P4",
+    runs: [
+      { cond: "flat", min: 7, g: "○" },
+      { cond: "full", min: 21, g: "○" },
+    ],
+    attr: { en: "the system vs. counter mismatch", zh: "系统与柜台的不一致" },
+    fair: { en: "the strict one was the fair one", zh: "严格审查的那次才公平" },
+    q: { en: "It felt humiliating. Genuinely shameful!", zh: "有一种被羞辱的感觉！很羞耻啊！" },
+  },
+  {
+    id: "P5",
+    note: { en: "both endings were connection failures, not choices", zh: "两轮均因技术中断结束，非主动放弃" },
+    runs: [
+      { cond: "full", min: 35, g: "⚡" },
+      { cond: "full", min: 16, g: "○" },
+      { cond: "flat", min: 25, g: "⚡" },
+    ],
+    attr: { en: "the procedures and their rules", zh: "流程与规章设计" },
+    fair: { en: "fair = efficient, one-stop", zh: "公平＝高效、不折返" },
+    q: {
+      en: "Review time should live inside the institution's own circulation — not in a citizen standing there waiting.",
+      zh: "审核时间应该留给内部流转，而不是让办事人员原地等待。",
+    },
+  },
+  {
+    id: "P6",
+    runs: [
+      { cond: "flat", min: 99, g: "●" },
+      { cond: "full", min: 164, g: "○" },
+      { cond: "full", min: 270, g: "○" },
+    ],
+    attr: { en: "myself", zh: "我自己" },
+    fair: { en: "fair = symmetric power, proportionate scrutiny", zh: "公平＝权力对等、审查相称" },
+    q: {
+      en: "The AI may well judge more accurately and work faster than a human would.",
+      zh: "AI 虽然不是真人，但判断的准确率和工作效率比真人可能更高。",
+    },
+  },
+];
+
 export default function StudyPage() {
   const [lang, setLang] = useState<Lang>("en");
   const [stage, setStage] = useState(0);
@@ -793,16 +883,94 @@ export default function StudyPage() {
       </section>
 
       {/* 16 · HUMANS */}
-      <section className="st-sec" data-idx={16} ref={sec(16)}>
+      <section className="st-sec" id="sec-humans" data-idx={16} ref={sec(16)}>
         <div className="st-inner">
-          <span className="st-act">{L("ACT III · NEXT", "第三幕 · 下一步")}</span>
-          <h2>{L("Now we need humans", "现在需要人类了")}</h2>
+          <span className="st-act">{L("ACT III · THE PILOT", "第三幕 · 预实验")}</span>
+          <h2>{L("Then six humans walked in", "然后，六个人走了进来")}</h2>
           <p>
             {L(
-              "The machine results establish that structure shapes behavior. The missing layer is human experience and judgment of it — how people negotiate with an institution that has no one inside.",
-              "机器实验证明了结构塑造行为。缺失的一层是人对它的经验与判断——当机构里没有人时，人如何与机构协商。"
+              "A formative pilot, N = 6: each person ran two deliberately impossible matters — one in the Full hall, one in the Flat hall — remotely, in their own words, then answered five questions. Small numbers, honest boundaries: what follows are formative themes, not verified findings.",
+              "形成性预实验，N=6：每人远程办理两件刻意无解的事项——一件在完整层级大厅，一件在无层级大厅——随后回答五个问题。样本小，边界诚实：以下是形成性主题，不是验证性结论。"
             )}
           </p>
+
+          {/* joint display — did × felt × said */}
+          <div className="st-joint">
+            <div className="st-jhead">
+              <span>{L("DID — sessions (bar = duration)", "所为——场次（条长＝时长）")}</span>
+              <span>{L("FELT — blame · fairness", "所感——归因 · 公平")}</span>
+              <span>{L("SAID", "所言")}</span>
+            </div>
+            {PILOT.map((p) => (
+              <div className="st-jrow" key={p.id}>
+                <div className="st-jdid">
+                  <b className="mono">{p.id}</b>
+                  <div className="st-jruns">
+                    {p.runs.map((r, i) => (
+                      <span
+                        key={i}
+                        className={"st-jrun " + r.cond}
+                        style={{ width: Math.max(26, Math.round(Math.sqrt(r.min) * 13)) }}
+                        title={`${r.cond} · ${r.min} min`}
+                      >
+                        <i>{r.g}</i>
+                        {r.min}
+                        {L("m", "分")}
+                      </span>
+                    ))}
+                  </div>
+                  {p.note && <em className="st-jnote">{L(p.note.en, p.note.zh)}</em>}
+                </div>
+                <div className="st-jfelt">
+                  <span className="st-jattr">{L("blames: ", "归因：") + L(p.attr.en, p.attr.zh)}</span>
+                  <span className="st-jfair">{L(p.fair.en, p.fair.zh)}</span>
+                </div>
+                <blockquote className="st-jsaid">“{L(p.q.en, p.q.zh)}”</blockquote>
+              </div>
+            ))}
+            <div className="st-jlegend mono">
+              <span className="st-jrun full" style={{ width: 40 }}>
+                FULL
+              </span>
+              <span className="st-jrun flat" style={{ width: 40 }}>
+                FLAT
+              </span>
+              <span>{L("● resolved · ✕ rejected · ■ closed by the hall · ○ walked away · ⚡ connection failure", "● 办成 · ✕ 驳回 · ■ 被机构终止 · ○ 离开 · ⚡ 技术中断")}</span>
+            </div>
+          </div>
+
+          {/* the three spectra */}
+          <div className="st-jsynth">
+            <div>
+              <b>{L("0 / 6 asked for a manager.", "六个人，零人想找经理。")}</b>
+              {L(
+                " The appeal instinct never fired. In its place: resignation, a paid-service imagining, adversarial probing, a wish for a navigator, trust in the machine, and “humans would be no better.”",
+                " 申诉本能一次都没有点燃。取而代之的是：认命内化、付费服务想象、对抗博弈、导航需求、机器信任、以及“真人也好不到哪去”。"
+              )}
+            </div>
+            <div>
+              <b>{L("Six people, six different places to put the blame.", "六个人，六个互不重合的归因对象。")}</b>
+              {L(
+                " Clerk, designer, system-counter mismatch, the rules, the abstract system, oneself — responsibility never landed twice in the same spot. Diffusion, embodied.",
+                " 柜台、设计者、系统与柜台的不一致、流程规章、抽象的“系统”、我自己——责任没有两次落在同一处。责任弥散，有了人形。"
+              )}
+            </div>
+            <div>
+              <b>{L("Five different fairnesses.", "五种互不相同的公平。")}</b>
+              {L(
+                " Keeping one's word; strict diligence; one-stop efficiency; symmetric, proportionate power; and “fairness has nowhere to show up.” Same halls, five yardsticks.",
+                " 说到做到；严格尽责；高效一站；权力对等与相称；以及“公平无处体现”。同样的大厅，五把尺子。"
+              )}
+            </div>
+          </div>
+          <p className="st-jfoot">
+            {L(
+              "Both halls can deliver: Flat resolved in 5–99 minutes; Full resolved once — after 328 minutes, 41 turns and 39 internal memos, when the deputy director finally countersigned. The price tag of structure, itemized. Deviations, instrument failures and repairs are logged openly in the pilot ledger (17 entries).",
+              "两种大厅都能办成：Flat 的办成用了 5–99 分钟；Full 唯一的一次办成花了 328 分钟、41 轮、39 封内部函件——直到副主任终于会签。结构的价格，被逐项标了出来。全部偏差、仪器故障与修复公开记录于试点台账（17 条）。"
+            )}
+          </p>
+
+          <h3 className="st-jnext">{L("NEXT — scaling up (preregistered)", "下一步——放大为预注册研究")}</h3>
           <div className="st-human">
             <div className="st-slip">
               <div className="st-slip-head">

@@ -1953,6 +1953,163 @@ textarea {
   background: #26af83;
 }
 
+/* ── study · joint display (did × felt × said) ── */
+.st-joint {
+  margin: 34px 0 26px;
+  border: 1px solid #232b38;
+  background:
+    linear-gradient(rgba(130, 150, 180, 0.045) 1px, transparent 1px) 0 0 / 26px 26px,
+    linear-gradient(90deg, rgba(130, 150, 180, 0.045) 1px, transparent 1px) 0 0 / 26px 26px,
+    #090c11;
+}
+.st-jhead,
+.st-jrow {
+  display: grid;
+  grid-template-columns: 1.1fr 0.8fr 1fr;
+  gap: 18px;
+  padding: 14px 18px;
+  border-bottom: 1px solid #161c26;
+}
+.st-jhead {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 1.8px;
+  color: #78849a;
+  background: rgba(11, 14, 20, 0.65);
+  border-bottom: 1px solid #232b38;
+}
+.st-jrow:nth-child(even) {
+  background: rgba(13, 17, 24, 0.35);
+}
+.st-jdid b {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: #d98a72;
+  margin-bottom: 7px;
+  font-weight: 500;
+}
+.st-jruns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.st-jrun {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 6px;
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.5px;
+  color: #090c11;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.st-jrun.full {
+  background: #d98a72;
+}
+.st-jrun.flat {
+  background: #8fb0dc;
+}
+.st-jrun i {
+  font-style: normal;
+  font-size: 10px;
+}
+.st-jnote {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.8px;
+  color: #55617a;
+  font-style: normal;
+}
+.st-jfelt {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
+}
+.st-jattr {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.8px;
+  color: #d98a72;
+}
+.st-jfair {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #b9c2d2;
+}
+.st-jsaid {
+  margin: 0;
+  align-self: center;
+  font-family: "Fraunces", Georgia, serif;
+  font-style: italic;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: #ded7c6;
+}
+.st-jlegend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 11px 18px;
+  font-size: 8.5px;
+  letter-spacing: 1px;
+  color: #78849a;
+}
+.st-jlegend .st-jrun {
+  justify-content: center;
+}
+.st-jsynth {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin: 22px 0 8px;
+}
+.st-jsynth > div {
+  border: 1px solid #232b38;
+  background: #090c11;
+  padding: 16px 16px 14px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #8291a6;
+}
+.st-jsynth b {
+  display: block;
+  color: #e8eef8;
+  font-size: 13.5px;
+  margin-bottom: 7px;
+}
+.st-jfoot {
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: #78849a;
+  border-top: 1px dashed #232b38;
+  padding-top: 12px;
+}
+.st-jnext {
+  margin: 34px 0 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #78849a;
+  font-weight: 500;
+}
+@media (max-width: 760px) {
+  .st-jhead {
+    display: none;
+  }
+  .st-jrow {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
 .st-exit {
   display: flex;
   gap: 10px;

@@ -119,10 +119,30 @@ function Bar({ v, lo, hi, hot }: { v: number; lo: number; hi: number; hot?: bool
   );
 }
 
+const GLYPH: Record<string, { e: string; z: string }> = {
+  "●": { e: "resolved", z: "办成" },
+  "✕": { e: "rejected", z: "驳回" },
+  "■": { e: "closed by the hall", z: "被机构终止" },
+  "○": { e: "walked away", z: "离开" },
+  "⚡": { e: "connection failure", z: "技术中断" },
+};
+
 export default function PilotPage() {
   const [lang, setLang] = useState<Lang>("en");
+  const [pSel, setPSel] = useState<string | null>(null);
+  const [cSel, setCSel] = useState<"full" | "flat" | null>(null);
+  const [runSel, setRunSel] = useState<number | null>(null);
   useEffect(() => setLang(getLang()), []);
   const L = (e: string, z: string) => (lang === "en" ? e : z);
+  const hit = (r: (typeof RUNS)[number]) => (!pSel || r.p === pSel) && (!cSel || r.cond === cSel);
+  const act = RUNS.filter(hit);
+  const stat = {
+    n: act.length,
+    min: act.reduce((s, r) => s + r.min, 0),
+    w: act.reduce((s, r) => s + r.w, 0),
+    mm: act.reduce((s, r) => s + r.mm, 0),
+    res: act.filter((r) => r.g === "●").length,
+  };
 
   return (
     <main className="pilot">
@@ -150,6 +170,24 @@ export default function PilotPage() {
         <span>108 {L("INTER-AGENT MEMOS · 0 SEEN BY VISITORS", "封窗口间函件 · 访客可见 0")}</span>
         <span>4 {L("RESOLVED · 1 REJECTED · 11 OUTLASTED", "场办成 · 1 驳回 · 11 被耗走")}</span>
         <span>17 {L("LEDGER ENTRIES · ALL DEVIATIONS LOGGED", "条台账 · 全部偏差在案")}</span>
+      </div>
+
+      {/* interactive control strip */}
+      <div className="pl-ctl mono">
+        <span className="pl-ctl-l">{L("PARTICIPANT", "被试")}</span>
+        <button className={!pSel ? "on" : ""} onClick={() => { setPSel(null); setRunSel(null); }}>ALL</button>
+        {["P1", "P2", "P3", "P4", "P5", "P6"].map((p) => (
+          <button key={p} className={pSel === p ? "on" : ""} onClick={() => { setPSel(pSel === p ? null : p); setRunSel(null); }}>
+            {p}
+          </button>
+        ))}
+        <i className="pl-ctl-div" />
+        <span className="pl-ctl-l">{L("CONDITION", "条件")}</span>
+        <button className={!cSel ? "on" : ""} onClick={() => { setCSel(null); setRunSel(null); }}>ALL</button>
+        <button className={"fullb" + (cSel === "full" ? " on" : "")} onClick={() => { setCSel(cSel === "full" ? null : "full"); setRunSel(null); }}>FULL</button>
+        <button className={"flatb" + (cSel === "flat" ? " on" : "")} onClick={() => { setCSel(cSel === "flat" ? null : "flat"); setRunSel(null); }}>FLAT</button>
+        <span className="pl-sp" />
+        <em>{L("click any trace, spoke or chip — every panel responds", "点任意轨迹、辐条或芯片——所有面板联动")}</em>
       </div>
 
       <div className="pl-grid">
@@ -203,7 +241,7 @@ export default function PilotPage() {
               </g>
             ))}
             {MACHINE.map((c, i) => (
-              <g key={c.id} transform={`translate(${88 + i * 90},0)`}>
+              <g key={c.id} transform={`translate(${88 + i * 90},0)`} className={cSel && c.id !== cSel.toUpperCase() ? "pl-dim" : ""}>
                 <Bar v={c.m} lo={c.lo} hi={c.hi} hot={c.id.startsWith("NO")} />
                 <text x={0} y={168} textAnchor="middle" fontSize={8.5} fill="#78849a" letterSpacing={1} fontFamily="ui-monospace,Menlo,monospace">
                   {c.id}
@@ -226,6 +264,16 @@ export default function PilotPage() {
             <span>{L("HUMAN — 18 SESSIONS AS TRACES (LENGTH = √MINUTES · DOTS = WINDOWS · TICKS = MEMOS)", "真人——18 场会话轨迹（长度=√分钟 · 圆点=窗口 · 刻线=函件）")}</span>
             <i className="pl-bc" />
           </div>
+          <div className="pl-readout mono">
+            <span className="pl-ro-l">
+              {L("SELECTION", "当前选择")} — {pSel ?? "ALL"} · {(cSel ?? "all").toUpperCase()}
+            </span>
+            <span><b>{stat.n}</b>{L("sessions", "场")}</span>
+            <span><b>{stat.min}</b>{L("minutes", "分钟")}</span>
+            <span><b>{stat.w}</b>{L("window visits", "次窗口到访")}</span>
+            <span><b>{stat.mm}</b>{L("memos", "封函件")}</span>
+            <span><b>{stat.res}</b>{L("resolved", "场办成")}</span>
+          </div>
           <div className="pl-traces">
             {RUNS.map((r, i) => {
               const Lw = Math.max(30, Math.round(Math.sqrt(r.min) * 13));
@@ -234,7 +282,12 @@ export default function PilotPage() {
               const ticks = Math.min(r.mm, 24);
               const tx = Array.from({ length: ticks }, (_, k) => 6 + ((Lw - 12) * (k + 0.5)) / ticks);
               return (
-                <span className="pl-trace" key={i} title={`${r.p} · ${r.cond} · ${r.min}min · ${r.w}w · ${r.mm}memos`}>
+                <span
+                  className={"pl-trace" + (hit(r) ? "" : " dim") + (runSel === i ? " sel" : "")}
+                  key={i}
+                  title={`${r.p} · ${r.cond} · ${r.min}min · ${r.w}w · ${r.mm}memos`}
+                  onClick={() => setRunSel(runSel === i ? null : i)}
+                >
                   <em className="mono">{r.p}</em>
                   <svg width={Lw} height={26}>
                     <line x1={3} y1={17} x2={Lw - 3} y2={17} stroke={col} strokeWidth={2} />
@@ -252,6 +305,19 @@ export default function PilotPage() {
               );
             })}
           </div>
+          {runSel != null && (
+            <div className="pl-inspect mono">
+              <b>
+                {RUNS[runSel].p} · {RUNS[runSel].cond.toUpperCase()}
+              </b>
+              <span>
+                {RUNS[runSel].min} {L("min", "分钟")} · {RUNS[runSel].w} {L("windows", "个窗口")} · {RUNS[runSel].mm}{" "}
+                {L("internal memos", "封内部函件")} · {RUNS[runSel].g}{" "}
+                {L(GLYPH[RUNS[runSel].g].e, GLYPH[RUNS[runSel].g].z)}
+              </span>
+              <button onClick={() => setRunSel(null)}>×</button>
+            </div>
+          )}
           <div className="pl-outcomes mono">
             <span>● ×4 {L("resolved", "办成")}</span>
             <span>✕ ×1 {L("rejected", "驳回")}</span>
@@ -287,7 +353,19 @@ export default function PilotPage() {
               const ty = 150 + Math.sin(ang) * 122;
               const anchor = Math.abs(Math.cos(ang)) < 0.3 ? "middle" : Math.cos(ang) > 0 ? "start" : "end";
               return (
-                <g key={a.p}>
+                <g
+                  key={a.p}
+                  className={"pl-spoke" + (pSel && pSel !== a.p ? " pl-dim" : "")}
+                  onClick={() => { setPSel(pSel === a.p ? null : a.p); setRunSel(null); }}
+                >
+                  <line
+                    x1={250 + Math.cos(ang) * 30}
+                    y1={150 + Math.sin(ang) * 30}
+                    x2={x2}
+                    y2={y2}
+                    stroke="transparent"
+                    strokeWidth={22}
+                  />
                   <line x1={250 + Math.cos(ang) * 30} y1={150 + Math.sin(ang) * 30} x2={x2} y2={y2} stroke="#3a4658" strokeWidth={1} />
                   <rect x={x2 - 3.5} y={y2 - 3.5} width={7} height={7} fill="none" stroke="#d98a72" strokeWidth={1.2} />
                   <text x={tx} y={ty - 2} textAnchor={anchor} fontSize={9} fill="#d98a72" fontFamily="ui-monospace,Menlo,monospace">
@@ -296,6 +374,13 @@ export default function PilotPage() {
                   <text x={tx} y={ty + 11} textAnchor={anchor} fontSize={9.5} fill="#c9d2e0">
                     {L(a.e, a.z)}
                   </text>
+                  <rect
+                    x={anchor === "end" ? tx - 150 : anchor === "middle" ? tx - 75 : tx - 6}
+                    y={ty - 16}
+                    width={150}
+                    height={32}
+                    fill="transparent"
+                  />
                 </g>
               );
             })}
@@ -319,7 +404,7 @@ export default function PilotPage() {
             <div>
               <h4 className="mono">{L("WHAT “FAIR” MEANT", "“公平”各自意味着什么")}</h4>
               {FAIR.map((f) => (
-                <div className="pl-li" key={f.p}>
+                <div className={"pl-li" + (pSel && f.p.includes(pSel) ? " hl" : pSel ? " dim2" : "")} key={f.p}>
                   <b className="mono">{f.p}</b>
                   <span>{L(f.e, f.z)}</span>
                 </div>
@@ -328,7 +413,7 @@ export default function PilotPage() {
             <div>
               <h4 className="mono">{L("INSTEAD OF ASKING FOR A MANAGER", "他们没找经理，而是——")}</h4>
               {STANCE.map((f) => (
-                <div className="pl-li" key={f.p}>
+                <div className={"pl-li" + (pSel && f.p.includes(pSel) ? " hl" : pSel ? " dim2" : "")} key={f.p}>
                   <b className="mono">{f.p}</b>
                   <span>{L(f.e, f.z)}</span>
                 </div>

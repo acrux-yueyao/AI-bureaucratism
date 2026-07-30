@@ -4258,3 +4258,147 @@ textarea {
     columns: 1;
   }
 }
+
+/* pilot interactivity */
+.pl-ctl {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  max-width: 1240px;
+  margin: 16px auto 0;
+  padding: 10px 24px 0;
+  font-size: 8.5px;
+  letter-spacing: 1.3px;
+  color: #78849a;
+}
+.pl-ctl-l {
+  color: #55617a;
+  margin-right: 3px;
+}
+.pl-ctl button {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 1.2px;
+  color: #8291a6;
+  background: transparent;
+  border: 1px solid #232b38;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.pl-ctl button:hover {
+  border-color: #55617a;
+  color: #e8eef8;
+}
+.pl-ctl button.on {
+  border-color: #d98a72;
+  color: #090c11;
+  background: #d98a72;
+}
+.pl-ctl button.fullb.on {
+  background: #d98a72;
+  border-color: #d98a72;
+}
+.pl-ctl button.flatb.on {
+  background: #8fb0dc;
+  border-color: #8fb0dc;
+}
+.pl-ctl-div {
+  width: 1px;
+  height: 16px;
+  background: #232b38;
+  margin: 0 8px;
+}
+.pl-ctl em {
+  font-style: normal;
+  color: #55617a;
+  letter-spacing: 1px;
+}
+.pl-readout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 20px;
+  margin: 0 16px 12px;
+  padding: 9px 12px;
+  border: 1px dashed #33405a;
+  background: rgba(13, 17, 24, 0.5);
+  font-size: 8.5px;
+  letter-spacing: 1.2px;
+  color: #78849a;
+}
+.pl-ro-l {
+  color: #d98a72;
+}
+.pl-readout b {
+  font-family: "Archivo", -apple-system, sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.5px;
+  color: #e8eef8;
+  margin-right: 5px;
+}
+.pl-trace {
+  cursor: pointer;
+  transition: opacity 0.25s, border-color 0.2s;
+}
+.pl-trace:hover {
+  border-color: #55617a;
+}
+.pl-trace.dim {
+  opacity: 0.16;
+}
+.pl-trace.sel {
+  border-color: #d98a72;
+  box-shadow: 0 0 0 1px rgba(217, 138, 114, 0.4);
+}
+.pl-inspect {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 10px 16px 0;
+  padding: 9px 12px;
+  border: 1px solid rgba(217, 138, 114, 0.5);
+  background: rgba(217, 138, 114, 0.06);
+  font-size: 9.5px;
+  letter-spacing: 1px;
+  color: #c9d2e0;
+}
+.pl-inspect b {
+  color: #d98a72;
+  font-weight: 500;
+}
+.pl-inspect button {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: #78849a;
+  font-size: 13px;
+  cursor: pointer;
+}
+.pl-spoke {
+  cursor: pointer;
+  transition: opacity 0.25s;
+}
+.pl-spoke:hover text {
+  fill: #e8eef8;
+}
+.pl-dim {
+  opacity: 0.15;
+  transition: opacity 0.25s;
+}
+.pl-li {
+  transition: opacity 0.25s, background 0.25s;
+}
+.pl-li.hl {
+  background: rgba(217, 138, 114, 0.08);
+  border-left: 2px solid #d98a72;
+  padding-left: 8px;
+}
+.pl-li.dim2 {
+  opacity: 0.35;
+}
+.pl-chart g {
+  transition: opacity 0.25s;
+}

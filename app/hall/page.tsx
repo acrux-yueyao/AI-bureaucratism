@@ -2,17 +2,19 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AGENT_MAP } from "@/lib/agents";
-import { loadCase, saveCase } from "@/lib/storage";
+import { AGENT_MAP, WINDOW_AGENTS } from "@/lib/agents";
+import { clearCase, loadCase, saveCase } from "@/lib/storage";
 import { SCENARIOS } from "@/lib/visitors";
 import { digestsForAll, loadExperience } from "@/lib/experience";
-import { loadArchive, renderArchiveDigest } from "@/lib/archive";
+import { archiveCase, loadArchive, renderArchiveDigest } from "@/lib/archive";
 import { deptLabel, getLang, storeLang, t, type Lang } from "@/lib/i18n";
 import { REPLAYS, type ReplayFile } from "@/lib/replays";
 import { liveHeaders, setLivePass } from "@/lib/livepass";
 import { downloadSessionExport, storePid } from "@/lib/export";
 import { getStudyAblation, storeStudyAblation } from "@/lib/ablation";
 import Hall3D, { type HallFlight } from "./Hall3D";
+import { makeCaseId } from "@/lib/case-file";
+import { openExhibitChannel, parseDisplay, type Display, type ExhibitMsg } from "@/lib/exhibit";
 import type {
   AgentId,
   AgentUiState,
@@ -23,6 +25,15 @@ import type {
 } from "@/lib/types";
 
 const MAX_OBSERVER_TURNS = 12;
+const IDLE_MS = 240_000; // kiosk: reset for the next visitor after 4 idle minutes
+const WARN_MS = 20_000;
+const EMPTY_CASE = (): CaseState => ({
+  caseId: "",
+  matter: "",
+  startedAt: Date.now(),
+  events: [],
+  closed: false,
+});
 
 export default function HallPage() {
   const router = useRouter();
@@ -63,6 +74,18 @@ export default function HallPage() {
   const replayRef = useRef(false);
   const replayEvents = useRef<CaseEvent[] | null>(null);
   const replayStarted = useRef(false);
+  const [display, setDisplay] = useState<Display | null>(null);
+  const displayRef = useRef<Display | null>(null);
+  const chanRef = useRef<BroadcastChannel | null>(null);
+  const genRef = useRef(0);
+  const abortRef = useRef<AbortController | null>(null);
+  const sendingRef = useRef(false);
+  const [stageBeam, setStageBeam] = useState<"up" | "down" | null>(null);
+  const [stageLinked, setStageLinked] = useState(false);
+  const [stageChrome, setStageChrome] = useState(true);
+  const [kioskMatter, setKioskMatter] = useState("");
+  const [idleLeft, setIdleLeft] = useState<number | null>(null);
+  const lastActRef = useRef(Date.now());
 
   useEffect(() => {
     setLang(getLang());
@@ -71,6 +94,24 @@ export default function HallPage() {
     if (pid) storePid(pid);
     const ab = params.get("ab");
     if (ab) storeStudyAblation(ab);
+    const disp = parseDisplay(params.get("display"));
+    displayRef.current = disp;
+    setDisplay(disp);
+    if (disp === "stage") {
+      // Projector: never calls the API; mirrors whatever the kiosk is doing.
+      const c0 = loadCase();
+      const shown = c0 && !c0.closed ? c0 : EMPTY_CASE();
+      csRef.current = shown;
+      setCs(shown);
+      return;
+    }
+    if (disp === "kiosk") {
+      const c0 = loadCase();
+      const resume = c0 && !c0.closed ? c0 : null;
+      csRef.current = resume;
+      setCs(resume);
+      return;
+    }
     if (params.get("mode") === "replay") {
       const id = params.get("id") ?? "";
       const meta = REPLAYS.find((r) => r.id === id);
@@ -237,7 +278,11 @@ export default function HallPage() {
     };
     csRef.current = merged;
     setCs(merged);
-    if (!replayRef.current) saveCase(merged);
+    if (!replayRef.current && displayRef.current !== "stage") saveCase(merged);
+    if (displayRef.current === "kiosk") {
+      const m: ExhibitMsg = { t: "event", e };
+      chanRef.current?.postMessage(m);
+    }
     if (e.type === "agent_message") setStream(null);
     if (e.type === "internal_memo" || e.type === "internal_reply") {
       flightId.current += 1;
@@ -279,6 +324,10 @@ export default function HallPage() {
     csRef.current = merged;
     setCs(merged);
     if (!replayRef.current) saveCase(merged);
+    if (displayRef.current === "kiosk") {
+      const m: ExhibitMsg = { t: "rollback", cs: merged };
+      chanRef.current?.postMessage(m);
+    }
   }, []);
 
   const dispatch = useCallback(
@@ -293,6 +342,8 @@ export default function HallPage() {
       // Watchdog: never let a dead connection freeze the session. Abort when
       // no bytes arrive for 90s (server heartbeats every 15s) or after 8 min.
       const ac = new AbortController();
+      abortRef.current = ac;
+      const gen = genRef.current;
       const startedAt = Date.now();
       let lastByte = Date.now();
       const watchdog = setInterval(() => {
@@ -343,6 +394,7 @@ export default function HallPage() {
         for (;;) {
           const { done, value } = await reader.read();
           if (done) break;
+          if (genRef.current !== gen) break;
           lastByte = Date.now();
           buf += decoder.decode(value, { stream: true });
           let idx: number;
@@ -357,6 +409,7 @@ export default function HallPage() {
               } catch {
                 continue;
               }
+              if (genRef.current !== gen) break;
               if (frame.kind === "event") {
                 applyEvent(frame.event);
                 if (frame.event.type !== "user_message") productive = true;
@@ -385,6 +438,7 @@ export default function HallPage() {
             }
           }
         }
+        if (genRef.current !== gen) return false;
         if (failed || !productive) {
           if (!failed && keepPartial()) {
             setError(t(lang, "netPartial"));
@@ -395,6 +449,7 @@ export default function HallPage() {
         }
         return true;
       } catch {
+        if (genRef.current !== gen) return false;
         // Connection died mid-turn. Keep whatever the visitor already saw;
         // only bounce the message when nothing at all came back.
         if (keepPartial() || productive) {
@@ -581,6 +636,191 @@ export default function HallPage() {
     }
   }, [replay, cs, runReplay]);
 
+  // ── exhibition split: kiosk (laptop, chat only) ⇄ stage (projector, hall only) ──
+  const beamNow: "up" | "down" | null = stream ? "down" : sending ? "up" : null;
+  const currentRef = useRef<AgentId | null>(null);
+  const pathRef = useRef<(AgentId | "entrance")[]>(["entrance"]);
+  const statusRef = useRef<typeof statusMap>({});
+  const beamRef = useRef<"up" | "down" | null>(null);
+  useEffect(() => {
+    currentRef.current = current;
+    pathRef.current = path;
+    statusRef.current = statusMap;
+    beamRef.current = beamNow;
+    sendingRef.current = sending || !!stream;
+  });
+
+  useEffect(() => {
+    if (!display) return;
+    const snapNow = (): ExhibitMsg => ({
+      t: "snap",
+      cs: csRef.current,
+      current: currentRef.current,
+      path: pathRef.current,
+      statusMap: statusRef.current,
+      beam: beamRef.current,
+    });
+    const ch = openExhibitChannel((m) => {
+      if (displayRef.current === "kiosk") {
+        if (m.t === "hello") ch?.postMessage(snapNow());
+        return;
+      }
+      if (m.t === "snap") {
+        const c = m.cs ?? EMPTY_CASE();
+        csRef.current = c;
+        setCs(c);
+        setCurrent(m.current);
+        setPath(m.path);
+        setStatusMap(m.statusMap);
+        setStageBeam(m.beam);
+        setFlights([]);
+        setStageLinked(true);
+      } else if (m.t === "event") {
+        applyEvent(m.e);
+        setStageLinked(true);
+      } else if (m.t === "rollback") {
+        csRef.current = m.cs;
+        setCs(m.cs);
+      } else if (m.t === "state") {
+        setCurrent(m.current);
+        setPath(m.path);
+        setStatusMap(m.statusMap);
+        setStageBeam(m.beam);
+        setStageLinked(true);
+      } else if (m.t === "reset") {
+        const c = EMPTY_CASE();
+        csRef.current = c;
+        setCs(c);
+        setCurrent(null);
+        setPath(["entrance"]);
+        setStatusMap({});
+        setStageBeam(null);
+        setFlights([]);
+      }
+    });
+    chanRef.current = ch;
+    const first: ExhibitMsg = display === "stage" ? { t: "hello" } : snapNow();
+    ch?.postMessage(first);
+    return () => {
+      ch?.close();
+      chanRef.current = null;
+    };
+  }, [display, applyEvent]);
+
+  useEffect(() => {
+    if (display !== "kiosk") return;
+    const m: ExhibitMsg = { t: "state", current, path, statusMap, beam: beamNow };
+    chanRef.current?.postMessage(m);
+  }, [display, current, path, statusMap, beamNow]);
+
+  const nextVisitor = useCallback(() => {
+    genRef.current += 1;
+    abortRef.current?.abort();
+    const base = csRef.current;
+    if (base && base.events.length > 0) {
+      archiveCase(
+        base.closed
+          ? base
+          : {
+              ...base,
+              events: [...base.events, { type: "user_abandoned", ts: Date.now() } as CaseEvent],
+              closed: true,
+            }
+      );
+    }
+    clearCase();
+    csRef.current = null;
+    setCs(null);
+    setCurrent(null);
+    setPath(["entrance"]);
+    setStatusMap({});
+    setFlights([]);
+    setStream(null);
+    setSending(false);
+    setInput("");
+    setError("");
+    setTab("chat");
+    setKioskMatter("");
+    setIdleLeft(null);
+    lastActRef.current = Date.now();
+    const m: ExhibitMsg = { t: "reset" };
+    chanRef.current?.postMessage(m);
+  }, []);
+
+  function startKioskCase(text: string) {
+    const matterText = text.trim();
+    if (!matterText) return;
+    genRef.current += 1;
+    const c: CaseState = {
+      caseId: makeCaseId(),
+      matter: matterText,
+      startedAt: Date.now(),
+      events: [],
+      closed: false,
+      conditionId: "calm",
+      ablationId: getStudyAblation() || undefined,
+    };
+    saveCase(c);
+    csRef.current = c;
+    setCs(c);
+    setCurrent(null);
+    setPath(["entrance"]);
+    setStatusMap({});
+    setFlights([]);
+    lastActRef.current = Date.now();
+    const snap: ExhibitMsg = {
+      t: "snap",
+      cs: c,
+      current: null,
+      path: ["entrance"],
+      statusMap: {},
+      beam: null,
+    };
+    chanRef.current?.postMessage(snap);
+  }
+
+  useEffect(() => {
+    if (display !== "kiosk") return;
+    const bump = () => {
+      lastActRef.current = Date.now();
+      setIdleLeft(null);
+    };
+    window.addEventListener("pointerdown", bump);
+    window.addEventListener("keydown", bump);
+    const iv = setInterval(() => {
+      if (!csRef.current) return;
+      if (sendingRef.current) {
+        lastActRef.current = Date.now();
+        return;
+      }
+      const idle = Date.now() - lastActRef.current;
+      if (idle >= IDLE_MS) nextVisitor();
+      else if (idle >= IDLE_MS - WARN_MS) setIdleLeft(Math.ceil((IDLE_MS - idle) / 1000));
+      else setIdleLeft(null);
+    }, 1000);
+    return () => {
+      clearInterval(iv);
+      window.removeEventListener("pointerdown", bump);
+      window.removeEventListener("keydown", bump);
+    };
+  }, [display, nextVisitor]);
+
+  useEffect(() => {
+    if (display !== "stage") return;
+    let tm: ReturnType<typeof setTimeout> | undefined;
+    const show = () => {
+      setStageChrome(true);
+      if (tm) clearTimeout(tm);
+      tm = setTimeout(() => setStageChrome(false), 2500);
+    };
+    show();
+    window.addEventListener("mousemove", show);
+    return () => {
+      window.removeEventListener("mousemove", show);
+      if (tm) clearTimeout(tm);
+    };
+  }, [display]);
+
   function leave() {
     const base = csRef.current;
     if (!base) return;
@@ -604,16 +844,98 @@ export default function HallPage() {
     router.push("/report");
   }
 
-  if (!cs) return null;
+  if (!cs) {
+    if (display !== "kiosk") return null;
+    return (
+      <main className="hall-page kiosk">
+        <div className="kiosk-start">
+          <div className="kiosk-brand">
+            <b>{t(lang, "brand")}</b>
+            <span>{t(lang, "kioskTitle")}</span>
+            <button className="kiosk-lang" onClick={toggleLang}>
+              {t(lang, "langToggle")}
+            </button>
+          </div>
+          <h1>{t(lang, "kioskPrompt")}</h1>
+          <p className="kiosk-hint">{t(lang, "kioskHint")}</p>
+          <div className="kiosk-ex">
+            {(["kioskEx1", "kioskEx2", "kioskEx3"] as const).map((k) => (
+              <button key={k} onClick={() => setKioskMatter(t(lang, k))}>
+                {t(lang, k)}
+              </button>
+            ))}
+          </div>
+          <textarea
+            rows={3}
+            value={kioskMatter}
+            placeholder={t(lang, "startPlaceholder")}
+            onChange={(e) => setKioskMatter(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                startKioskCase(kioskMatter);
+              }
+            }}
+          />
+          <button
+            className="kiosk-go"
+            disabled={!kioskMatter.trim()}
+            onClick={() => startKioskCase(kioskMatter)}
+          >
+            {t(lang, "kioskEnter")} →
+          </button>
+          <p className="kiosk-notice">{t(lang, "kioskNotice")}</p>
+        </div>
+      </main>
+    );
+  }
 
   const cur = current ? AGENT_MAP[current] : null;
   const scenario = observer ? SCENARIOS.find((s) => s.id === observer.scenarioId) : null;
 
+  if (display === "stage") {
+    return (
+      <main className={"hall-page stage" + (stageChrome ? "" : " nocursor")}>
+        <div className="hall-main">
+          <Hall3D
+            current={current}
+            suggested={suggested}
+            synthetic={false}
+            statusMap={statusMap}
+            queueSize={queueSize}
+            memoRoutes={memoRoutes}
+            trail={trailSegments}
+            flights={flights}
+            onFlightDone={removeFlight}
+            docCount={docs.length}
+            todoCount={todos.length}
+            beamFlow={stageBeam}
+            closed={closed}
+            conditionId={cs.conditionId ?? null}
+            ambient
+            onSelect={goTo}
+          />
+        </div>
+        <div className={"stage-chrome mono" + (stageChrome ? "" : " hide")}>
+          <span>{stageLinked ? "● " + t(lang, "stageLinked") : "○ " + t(lang, "stageWaiting")}</span>
+          <button
+            onClick={() => {
+              if (document.fullscreenElement) void document.exitFullscreen();
+              else void document.documentElement.requestFullscreen().catch(() => {});
+            }}
+          >
+            ⛶ {t(lang, "stageFull")}
+          </button>
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="hall-page">
+    <main className={"hall-page" + (display === "kiosk" ? " kiosk" : "")}>
       <header className="gov-header">
         <div className="gov-header-inner">
-          <a className="gov-logotype" href="/">
+          <a className="gov-logotype" href={display === "kiosk" ? undefined : "/"}>
             {t(lang, "brand")}
           </a>
           <span className="hall-head-meta">
@@ -625,19 +947,34 @@ export default function HallPage() {
             </span>
           )}
           <span className="right">
-            {!replay && (
-              <button onClick={downloadSessionExport}>{t(lang, "dataExport")}</button>
-            )}
-            <button onClick={() => setDrawerOpen(true)}>
-              {t(lang, "internalLog")}
-              {memoCount > 0 ? ` (${memoCount})` : ""}
-            </button>
-            {closed ? (
-              <button onClick={() => router.push("/report")}>{t(lang, "viewReceipt")}</button>
+            {display === "kiosk" ? (
+              <>
+                <button
+                  onClick={() => {
+                    if (window.confirm(t(lang, "kioskNextConfirm"))) nextVisitor();
+                  }}
+                >
+                  {t(lang, "kioskNext")} →
+                </button>
+                <button onClick={toggleLang}>{t(lang, "langToggle")}</button>
+              </>
             ) : (
-              <button onClick={leave}>{t(lang, "endService")}</button>
+              <>
+                {!replay && (
+                  <button onClick={downloadSessionExport}>{t(lang, "dataExport")}</button>
+                )}
+                <button onClick={() => setDrawerOpen(true)}>
+                  {t(lang, "internalLog")}
+                  {memoCount > 0 ? ` (${memoCount})` : ""}
+                </button>
+                {closed ? (
+                  <button onClick={() => router.push("/report")}>{t(lang, "viewReceipt")}</button>
+                ) : (
+                  <button onClick={leave}>{t(lang, "endService")}</button>
+                )}
+                <button onClick={toggleLang}>{t(lang, "langToggle")}</button>
+              </>
             )}
-            <button onClick={toggleLang}>{t(lang, "langToggle")}</button>
           </span>
         </div>
       </header>
@@ -720,14 +1057,22 @@ export default function HallPage() {
       {closed && !observer && !replay && (
         <div className="closed-banner">
           <strong>{t(lang, "caseClosedBanner")}</strong>
-          <span>{t(lang, "seeReport")}</span>
-          <button className="btn-plain" onClick={() => router.push("/report")}>
-            {t(lang, "goSee")} →
-          </button>
+          {display === "kiosk" ? (
+            <button className="btn-plain" onClick={nextVisitor}>
+              {t(lang, "kioskNext")} →
+            </button>
+          ) : (
+            <>
+              <span>{t(lang, "seeReport")}</span>
+              <button className="btn-plain" onClick={() => router.push("/report")}>
+                {t(lang, "goSee")} →
+              </button>
+            </>
+          )}
         </div>
       )}
 
-      <div className="hall-main"><Hall3D
+      <div className="hall-main">{display !== "kiosk" && <Hall3D
         current={current}
         suggested={suggested}
         synthetic={!!observer || !!replay}
@@ -743,7 +1088,7 @@ export default function HallPage() {
         closed={closed}
         conditionId={cs.conditionId ?? null}
         onSelect={goTo}
-      />
+      />}
 
       <div className="dock">
         <div className="dock-tabs">
@@ -758,6 +1103,22 @@ export default function HallPage() {
             {t(lang, "requiredMaterials")} ({todos.length})
           </button>
         </div>
+        {display === "kiosk" && cur && (
+          <div className="kiosk-strip mono">
+            <span>{t(lang, "kioskWindows")}</span>
+            {WINDOW_AGENTS.map((a) => (
+              <button
+                key={a.id}
+                className={current === a.id ? "on" : ""}
+                disabled={sending}
+                title={deptLabel(lang, a.dept)}
+                onClick={() => goTo(a.id)}
+              >
+                {a.windowNo}
+              </button>
+            ))}
+          </div>
+        )}
 
         {tab === "chat" && (
           <div className="dock-chat">
@@ -898,10 +1259,25 @@ export default function HallPage() {
                 )}
               </>
             ) : (
-              <div className="counter-empty">
-                <div>{t(lang, "approachHint")}</div>
-                <div style={{ fontSize: 13 }}>{t(lang, "approachHint2")}</div>
-              </div>
+              display === "kiosk" ? (
+                <div className="kiosk-pick">
+                  <p>{t(lang, "kioskPick")}</p>
+                  <div className="kiosk-grid">
+                    {WINDOW_AGENTS.map((a) => (
+                      <button key={a.id} onClick={() => goTo(a.id)}>
+                        <b className="mono">{a.windowNo}</b>
+                        <span>{deptLabel(lang, a.dept)}</span>
+                        <em>{a.personName}</em>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="counter-empty">
+                  <div>{t(lang, "approachHint")}</div>
+                  <div style={{ fontSize: 13 }}>{t(lang, "approachHint2")}</div>
+                </div>
+              )
             )}
             {error && (
               <div className="err" style={{ margin: "0 16px 12px" }}>
@@ -1043,6 +1419,20 @@ export default function HallPage() {
             <div className="barcode" />
             <div className="barcode-ref">{cs.caseId}</div>
             <div className="ink-stamp stamp-anim">RECEIVED</div>
+          </div>
+        </div>
+      )}
+      {display === "kiosk" && idleLeft !== null && (
+        <div
+          className="kiosk-idle"
+          onClick={() => {
+            lastActRef.current = Date.now();
+            setIdleLeft(null);
+          }}
+        >
+          <div>
+            <p>{t(lang, "kioskIdle").replace("{s}", String(idleLeft))}</p>
+            <button>{t(lang, "kioskStay")}</button>
           </div>
         </div>
       )}

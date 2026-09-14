@@ -21,6 +21,7 @@ import {
   saveExperience,
 } from "@/lib/experience";
 import { archiveCase, findArchived, updateArchivedAnalysis } from "@/lib/archive";
+import { findSeedCase } from "@/lib/seedArchive";
 import { getLang, storeLang, t, type Lang } from "@/lib/i18n";
 import { liveHeaders } from "@/lib/livepass";
 import { getPid } from "@/lib/export";
@@ -171,6 +172,28 @@ export default function ReportPage() {
         setArchived(true);
         return;
       }
+      // Not in this browser's archive — try the public experiment archive
+      // (public/archive/*.json) before falling back to the current case.
+      let live = true;
+      void findSeedCase(id).then((seedCase) => {
+        if (!live) return;
+        if (seedCase) {
+          setCs(seedCase);
+          setAnalysis(seedCase.analysis ?? "");
+          setArchived(true);
+          return;
+        }
+        const cur = loadCase();
+        if (!cur) {
+          router.replace("/cases");
+          return;
+        }
+        setCs(cur);
+        setAnalysis(loadAnalysis());
+      });
+      return () => {
+        live = false;
+      };
     }
     const c = loadCase();
     if (!c) {

@@ -913,6 +913,7 @@ export default function HallPage() {
             closed={closed}
             conditionId={cs.conditionId ?? null}
             ambient
+            follow
             onSelect={goTo}
           />
         </div>

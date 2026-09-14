@@ -38,6 +38,7 @@ type Props = {
   closed: boolean;
   conditionId: string | null;
   ambient?: boolean;
+  follow?: boolean;
   onSelect: (id: AgentId) => void;
 };
 
@@ -913,7 +914,32 @@ export default function Hall3D(props: Props) {
       const t = world.clock.elapsedTime;
       const p = propsRef.current;
 
-      if (cam.auto) cam.az += dt * (p.ambient ? 0.055 : 0.1);
+      if (p.follow) {
+        // Exhibition stage: keep turning, but orbit the visitor. With a window
+        // in play, aim at the midpoint of figure and office so the whole beam
+        // stays centred; with no visitor, drift back to the whole building.
+        const k = 1 - Math.exp(-dt * 1.4);
+        let fx = 0,
+          fy = 5.8,
+          fz = 0,
+          fd = 30,
+          fp = 1.12;
+        if (p.current) {
+          const b = boxBottom(p.current);
+          fx = (me.position.x + b.x) / 2;
+          fy = Math.max(2.4, (0.7 + b.y) / 2);
+          fz = (me.position.z + b.z) / 2;
+          const span = Math.hypot(b.x - me.position.x, b.y, b.z - me.position.z);
+          fd = Math.min(26, Math.max(15, 11 + span * 1.2));
+          fp = 1.22;
+        }
+        cam.target.x += (fx - cam.target.x) * k;
+        cam.target.y += (fy - cam.target.y) * k;
+        cam.target.z += (fz - cam.target.z) * k;
+        cam.dist += (fd - cam.dist) * k * 0.7;
+        cam.pol += (fp - cam.pol) * k * 0.7;
+        cam.az += dt * (p.current ? 0.085 : 0.055);
+      } else if (cam.auto) cam.az += dt * (p.ambient ? 0.055 : 0.1);
 
       const goal = p.current ? groundSpot(p.current) : ENTRANCE_SPOT.clone();
       const dvec = new THREE.Vector3().subVectors(goal, me.position);

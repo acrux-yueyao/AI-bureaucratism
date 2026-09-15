@@ -34,6 +34,16 @@ const SCEN: Record<string, { en: string; zh: string }> = {
   uncategorizable: { en: "uncategorizable", zh: "无法归类" },
 };
 
+const PIDS = ["P1", "P2", "P3", "P4", "P5", "P6"];
+
+function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button className={"chip" + (on ? " chip-on" : "")} onClick={onClick}>
+      {children}
+    </button>
+  );
+}
+
 export default function CasesPage() {
   const router = useRouter();
   const [lang, setLang] = useState<Lang>("en");
@@ -42,6 +52,8 @@ export default function CasesPage() {
   const [seedState, setSeedState] = useState<"loading" | "ok" | "empty">("loading");
   const [abl, setAbl] = useState<string | null>(null);
   const [scen, setScen] = useState<string | null>(null);
+  const [pid, setPid] = useState<string | null>(null);
+  const [pabl, setPabl] = useState<string | null>(null);
 
   useEffect(() => {
     setLang(getLang());
@@ -60,11 +72,22 @@ export default function CasesPage() {
 
   const L = (v: { en: string; zh: string } | undefined, fallback: string) =>
     v ? (lang === "en" ? v.en : v.zh) : fallback;
-  const shown = seed.filter((c) => (!abl || c.ablationId === abl) && (!scen || c.scenario === scen));
+
+  const machine = seed.filter((c) => c.batch === "main01");
+  const pilot = seed
+    .filter((c) => c.batch === "pilot")
+    .sort((a, b) => (a.participant ?? "").localeCompare(b.participant ?? "") || (a.round ?? 0) - (b.round ?? 0));
+  const shownM = machine.filter((c) => (!abl || c.ablationId === abl) && (!scen || c.scenario === scen));
+  const shownP = pilot.filter((c) => (!pid || c.participant === pid) && (!pabl || c.ablationId === pabl));
 
   const row = (c: ArchivedCase, s?: SeedCase) => {
     const stats = computeStats(c.events);
     const cond = c.conditionId ? CONDITION_MAP[c.conditionId] : undefined;
+    const tag = !s
+      ? ""
+      : s.batch === "pilot"
+        ? `${s.participant} · ${L(ABL[s.ablationId ?? ""], s.ablationId ?? "")} · ${t(lang, "archiveRound").replace("{n}", String(s.round ?? ""))} · ${s.lang} · ${s.minutes} min · `
+        : `${L(ABL[s.ablationId ?? ""], s.ablationId ?? "")} · ${L(SCEN[s.scenario ?? ""], s.scenario ?? "")} · `;
     return (
       <tr key={c.caseId}>
         <td style={{ fontFamily: "var(--mono)", fontWeight: 400, fontSize: 12.5 }}>
@@ -76,7 +99,7 @@ export default function CasesPage() {
           {c.matter}
           <br />
           <span style={{ fontSize: 12.5, color: "var(--ink-2)" }}>
-            {s ? `${L(ABL[s.ablationId ?? ""], s.ablationId ?? "")} · ${L(SCEN[s.scenario], s.scenario)} · ` : ""}
+            {tag}
             {stats.outcome} · {stats.windowsVisited} windows · {stats.referrals} ref ·{" "}
             {stats.internalMemos + stats.escalations + stats.assignments} memos
             {cond && cond.id !== "calm" ? ` · ${cond.name}` : ""}
@@ -127,52 +150,79 @@ export default function CasesPage() {
               <tbody>{list.map((c) => row(c))}</tbody>
             </table>
             <div className="report-actions">
-              <button
-                className="btn-plain"
-                onClick={() => download("aib-archive.json", JSON.stringify(list, null, 2))}
-              >
+              <button className="btn-plain" onClick={() => download("aib-archive.json", JSON.stringify(list, null, 2))}>
                 {t(lang, "exportAll")}
               </button>
             </div>
           </>
         )}
 
-        <h2 style={{ fontSize: 22, marginTop: list.length > 0 ? 40 : 28 }}>{t(lang, "archiveSeedTitle")}</h2>
-        <p style={{ fontSize: 15, color: "var(--ink-2)", marginTop: 6, maxWidth: 720 }}>
-          {t(lang, "archiveSeedDesc")}
-        </p>
-
         {seedState === "loading" && (
-          <p style={{ color: "var(--ink-2)", marginTop: 16 }}>{t(lang, "archiveSeedLoading")}</p>
+          <p style={{ color: "var(--ink-2)", marginTop: 28 }}>{t(lang, "archiveSeedLoading")}</p>
         )}
 
-        {seedState === "ok" && (
+        {pilot.length > 0 && (
           <>
+            <h2 style={{ fontSize: 22, marginTop: list.length > 0 ? 40 : 28 }}>{t(lang, "archivePilotTitle")}</h2>
+            <p style={{ fontSize: 15, color: "var(--ink-2)", marginTop: 6, maxWidth: 720 }}>{t(lang, "archivePilotDesc")}</p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 16 }}>
-              <button className={"chip" + (!abl ? " chip-on" : "")} onClick={() => setAbl(null)}>
+              <Chip on={!pid} onClick={() => setPid(null)}>
                 {t(lang, "archiveAll")}
-              </button>
-              {Object.keys(ABL).map((k) => (
-                <button key={k} className={"chip" + (abl === k ? " chip-on" : "")} onClick={() => setAbl(abl === k ? null : k)}>
-                  {L(ABL[k], k)}
-                </button>
+              </Chip>
+              {PIDS.map((p) => (
+                <Chip key={p} on={pid === p} onClick={() => setPid(pid === p ? null : p)}>
+                  {p}
+                </Chip>
               ))}
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
-              <button className={"chip" + (!scen ? " chip-on" : "")} onClick={() => setScen(null)}>
+              <Chip on={!pabl} onClick={() => setPabl(null)}>
                 {t(lang, "archiveAll")}
-              </button>
-              {Object.keys(SCEN).map((k) => (
-                <button key={k} className={"chip" + (scen === k ? " chip-on" : "")} onClick={() => setScen(scen === k ? null : k)}>
-                  {L(SCEN[k], k)}
-                </button>
+              </Chip>
+              {["full", "flat"].map((k) => (
+                <Chip key={k} on={pabl === k} onClick={() => setPabl(pabl === k ? null : k)}>
+                  {L(ABL[k], k)}
+                </Chip>
               ))}
             </div>
             <p style={{ fontSize: 13, color: "var(--ink-2)", marginTop: 12 }}>
-              {t(lang, "archiveCount").replace("{n}", String(shown.length))}
+              {t(lang, "archiveSessions").replace("{n}", String(shownP.length))}
             </p>
             <table className="window-table" style={{ marginTop: 8, maxWidth: "100%" }}>
-              <tbody>{shown.map((c) => row(c, c))}</tbody>
+              <tbody>{shownP.map((c) => row(c, c))}</tbody>
+            </table>
+          </>
+        )}
+
+        {machine.length > 0 && (
+          <>
+            <h2 style={{ fontSize: 22, marginTop: 40 }}>{t(lang, "archiveSeedTitle")}</h2>
+            <p style={{ fontSize: 15, color: "var(--ink-2)", marginTop: 6, maxWidth: 720 }}>{t(lang, "archiveSeedDesc")}</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 16 }}>
+              <Chip on={!abl} onClick={() => setAbl(null)}>
+                {t(lang, "archiveAll")}
+              </Chip>
+              {Object.keys(ABL).map((k) => (
+                <Chip key={k} on={abl === k} onClick={() => setAbl(abl === k ? null : k)}>
+                  {L(ABL[k], k)}
+                </Chip>
+              ))}
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
+              <Chip on={!scen} onClick={() => setScen(null)}>
+                {t(lang, "archiveAll")}
+              </Chip>
+              {Object.keys(SCEN).map((k) => (
+                <Chip key={k} on={scen === k} onClick={() => setScen(scen === k ? null : k)}>
+                  {L(SCEN[k], k)}
+                </Chip>
+              ))}
+            </div>
+            <p style={{ fontSize: 13, color: "var(--ink-2)", marginTop: 12 }}>
+              {t(lang, "archiveCount").replace("{n}", String(shownM.length))}
+            </p>
+            <table className="window-table" style={{ marginTop: 8, maxWidth: "100%" }}>
+              <tbody>{shownM.map((c) => row(c, c))}</tbody>
             </table>
           </>
         )}

@@ -9,25 +9,25 @@ import { useEffect, useState } from "react";
 import { getLang, storeLang, type Lang } from "@/lib/i18n";
 import AgentNetwork from "./AgentNetwork";
 
-const RUNS: { p: string; cond: "full" | "flat"; min: number; w: number; mm: number; g: string }[] = [
-  { p: "P1", cond: "flat", min: 3, w: 1, mm: 0, g: "■" },
-  { p: "P1", cond: "full", min: 8, w: 1, mm: 0, g: "✕" },
-  { p: "P1", cond: "flat", min: 14, w: 3, mm: 0, g: "■" },
-  { p: "P1", cond: "flat", min: 15, w: 3, mm: 1, g: "○" },
-  { p: "P1", cond: "full", min: 4, w: 2, mm: 7, g: "○" },
-  { p: "P2", cond: "flat", min: 5, w: 4, mm: 0, g: "●" },
-  { p: "P2", cond: "full", min: 328, w: 5, mm: 39, g: "●" },
-  { p: "P3", cond: "full", min: 2, w: 2, mm: 0, g: "○" },
-  { p: "P3", cond: "full", min: 30, w: 5, mm: 17, g: "○" },
-  { p: "P3", cond: "flat", min: 9, w: 2, mm: 0, g: "●" },
-  { p: "P4", cond: "flat", min: 7, w: 3, mm: 0, g: "○" },
-  { p: "P4", cond: "full", min: 21, w: 2, mm: 0, g: "○" },
-  { p: "P5", cond: "full", min: 35, w: 3, mm: 12, g: "⚡" },
-  { p: "P5", cond: "full", min: 16, w: 4, mm: 4, g: "○" },
-  { p: "P5", cond: "flat", min: 25, w: 6, mm: 8, g: "⚡" },
-  { p: "P6", cond: "flat", min: 99, w: 4, mm: 0, g: "●" },
-  { p: "P6", cond: "full", min: 164, w: 2, mm: 0, g: "○" },
-  { p: "P6", cond: "full", min: 270, w: 4, mm: 20, g: "○" },
+const RUNS: { p: string; cond: "full" | "flat"; min: number; w: number; mm: number; g: string; id: string }[] = [
+  { p: "P1", cond: "flat", min: 3, w: 1, mm: 0, g: "■", id: "AIB-20260727-2197" },
+  { p: "P1", cond: "full", min: 8, w: 1, mm: 0, g: "✕", id: "AIB-20260727-8051" },
+  { p: "P1", cond: "flat", min: 14, w: 3, mm: 0, g: "■", id: "AIB-20260727-4686" },
+  { p: "P1", cond: "flat", min: 15, w: 3, mm: 1, g: "○", id: "AIB-20260727-9036" },
+  { p: "P1", cond: "full", min: 4, w: 2, mm: 7, g: "○", id: "AIB-20260727-1744" },
+  { p: "P2", cond: "flat", min: 5, w: 4, mm: 0, g: "●", id: "AIB-20260729-5677" },
+  { p: "P2", cond: "full", min: 328, w: 5, mm: 39, g: "●", id: "AIB-20260729-2549" },
+  { p: "P3", cond: "full", min: 2, w: 2, mm: 0, g: "○", id: "AIB-20260726-2906" },
+  { p: "P3", cond: "full", min: 30, w: 5, mm: 17, g: "○", id: "AIB-20260726-0419" },
+  { p: "P3", cond: "flat", min: 9, w: 2, mm: 0, g: "●", id: "AIB-20260726-2630" },
+  { p: "P4", cond: "flat", min: 7, w: 3, mm: 0, g: "○", id: "AIB-20260727-4013" },
+  { p: "P4", cond: "full", min: 21, w: 2, mm: 0, g: "○", id: "AIB-20260727-7652" },
+  { p: "P5", cond: "full", min: 35, w: 3, mm: 12, g: "⚡", id: "AIB-20260727-8818" },
+  { p: "P5", cond: "full", min: 16, w: 4, mm: 4, g: "○", id: "AIB-20260727-8771" },
+  { p: "P5", cond: "flat", min: 25, w: 6, mm: 8, g: "⚡", id: "AIB-20260727-4166" },
+  { p: "P6", cond: "flat", min: 99, w: 4, mm: 0, g: "●", id: "AIB-20260727-5739" },
+  { p: "P6", cond: "full", min: 164, w: 2, mm: 0, g: "○", id: "AIB-20260727-2866" },
+  { p: "P6", cond: "full", min: 270, w: 4, mm: 20, g: "○", id: "AIB-20260728-2897" },
 ];
 
 // machine batch main01 — per-case means with bootstrap 95% CI (materials)
@@ -317,6 +317,9 @@ export default function PilotPage() {
                 {L("internal memos", "封内部函件")} · {RUNS[runSel].g}{" "}
                 {L(GLYPH[RUNS[runSel].g].e, GLYPH[RUNS[runSel].g].z)}
               </span>
+              <a className="pl-open" href={`/report?id=${RUNS[runSel].id}`} target="_blank" rel="noreferrer">
+                {L("open case file ↗", "打开案卷 ↗")}
+              </a>
               <button onClick={() => setRunSel(null)}>×</button>
             </div>
           )}

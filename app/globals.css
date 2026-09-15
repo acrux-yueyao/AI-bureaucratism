@@ -5030,3 +5030,18 @@ textarea {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* pilot · inspector → case file */
+.pl-inspect .pl-open {
+  margin-left: 14px;
+  font-size: 8.5px;
+  letter-spacing: 1.2px;
+  color: #d98a72;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(217, 138, 114, 0.45);
+  white-space: nowrap;
+}
+.pl-inspect .pl-open:hover {
+  color: #f0a98f;
+  border-bottom-color: #f0a98f;
+}
